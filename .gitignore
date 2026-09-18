@@ -1,0 +1,34 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test artifacts
+*.test
+*.out
+
+# Environment files
+.env
+.env.local
+
+# Database files (SQLite)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# IDE & OS files
+.idea/
+.vscode/
+.kilo/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Frontend build artifacts
+web/dist/
+web/node_modules/
