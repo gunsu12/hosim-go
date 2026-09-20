@@ -22,9 +22,10 @@ var (
 	ErrInvalidFamilyCardFormat  = errors.New("nomor Kartu Keluarga (No. KK) harus berjumlah 16 digit angka")
 	ErrInvalidGender            = errors.New("jenis kelamin tidak valid (gunakan 'L' / 'P' atau 'male' / 'female')")
 	ErrInvalidEmail             = errors.New("format email tidak valid")
-	ErrInvalidDeceasedDate      = errors.New("tanggal meninggal tidak valid (tidak boleh sebelum tanggal lahir atau di masa depan)")
-	ErrMaxMedicalRecordExceeded = errors.New("nomor rekam medis telah mencapai batas maksimal (99999999)")
-	ErrInvalidMedicalRecordFormat = errors.New("nomor rekam medis manual harus berupa 8 digit angka")
+	ErrInvalidDeceasedDate              = errors.New("tanggal meninggal tidak valid (gunakan format YYYY-MM-DD atau YYYY-MM-DD HH:mm:ss, dan tidak boleh sebelum lahir atau di masa depan)")
+	ErrMaxMedicalRecordExceeded         = errors.New("nomor rekam medis telah mencapai batas maksimal (99999999)")
+	ErrInvalidMedicalRecordFormat       = errors.New("nomor rekam medis manual harus berupa 8 digit angka")
+	ErrInvalidInsuranceExpiryDateFormat = errors.New("format masa berlaku asuransi tidak valid (gunakan format YYYY-MM-DD)")
 )
 
 type EmergencyContactRequest struct {
@@ -87,6 +88,68 @@ type CreatePatientRequest struct {
 	Addresses           []AddressRequest          `json:"addresses"`
 }
 
+// Sanitize membersihkan spasi di awal dan akhir seluruh field string pada request
+func (req *CreatePatientRequest) Sanitize() {
+	req.NIK = strings.TrimSpace(req.NIK)
+	req.FamilyCardNo = strings.TrimSpace(req.FamilyCardNo)
+	req.IHSPatientID = strings.TrimSpace(req.IHSPatientID)
+	req.Title = strings.TrimSpace(req.Title)
+	req.ShortName = strings.TrimSpace(req.ShortName)
+	req.FullName = strings.TrimSpace(req.FullName)
+	req.MotherName = strings.TrimSpace(req.MotherName)
+	req.Gender = strings.TrimSpace(req.Gender)
+	req.BirthPlace = strings.TrimSpace(req.BirthPlace)
+	req.BirthDate = strings.TrimSpace(req.BirthDate)
+	req.Phone = strings.TrimSpace(req.Phone)
+	req.Email = strings.TrimSpace(req.Email)
+	req.MaritalStatus = strings.TrimSpace(req.MaritalStatus)
+	req.Religion = strings.TrimSpace(req.Religion)
+	req.Education = strings.TrimSpace(req.Education)
+	req.Occupation = strings.TrimSpace(req.Occupation)
+	req.Nationality = strings.TrimSpace(req.Nationality)
+	req.BloodType = strings.TrimSpace(req.BloodType)
+	req.Rhesus = strings.TrimSpace(req.Rhesus)
+	req.SpecialNeeds = strings.TrimSpace(req.SpecialNeeds)
+	req.InsuranceType = strings.TrimSpace(req.InsuranceType)
+	req.InsuranceNumber = strings.TrimSpace(req.InsuranceNumber)
+	req.MedicalRecordNo = strings.TrimSpace(req.MedicalRecordNo)
+
+	if req.DeceasedAt != nil {
+		trimmed := strings.TrimSpace(*req.DeceasedAt)
+		req.DeceasedAt = &trimmed
+	}
+	if req.InsuranceExpiryDate != nil {
+		trimmed := strings.TrimSpace(*req.InsuranceExpiryDate)
+		req.InsuranceExpiryDate = &trimmed
+	}
+
+	for i := range req.EmergencyContacts {
+		req.EmergencyContacts[i].Name = strings.TrimSpace(req.EmergencyContacts[i].Name)
+		req.EmergencyContacts[i].Relation = strings.TrimSpace(req.EmergencyContacts[i].Relation)
+		req.EmergencyContacts[i].Phone = strings.TrimSpace(req.EmergencyContacts[i].Phone)
+		req.EmergencyContacts[i].Address = strings.TrimSpace(req.EmergencyContacts[i].Address)
+	}
+
+	for i := range req.Relations {
+		req.Relations[i].Name = strings.TrimSpace(req.Relations[i].Name)
+		req.Relations[i].Relation = strings.TrimSpace(req.Relations[i].Relation)
+		req.Relations[i].Phone = strings.TrimSpace(req.Relations[i].Phone)
+		req.Relations[i].Address = strings.TrimSpace(req.Relations[i].Address)
+	}
+
+	for i := range req.Addresses {
+		req.Addresses[i].AddressType = strings.TrimSpace(req.Addresses[i].AddressType)
+		req.Addresses[i].AddressLine = strings.TrimSpace(req.Addresses[i].AddressLine)
+		req.Addresses[i].RT = strings.TrimSpace(req.Addresses[i].RT)
+		req.Addresses[i].RW = strings.TrimSpace(req.Addresses[i].RW)
+		req.Addresses[i].PostalCode = strings.TrimSpace(req.Addresses[i].PostalCode)
+		req.Addresses[i].ProvinsiID = strings.TrimSpace(req.Addresses[i].ProvinsiID)
+		req.Addresses[i].KabupatenID = strings.TrimSpace(req.Addresses[i].KabupatenID)
+		req.Addresses[i].KecamatanID = strings.TrimSpace(req.Addresses[i].KecamatanID)
+		req.Addresses[i].KelurahanID = strings.TrimSpace(req.Addresses[i].KelurahanID)
+	}
+}
+
 type UpdatePatientRequest struct {
 	CreatePatientRequest
 }
@@ -113,13 +176,7 @@ func NewService(repo Repository) Service {
 // RegisterPatient mendaftarkan pasien baru di loket
 func (s *service) RegisterPatient(ctx context.Context, req CreatePatientRequest, operatorID string) (*Patient, error) {
 	// 0. Sanitasi Input String
-	req.NIK = strings.TrimSpace(req.NIK)
-	req.FamilyCardNo = strings.TrimSpace(req.FamilyCardNo)
-	req.Phone = strings.TrimSpace(req.Phone)
-	req.Email = strings.TrimSpace(req.Email)
-	req.MedicalRecordNo = strings.TrimSpace(req.MedicalRecordNo)
-	req.FullName = strings.TrimSpace(req.FullName)
-	req.ShortName = strings.TrimSpace(req.ShortName)
+	req.Sanitize()
 
 	// A. Validasi & Parse Tanggal Lahir (string -> time.Time)
 	birthDate, err := time.Parse("2006-01-02", req.BirthDate)
@@ -228,20 +285,23 @@ func (s *service) RegisterPatient(ctx context.Context, req CreatePatientRequest,
 	var insuranceExpiry *time.Time
 	if req.InsuranceExpiryDate != nil && *req.InsuranceExpiryDate != "" {
 		t, err := time.Parse("2006-01-02", *req.InsuranceExpiryDate)
-		if err == nil {
-			insuranceExpiry = &t
+		if err != nil {
+			return nil, ErrInvalidInsuranceExpiryDateFormat
 		}
+		insuranceExpiry = &t
 	}
 
-	// J. Optional: Parse Tanggal Kematian jika diisi
+	// J. Optional: Parse Tanggal Kematian jika pasien meninggal
 	var deceasedTime *time.Time
-	if req.DeceasedAt != nil && *req.DeceasedAt != "" {
-		if t, err := time.Parse("2006-01-02 15:04:05", *req.DeceasedAt); err == nil {
-			deceasedTime = &t
-		} else if t, err := time.Parse("2006-01-02", *req.DeceasedAt); err == nil {
-			deceasedTime = &t
-		}
-		if deceasedTime != nil {
+	if req.IsDeceased {
+		if req.DeceasedAt != nil && *req.DeceasedAt != "" {
+			if t, err := time.Parse("2006-01-02 15:04:05", *req.DeceasedAt); err == nil {
+				deceasedTime = &t
+			} else if t, err := time.Parse("2006-01-02", *req.DeceasedAt); err == nil {
+				deceasedTime = &t
+			} else {
+				return nil, ErrInvalidDeceasedDate
+			}
 			if deceasedTime.Before(birthDate) || deceasedTime.After(time.Now()) {
 				return nil, ErrInvalidDeceasedDate
 			}
@@ -326,12 +386,7 @@ func (s *service) UpdatePatient(ctx context.Context, id string, req UpdatePatien
 	}
 
 	// 0. Sanitasi Input String
-	req.NIK = strings.TrimSpace(req.NIK)
-	req.FamilyCardNo = strings.TrimSpace(req.FamilyCardNo)
-	req.Phone = strings.TrimSpace(req.Phone)
-	req.Email = strings.TrimSpace(req.Email)
-	req.FullName = strings.TrimSpace(req.FullName)
-	req.ShortName = strings.TrimSpace(req.ShortName)
+	req.Sanitize()
 
 	// 2. Parse Tanggal Lahir
 	birthDate, err := time.Parse("2006-01-02", req.BirthDate)
@@ -401,28 +456,33 @@ func (s *service) UpdatePatient(ctx context.Context, id string, req UpdatePatien
 	if req.IHSPatientID != "" {
 		patient.IHSPatientID = req.IHSPatientID
 	}
-	if req.DeceasedAt != nil && *req.DeceasedAt != "" {
+	if !req.IsDeceased {
+		patient.DeceasedAt = nil
+	} else if req.DeceasedAt != nil && *req.DeceasedAt != "" {
 		var dTime *time.Time
 		if t, err := time.Parse("2006-01-02 15:04:05", *req.DeceasedAt); err == nil {
 			dTime = &t
 		} else if t, err := time.Parse("2006-01-02", *req.DeceasedAt); err == nil {
 			dTime = &t
+		} else {
+			return nil, ErrInvalidDeceasedDate
 		}
-		if dTime != nil {
-			if dTime.Before(birthDate) || dTime.After(time.Now()) {
-				return nil, ErrInvalidDeceasedDate
-			}
-			patient.DeceasedAt = dTime
+		if dTime.Before(birthDate) || dTime.After(time.Now()) {
+			return nil, ErrInvalidDeceasedDate
 		}
+		patient.DeceasedAt = dTime
 	} else if req.DeceasedAt != nil && *req.DeceasedAt == "" {
 		patient.DeceasedAt = nil
 	}
+
 	patient.InsuranceType = req.InsuranceType
 	patient.InsuranceNumber = req.InsuranceNumber
 	if req.InsuranceExpiryDate != nil && *req.InsuranceExpiryDate != "" {
-		if t, err := time.Parse("2006-01-02", *req.InsuranceExpiryDate); err == nil {
-			patient.InsuranceExpiryDate = &t
+		t, err := time.Parse("2006-01-02", *req.InsuranceExpiryDate)
+		if err != nil {
+			return nil, ErrInvalidInsuranceExpiryDateFormat
 		}
+		patient.InsuranceExpiryDate = &t
 	} else if req.InsuranceExpiryDate != nil && *req.InsuranceExpiryDate == "" {
 		patient.InsuranceExpiryDate = nil
 	}

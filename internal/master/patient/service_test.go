@@ -338,5 +338,94 @@ func TestRegisterPatient_InvalidManualMedicalRecordFormat(t *testing.T) {
 	}
 }
 
+func TestRegisterPatient_InvalidInsuranceExpiryDateFormat(t *testing.T) {
+	mockRepo := &mockPatientRepo{}
+	svc := patient.NewService(mockRepo)
+
+	invalidDate := "31-12-2025" // format salah
+	req := patient.CreatePatientRequest{
+		FullName:            "Pasien Asuransi Format Salah",
+		ShortName:           "Pasien",
+		Gender:              "L",
+		BirthDate:           "1990-01-01",
+		Phone:               "0812345678",
+		InsuranceExpiryDate: &invalidDate,
+	}
+
+	_, err := svc.RegisterPatient(context.Background(), req, "operator-1")
+	if !errors.Is(err, patient.ErrInvalidInsuranceExpiryDateFormat) {
+		t.Errorf("expected ErrInvalidInsuranceExpiryDateFormat, got %v", err)
+	}
+}
+
+func TestRegisterPatient_InvalidDeceasedDateFormat(t *testing.T) {
+	mockRepo := &mockPatientRepo{}
+	svc := patient.NewService(mockRepo)
+
+	invalidDate := "2025/12/31 10:00" // format salah
+	req := patient.CreatePatientRequest{
+		FullName:   "Pasien Meninggal Format Salah",
+		ShortName:  "Pasien",
+		Gender:     "L",
+		BirthDate:  "1990-01-01",
+		Phone:      "0812345678",
+		IsDeceased: true,
+		DeceasedAt: &invalidDate,
+	}
+
+	_, err := svc.RegisterPatient(context.Background(), req, "operator-1")
+	if !errors.Is(err, patient.ErrInvalidDeceasedDate) {
+		t.Errorf("expected ErrInvalidDeceasedDate, got %v", err)
+	}
+}
+
+func TestUpdatePatient_ResetDeceasedWhenNotDeceased(t *testing.T) {
+	pastDeceased := time.Now().Add(-24 * time.Hour)
+	existingPatient := &patient.Patient{
+		ID:         "patient-100",
+		FullName:   "Pasien Salah Input Meninggal",
+		BirthDate:  time.Now().AddDate(-30, 0, 0),
+		IsDeceased: true,
+		DeceasedAt: &pastDeceased,
+	}
+
+	var savedPatient *patient.Patient
+	mockRepo := &mockPatientRepo{
+		findByIDFn: func(ctx context.Context, id string) (*patient.Patient, error) {
+			return existingPatient, nil
+		},
+		updateFn: func(ctx context.Context, p *patient.Patient) (*patient.Patient, error) {
+			savedPatient = p
+			return p, nil
+		},
+	}
+
+	svc := patient.NewService(mockRepo)
+	req := patient.UpdatePatientRequest{
+		CreatePatientRequest: patient.CreatePatientRequest{
+			FullName:   "Pasien Salah Input Meninggal",
+			Gender:     "L",
+			BirthDate:  "1995-01-01",
+			Phone:      "08123456",
+			IsDeceased: false, // Dikoreksi menjadi hidup
+		},
+	}
+
+	res, err := svc.UpdatePatient(context.Background(), "patient-100", req, "operator-1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if res.IsDeceased {
+		t.Errorf("expected IsDeceased to be false")
+	}
+	if res.DeceasedAt != nil {
+		t.Errorf("expected DeceasedAt to be nil when IsDeceased is false, got %v", res.DeceasedAt)
+	}
+	if savedPatient.DeceasedAt != nil {
+		t.Errorf("expected saved patient DeceasedAt to be nil")
+	}
+}
+
 
 

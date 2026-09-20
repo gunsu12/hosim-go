@@ -104,10 +104,10 @@ type PatientAddress struct {
 	RT          string         `gorm:"size:3" json:"rt"`
 	RW          string         `gorm:"size:3" json:"rw"`
 	PostalCode  string         `gorm:"size:10" json:"postal_code"`
-	ProvinsiID  string         `gorm:"size:10" json:"provinsi_id"`
-	KabupatenID string         `gorm:"size:10" json:"kabupaten_id"`
-	KecamatanID string         `gorm:"size:10" json:"kecamatan_id"`
-	KelurahanID string         `gorm:"size:10" json:"kelurahan_id"`
+	ProvinsiID  string         `gorm:"size:20" json:"provinsi_id"`
+	KabupatenID string         `gorm:"size:20" json:"kabupaten_id"`
+	KecamatanID string         `gorm:"size:20" json:"kecamatan_id"`
+	KelurahanID string         `gorm:"size:20" json:"kelurahan_id"`
 	IsActive    bool           `gorm:"index:idx_paddr_patient_type_active;default:true" json:"is_active"`
 	CreatedAt   time.Time      `json:"created_at"`
 	CreatedBy   string         `json:"created_by"`

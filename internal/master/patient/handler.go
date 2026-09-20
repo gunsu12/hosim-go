@@ -53,7 +53,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 			errors.Is(err, ErrInvalidNIKFormat) || errors.Is(err, ErrInvalidFamilyCardFormat) ||
 			errors.Is(err, ErrInvalidGender) || errors.Is(err, ErrInvalidEmail) ||
 			errors.Is(err, ErrInvalidDeceasedDate) || errors.Is(err, ErrMaxMedicalRecordExceeded) ||
-			errors.Is(err, ErrInvalidMedicalRecordFormat) {
+			errors.Is(err, ErrInvalidMedicalRecordFormat) || errors.Is(err, ErrInvalidInsuranceExpiryDateFormat) {
 			response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
 			return
 		}
@@ -155,7 +155,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 			errors.Is(err, ErrInvalidNIKFormat) || errors.Is(err, ErrInvalidFamilyCardFormat) ||
 			errors.Is(err, ErrInvalidGender) || errors.Is(err, ErrInvalidEmail) ||
 			errors.Is(err, ErrInvalidDeceasedDate) || errors.Is(err, ErrMaxMedicalRecordExceeded) ||
-			errors.Is(err, ErrInvalidMedicalRecordFormat) {
+			errors.Is(err, ErrInvalidMedicalRecordFormat) || errors.Is(err, ErrInvalidInsuranceExpiryDateFormat) {
 			response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
 			return
 		}
