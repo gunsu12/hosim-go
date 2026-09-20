@@ -1,9 +1,11 @@
 package patient
 
 import (
-	"hosim-go/pkg/response"
+	"errors"
 	"net/http"
 	"strconv"
+
+	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,7 +45,19 @@ func (h *Handler) Create(ctx *gin.Context) {
 
 	patient, err := h.service.RegisterPatient(ctx.Request.Context(), req, operatorID)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
+		if errors.Is(err, ErrNIKAlreadyExists) || errors.Is(err, ErrMedicalRecordNoExists) {
+			response.Error(ctx, http.StatusConflict, err.Error(), nil)
+			return
+		}
+		if errors.Is(err, ErrInvalidDateFormat) || errors.Is(err, ErrBirthDateInFuture) ||
+			errors.Is(err, ErrInvalidNIKFormat) || errors.Is(err, ErrInvalidFamilyCardFormat) ||
+			errors.Is(err, ErrInvalidGender) || errors.Is(err, ErrInvalidEmail) ||
+			errors.Is(err, ErrInvalidDeceasedDate) || errors.Is(err, ErrMaxMedicalRecordExceeded) ||
+			errors.Is(err, ErrInvalidMedicalRecordFormat) {
+			response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
+			return
+		}
+		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 	response.Success(ctx, http.StatusCreated, "Pasien berhasil didaftarkan", patient)
@@ -129,6 +143,22 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 	patient, err := h.service.UpdatePatient(ctx.Request.Context(), id, req, operatorID)
 	if err != nil {
+		if errors.Is(err, ErrPatientNotFound) {
+			response.Error(ctx, http.StatusNotFound, "Pasien tidak ditemukan", err.Error())
+			return
+		}
+		if errors.Is(err, ErrNIKAlreadyExists) {
+			response.Error(ctx, http.StatusConflict, err.Error(), nil)
+			return
+		}
+		if errors.Is(err, ErrInvalidDateFormat) || errors.Is(err, ErrBirthDateInFuture) ||
+			errors.Is(err, ErrInvalidNIKFormat) || errors.Is(err, ErrInvalidFamilyCardFormat) ||
+			errors.Is(err, ErrInvalidGender) || errors.Is(err, ErrInvalidEmail) ||
+			errors.Is(err, ErrInvalidDeceasedDate) || errors.Is(err, ErrMaxMedicalRecordExceeded) ||
+			errors.Is(err, ErrInvalidMedicalRecordFormat) {
+			response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
@@ -145,6 +175,10 @@ func (h *Handler) Delete(ctx *gin.Context) {
 
 	err := h.service.DeletePatient(ctx.Request.Context(), id, operatorID)
 	if err != nil {
+		if errors.Is(err, ErrPatientNotFound) {
+			response.Error(ctx, http.StatusNotFound, "Pasien tidak ditemukan", err.Error())
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
