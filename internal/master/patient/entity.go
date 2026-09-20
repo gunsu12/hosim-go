@@ -4,6 +4,8 @@ import (
 	"time"
 	"uuid"
 
+	"hosim-go/pkg/enums"
+
 	"gorm.io/gorm"
 )
 
@@ -17,7 +19,7 @@ type Patient struct {
 	ShortName           string                    `gorm:"not null;size:150" json:"short_name"`
 	FullName            string                    `gorm:"index:idx_name_birth;not null;size:200" json:"full_name"`
 	MotherName          string                    `gorm:"size:150" json:"mother_name,omitempty"`
-	Gender              string                    `gorm:"size:10" json:"gender"`
+	Gender              enums.Gender              `gorm:"size:10;not null" json:"gender"`
 	BirthPlace          string                    `gorm:"size:50" json:"birth_place"`
 	BirthDate           time.Time                 `gorm:"index:idx_name_birth;not null" json:"birth_date"`
 	Phone               string                    `gorm:"index;not null;size:20" json:"phone"`

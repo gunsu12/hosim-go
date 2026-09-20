@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"hosim-go/pkg/enums"
+
 	"gorm.io/gorm"
 )
 
@@ -654,15 +656,11 @@ func isDigits(s string) bool {
 	return true
 }
 
-func normalizeGender(g string) (string, error) {
-	switch strings.ToLower(strings.TrimSpace(g)) {
-	case "l", "laki-laki", "male", "m":
-		return "L", nil
-	case "p", "perempuan", "female", "f":
-		return "P", nil
-	default:
-		return "", ErrInvalidGender
+func normalizeGender(g string) (enums.Gender, error) {
+	if gender, ok := enums.NormalizeGender(g); ok {
+		return gender, nil
 	}
+	return "", ErrInvalidGender
 }
 
 func normalizeBloodType(bt string) string {
