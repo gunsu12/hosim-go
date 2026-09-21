@@ -4,6 +4,10 @@ HOSIM-GO adalah sistem informasi manajemen rumah sakit (SIMRS) open-source yang 
 
 Didesain untuk keandalan tinggi (24/7), integritas data transaksi medis yang ketat, dan siap diintegrasikan dengan standar nasional (BPJS V-Claim & Kemenkes SatuSehat HL7 FHIR).
 
+## ALERT !!
+Project ini adalah project yang rencananya akan saya kembangkan untuk kebutuhan pembelajaran pribadi saya. segala kekurangan dan ketidak sempurnaan project ini mohon dimaklumi. 
+Kalau ada yang berminat untuk menjadi kontributor bisa informasikan ke email [gunawansuarna@gmail.com]
+
 ---
 
 ## 🏗️ Arsitektur & Teknologi
