@@ -5,19 +5,24 @@ import (
 	"testing"
 	"time"
 
+	"hosim-go/internal/config"
+	"hosim-go/internal/database"
 	"hosim-go/internal/master/patient"
+	"hosim-go/internal/master/payer"
 
-	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
 func setupTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	cfg := config.LoadConfig()
+	db, err := database.NewDatabase(cfg)
 	if err != nil {
-		t.Fatalf("failed to connect database: %v", err)
+		t.Fatalf("failed to connect to postgres database: %v", err)
 	}
 
 	err = db.AutoMigrate(
+		&payer.PayerType{},
+		&payer.Payer{},
 		&patient.Patient{},
 		&patient.PatientEmergencyContact{},
 		&patient.PatientRelation{},
@@ -30,7 +35,12 @@ func setupTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("failed to auto migrate: %v", err)
 	}
 
-	return db
+	tx := db.Begin()
+	t.Cleanup(func() {
+		tx.Rollback()
+	})
+
+	return tx
 }
 
 func TestRepository_UpdateAssociations(t *testing.T) {

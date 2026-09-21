@@ -15,15 +15,15 @@ import (
 )
 
 var (
-	ErrPatientNotFound          = errors.New("pasien tidak ditemukan")
-	ErrNIKAlreadyExists         = errors.New("pasien dengan NIK tersebut sudah terdaftar")
-	ErrMedicalRecordNoExists    = errors.New("nomor rekam medis tersebut sudah digunakan oleh pasien lain")
-	ErrInvalidDateFormat        = errors.New("format tanggal lahir tidak valid (gunakan format YYYY-MM-DD)")
-	ErrBirthDateInFuture        = errors.New("tanggal lahir tidak boleh di masa depan")
-	ErrInvalidNIKFormat         = errors.New("NIK harus berjumlah 16 digit angka")
-	ErrInvalidFamilyCardFormat  = errors.New("nomor Kartu Keluarga (No. KK) harus berjumlah 16 digit angka")
-	ErrInvalidGender            = errors.New("jenis kelamin tidak valid (gunakan 'L' / 'P' atau 'male' / 'female')")
-	ErrInvalidEmail             = errors.New("format email tidak valid")
+	ErrPatientNotFound                  = errors.New("pasien tidak ditemukan")
+	ErrNIKAlreadyExists                 = errors.New("pasien dengan NIK tersebut sudah terdaftar")
+	ErrMedicalRecordNoExists            = errors.New("nomor rekam medis tersebut sudah digunakan oleh pasien lain")
+	ErrInvalidDateFormat                = errors.New("format tanggal lahir tidak valid (gunakan format YYYY-MM-DD)")
+	ErrBirthDateInFuture                = errors.New("tanggal lahir tidak boleh di masa depan")
+	ErrInvalidNIKFormat                 = errors.New("NIK harus berjumlah 16 digit angka")
+	ErrInvalidFamilyCardFormat          = errors.New("nomor Kartu Keluarga (No. KK) harus berjumlah 16 digit angka")
+	ErrInvalidGender                    = errors.New("jenis kelamin tidak valid (gunakan 'L' / 'P' atau 'male' / 'female')")
+	ErrInvalidEmail                     = errors.New("format email tidak valid")
 	ErrInvalidDeceasedDate              = errors.New("tanggal meninggal tidak valid (gunakan format YYYY-MM-DD atau YYYY-MM-DD HH:mm:ss, dan tidak boleh sebelum lahir atau di masa depan)")
 	ErrMaxMedicalRecordExceeded         = errors.New("nomor rekam medis telah mencapai batas maksimal (99999999)")
 	ErrInvalidMedicalRecordFormat       = errors.New("nomor rekam medis manual harus berupa 8 digit angka")
@@ -65,7 +65,7 @@ type CreatePatientRequest struct {
 	Title               string                    `json:"title"`             // Opsional: Tn, Ny, Nn, An, By
 	ShortName           string                    `json:"short_name" binding:"required"`
 	FullName            string                    `json:"full_name" binding:"required"`
-	MotherName          string                    `json:"mother_name"`       // Opsional: Nama Ibu Kandung
+	MotherName          string                    `json:"mother_name"`               // Opsional: Nama Ibu Kandung
 	Gender              string                    `json:"gender" binding:"required"` // "L" / "P" atau "male" / "female"
 	BirthPlace          string                    `json:"birth_place" binding:"required"`
 	BirthDate           string                    `json:"birth_date" binding:"required"` // Format: YYYY-MM-DD
@@ -77,13 +77,14 @@ type CreatePatientRequest struct {
 	Occupation          string                    `json:"occupation"`
 	Nationality         string                    `json:"nationality"`
 	BloodType           string                    `json:"blood_type"`
-	Rhesus              string                    `json:"rhesus"`            // "+", "-", atau "tidak tahu"
-	SpecialNeeds        string                    `json:"special_needs"`     // Disabilitas / Kebutuhan khusus (kursi roda, tuna rungu, dll)
-	IsUnknown           bool                      `json:"is_unknown"`        // True jika Mr. X / Mrs. X (IGD)
-	IsDeceased          bool                      `json:"is_deceased"`       // True jika pasien meninggal
-	DeceasedAt          *string                   `json:"deceased_at"`       // Format: YYYY-MM-DD HH:mm:ss atau YYYY-MM-DD (opsional)
-	InsuranceType       string                    `json:"insurance_type"`
-	InsuranceNumber     string                    `json:"insurance_number"`
+	Rhesus              string                    `json:"rhesus"`                // "+", "-", atau "tidak tahu"
+	SpecialNeeds        string                    `json:"special_needs"`         // Disabilitas / Kebutuhan khusus (kursi roda, tuna rungu, dll)
+	IsUnknown           bool                      `json:"is_unknown"`            // True jika Mr. X / Mrs. X (IGD)
+	IsDeceased          bool                      `json:"is_deceased"`           // True jika pasien meninggal
+	DeceasedAt          *string                   `json:"deceased_at"`           // Format: YYYY-MM-DD HH:mm:ss atau YYYY-MM-DD (opsional)
+	PayerID             *string                   `json:"payer_id"`              // ID Penjamin
+	InsuranceType       *string                   `json:"insurance_type"`        // Jenis Asuransi
+	InsuranceNumber     *string                   `json:"insurance_number"`      // Nomor Asuransi
 	InsuranceExpiryDate *string                   `json:"insurance_expiry_date"` // Format: YYYY-MM-DD (opsional)
 	EmergencyContacts   []EmergencyContactRequest `json:"emergency_contacts"`
 	Relations           []RelationRequest         `json:"relations"`
@@ -112,8 +113,34 @@ func (req *CreatePatientRequest) Sanitize() {
 	req.BloodType = strings.TrimSpace(req.BloodType)
 	req.Rhesus = strings.TrimSpace(req.Rhesus)
 	req.SpecialNeeds = strings.TrimSpace(req.SpecialNeeds)
-	req.InsuranceType = strings.TrimSpace(req.InsuranceType)
-	req.InsuranceNumber = strings.TrimSpace(req.InsuranceNumber)
+
+	if req.PayerID != nil {
+		trimmed := strings.TrimSpace(*req.PayerID)
+		if trimmed == "" {
+			req.PayerID = nil
+		} else {
+			req.PayerID = &trimmed
+		}
+	}
+
+	if req.InsuranceType != nil {
+		trimmed := strings.TrimSpace(*req.InsuranceType)
+		if trimmed == "" {
+			req.InsuranceType = nil
+		} else {
+			req.InsuranceType = &trimmed
+		}
+	}
+
+	if req.InsuranceNumber != nil {
+		trimmed := strings.TrimSpace(*req.InsuranceNumber)
+		if trimmed == "" {
+			req.InsuranceNumber = nil
+		} else {
+			req.InsuranceNumber = &trimmed
+		}
+	}
+
 	req.MedicalRecordNo = strings.TrimSpace(req.MedicalRecordNo)
 
 	if req.DeceasedAt != nil {
@@ -336,6 +363,7 @@ func (s *service) RegisterPatient(ctx context.Context, req CreatePatientRequest,
 		IsUnknown:           req.IsUnknown,
 		IsDeceased:          req.IsDeceased,
 		DeceasedAt:          deceasedTime,
+		PayerID:             req.PayerID,
 		InsuranceType:       req.InsuranceType,
 		InsuranceNumber:     req.InsuranceNumber,
 		InsuranceExpiryDate: insuranceExpiry,
@@ -477,6 +505,8 @@ func (s *service) UpdatePatient(ctx context.Context, id string, req UpdatePatien
 		patient.DeceasedAt = nil
 	}
 
+	// Update data penjamin & asuransi
+	patient.PayerID = req.PayerID
 	patient.InsuranceType = req.InsuranceType
 	patient.InsuranceNumber = req.InsuranceNumber
 	if req.InsuranceExpiryDate != nil && *req.InsuranceExpiryDate != "" {

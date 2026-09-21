@@ -1,8 +1,8 @@
 package config
 
 import (
-	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/joho/godotenv"
 )
@@ -24,17 +24,29 @@ type Config struct {
 
 // LoadConfig membaca environment variables dari .env (jika ada) dan OS env
 func LoadConfig() *Config {
-	// Baca file .env jika tersedia (tidak error jika file tidak ada)
-	if err := godotenv.Load(); err != nil {
-		log.Println("[INFO] File .env tidak ditemukan, menggunakan environment variables sistem")
+	// Cari .env di direktori kerja saat ini atau naik ke direktori induk (penting saat unit test berjalan di subfolder)
+	dir, err := os.Getwd()
+	if err == nil {
+		for {
+			envPath := filepath.Join(dir, ".env")
+			if _, err := os.Stat(envPath); err == nil {
+				_ = godotenv.Load(envPath)
+				break
+			}
+			parent := filepath.Dir(dir)
+			if parent == dir {
+				break
+			}
+			dir = parent
+		}
 	}
 
 	return &Config{
 		AppName:    getEnv("APP_NAME", "HOSIM-GO"),
 		AppEnv:     getEnv("APP_ENV", "development"),
 		AppPort:    getEnv("APP_PORT", "8080"),
-		DBDriver:   getEnv("DB_DRIVER", "sqlite"),
-		DBName:     getEnv("DB_NAME", "hosim.db"),
+		DBDriver:   getEnv("DB_DRIVER", "postgres"),
+		DBName:     getEnv("DB_NAME", "hosim_go"),
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBPort:     getEnv("DB_PORT", "5432"),
 		DBUser:     getEnv("DB_USER", "postgres"),

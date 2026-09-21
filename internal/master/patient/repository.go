@@ -2,6 +2,7 @@ package patient
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -168,6 +169,7 @@ func (r *repository) Delete(ctx context.Context, id string, deletedBy string) er
 func (r *repository) FindByID(ctx context.Context, id string) (*Patient, error) {
 	var patient Patient
 	err := r.db.WithContext(ctx).
+		Preload("Payer").
 		Preload("EmergencyContacts", "is_active = ?", true).
 		Preload("Relations", "is_active = ?", true).
 		Preload("Allergies", "is_active = ?", true).
@@ -186,6 +188,7 @@ func (r *repository) FindByID(ctx context.Context, id string) (*Patient, error) 
 func (r *repository) FindByNIK(ctx context.Context, nik string) (*Patient, error) {
 	var patient Patient
 	err := r.db.WithContext(ctx).
+		Preload("Payer").
 		Preload("EmergencyContacts", "is_active = ?", true).
 		Preload("Relations", "is_active = ?", true).
 		Preload("Allergies", "is_active = ?", true).
@@ -203,6 +206,7 @@ func (r *repository) FindByNIK(ctx context.Context, nik string) (*Patient, error
 func (r *repository) FindByMedicalRecordNo(ctx context.Context, medicalRecordNo string) (*Patient, error) {
 	var patient Patient
 	err := r.db.WithContext(ctx).
+		Preload("Payer").
 		Preload("EmergencyContacts", "is_active = ?", true).
 		Preload("Relations", "is_active = ?", true).
 		Preload("Allergies", "is_active = ?", true).
@@ -224,11 +228,11 @@ func (r *repository) FindAll(ctx context.Context, params ListParams) ([]Patient,
 	// 1. Buat base query
 	query := r.db.WithContext(ctx).Model(&Patient{})
 
-	// 2. Pasang filter HANYA JIKA user mengetik pencarian (case-insensitive kompatibel SQLite & PostgreSQL)
+	// 2. Pasang filter HANYA JIKA user mengetik pencarian (PostgreSQL ILIKE)
 	if params.Search != "" {
-		searchTerm := "%" + params.Search + "%"
+		searchTerm := "%" + strings.TrimSpace(params.Search) + "%"
 		query = query.Where(
-			"LOWER(medical_record_no) LIKE LOWER(?) OR LOWER(full_name) LIKE LOWER(?) OR LOWER(nik) LIKE LOWER(?) OR LOWER(family_card_no) LIKE LOWER(?) OR phone LIKE ?",
+			"medical_record_no ILIKE ? OR full_name ILIKE ? OR nik ILIKE ? OR family_card_no ILIKE ? OR phone ILIKE ?",
 			searchTerm, searchTerm, searchTerm, searchTerm, searchTerm,
 		)
 	}
@@ -241,6 +245,7 @@ func (r *repository) FindAll(ctx context.Context, params ListParams) ([]Patient,
 	// 4. Ambil datanya sesuai limit dan offset halaman
 	offset := (params.Page - 1) * params.Limit
 	err := query.
+		Preload("Payer").
 		Order("created_at DESC").
 		Limit(params.Limit).
 		Offset(offset).

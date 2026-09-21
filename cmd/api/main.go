@@ -12,7 +12,11 @@ import (
 
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
+	"hosim-go/internal/master/departement"
 	"hosim-go/internal/master/patient"
+	"hosim-go/internal/master/payer"
+	"hosim-go/internal/master/practitioner"
+	serviceunit "hosim-go/internal/master/service_unit"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -35,8 +39,17 @@ func main() {
 		log.Fatalf("[FATAL] Inisialisasi database gagal: %v\n", err)
 	}
 
-	// Auto-Migrate tabel-tabel Master Pasien
+	// Auto-Migrate tabel-tabel Master (Payer, Departemen, Service Unit, Pasien, Practitioner)
 	err = db.AutoMigrate(
+		// Master Penjamin / Payer
+		&payer.PayerType{},
+		&payer.Payer{},
+
+		// Master Departemen / Instalasi & Unit Layanan
+		&departement.Departement{},
+		&serviceunit.ServiceUnit{},
+
+		// Master Pasien
 		&patient.Patient{},
 		&patient.PatientEmergencyContact{},
 		&patient.PatientRelation{},
@@ -44,16 +57,31 @@ func main() {
 		&patient.PatientAddress{},
 		&patient.PatientDrugHistory{},
 		&patient.PatientChronicalDisease{},
+
+		// Master Nakes / Practitioner
+		&practitioner.Profession{},
+		&practitioner.Specialty{},
+		&practitioner.Practitioner{},
 	)
 	if err != nil {
 		log.Fatalf("[FATAL] AutoMigrate database gagal: %v\n", err)
 	}
-	log.Println("[DATABASE] Skema tabel Master Pasien berhasil dimigrasi.")
+	log.Println("[DATABASE] Skema tabel database berhasil dimigrasi.")
+
+	// Jalankan Seeder data referensi (Profesi & Spesialisasi SatuSehat)
+	if err := practitioner.SeedProfessionsAndSpecialties(db); err != nil {
+		log.Printf("[WARN] Seeder profesi dan spesialisasi gagal: %v\n", err)
+	}
 
 	// 4. Inisialisasi Modul Master Pasien (Dependency Injection)
 	patientRepo := patient.NewRepository(db)
 	patientService := patient.NewService(patientRepo)
 	patientHandler := patient.NewHandler(patientService)
+
+	// Inisialisasi Modul Master Tenaga Medis (Practitioner)
+	practitionerRepo := practitioner.NewRepository(db)
+	practitionerService := practitioner.NewService(practitionerRepo)
+	practitionerHandler := practitioner.NewHandler(practitionerService)
 
 	// 5. Inisialisasi Router Gin
 	r := gin.New()
@@ -99,6 +127,9 @@ func main() {
 		v1.GET("/health", healthHandler)
 		// Daftarkan route modul Master Pasien
 		patientHandler.RegisterRoutes(v1)
+
+		// Daftarkan route modul Master Tenaga Medis (Practitioner)
+		practitionerHandler.RegisterRoutes(v1)
 	}
 
 	// 7. Jalankan Server dengan Graceful Shutdown

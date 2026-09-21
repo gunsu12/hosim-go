@@ -4,6 +4,7 @@ import (
 	"time"
 	"uuid"
 
+	"hosim-go/internal/master/payer"
 	"hosim-go/pkg/enums"
 
 	"gorm.io/gorm"
@@ -35,9 +36,11 @@ type Patient struct {
 	IsUnknown           bool                      `gorm:"default:false" json:"is_unknown"`
 	IsDeceased          bool                      `gorm:"default:false" json:"is_deceased"`
 	DeceasedAt          *time.Time                `json:"deceased_at,omitempty"`
-	InsuranceType       string                    `gorm:"size:20" json:"insurance_type"`
-	InsuranceNumber     string                    `gorm:"index;size:50" json:"insurance_number"`
-	InsuranceExpiryDate *time.Time                `gorm:"" json:"insurance_expiry_date"`
+	PayerID             *string                   `gorm:"index;size:36" json:"payer_id,omitempty"`
+	Payer               *payer.Payer              `gorm:"foreignKey:PayerID;references:ID" json:"payer,omitempty"`
+	InsuranceType       *string                   `gorm:"size:20" json:"insurance_type,omitempty"`
+	InsuranceNumber     *string                   `gorm:"index;size:50" json:"insurance_number,omitempty"`
+	InsuranceExpiryDate *time.Time                `gorm:"" json:"insurance_expiry_date,omitempty"`
 	EmergencyContacts   []PatientEmergencyContact `gorm:"foreignKey:PatientID;references:ID" json:"emergency_contacts,omitempty"`
 	Relations           []PatientRelation         `gorm:"foreignKey:PatientID;references:ID" json:"relations,omitempty"`
 	Allergies           []PatientAllergy          `gorm:"foreignKey:PatientID;references:ID" json:"allergies,omitempty"`

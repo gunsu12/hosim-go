@@ -427,5 +427,119 @@ func TestUpdatePatient_ResetDeceasedWhenNotDeceased(t *testing.T) {
 	}
 }
 
+func TestRegisterPatient_PayerID(t *testing.T) {
+	var savedPatient *patient.Patient
+	mockRepo := &mockPatientRepo{
+		createFn: func(ctx context.Context, p *patient.Patient) (*patient.Patient, error) {
+			savedPatient = p
+			return p, nil
+		},
+	}
+
+	svc := patient.NewService(mockRepo)
+
+	// Test 1: PayerID with value
+	payerID := "payer-uuid-123"
+	req := patient.CreatePatientRequest{
+		FullName:  "Pasien Dengan Penjamin",
+		Gender:    "L",
+		BirthDate: "1990-01-01",
+		PayerID:   &payerID,
+	}
+
+	res, err := svc.RegisterPatient(context.Background(), req, "operator-1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if res.PayerID == nil || *res.PayerID != "payer-uuid-123" {
+		t.Errorf("expected PayerID to be 'payer-uuid-123', got %v", res.PayerID)
+	}
+
+	// Test 2: PayerID with empty string (should be sanitized to nil)
+	emptyPayerID := "   "
+	req2 := patient.CreatePatientRequest{
+		FullName:  "Pasien Penjamin Kosong",
+		Gender:    "L",
+		BirthDate: "1990-01-01",
+		PayerID:   &emptyPayerID,
+	}
+
+	res2, err := svc.RegisterPatient(context.Background(), req2, "operator-1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if res2.PayerID != nil {
+		t.Errorf("expected PayerID to be nil for empty string, got %v", *res2.PayerID)
+	}
+	if savedPatient.PayerID != nil {
+		t.Errorf("expected savedPatient PayerID to be nil, got %v", *savedPatient.PayerID)
+	}
+}
+
+func TestUpdatePatient_PayerID(t *testing.T) {
+	initialPayer := "old-payer-id"
+	existingPatient := &patient.Patient{
+		ID:        "patient-200",
+		FullName:  "Pasien Edit Penjamin",
+		BirthDate: time.Now().AddDate(-25, 0, 0),
+		PayerID:   &initialPayer,
+	}
+
+	var savedPatient *patient.Patient
+	mockRepo := &mockPatientRepo{
+		findByIDFn: func(ctx context.Context, id string) (*patient.Patient, error) {
+			return existingPatient, nil
+		},
+		updateFn: func(ctx context.Context, p *patient.Patient) (*patient.Patient, error) {
+			savedPatient = p
+			return p, nil
+		},
+	}
+
+	svc := patient.NewService(mockRepo)
+
+	// Update to new payer
+	newPayer := "new-payer-id"
+	req := patient.UpdatePatientRequest{
+		CreatePatientRequest: patient.CreatePatientRequest{
+			FullName:  "Pasien Edit Penjamin",
+			Gender:    "L",
+			BirthDate: "2000-01-01",
+			PayerID:   &newPayer,
+		},
+	}
+
+	res, err := svc.UpdatePatient(context.Background(), "patient-200", req, "operator-1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if res.PayerID == nil || *res.PayerID != "new-payer-id" {
+		t.Errorf("expected PayerID 'new-payer-id', got %v", res.PayerID)
+	}
+
+	// Update to empty string (should clear PayerID to nil)
+	emptyPayer := ""
+	reqClear := patient.UpdatePatientRequest{
+		CreatePatientRequest: patient.CreatePatientRequest{
+			FullName:  "Pasien Edit Penjamin",
+			Gender:    "L",
+			BirthDate: "2000-01-01",
+			PayerID:   &emptyPayer,
+		},
+	}
+
+	resClear, err := svc.UpdatePatient(context.Background(), "patient-200", reqClear, "operator-1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resClear.PayerID != nil {
+		t.Errorf("expected PayerID to be nil after clearing, got %v", *resClear.PayerID)
+	}
+	if savedPatient.PayerID != nil {
+		t.Errorf("expected saved patient PayerID to be nil, got %v", *savedPatient.PayerID)
+	}
+}
+
+
 
 

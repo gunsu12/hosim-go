@@ -11,13 +11,13 @@ import (
 
 type Practitioner struct {
 	ID                  string       `gorm:"primaryKey;size:36" json:"id"`
-	NIK                 string       `gorm:"uniqueIndex:idx_practitioners_nik,where:nik != '' AND nik IS NOT NULL AND deleted_at IS NULL;size:16" json:"nik"`
-	NIP                 string       `gorm:"uniqueIndex:idx_practitioners_nip,where:nip != '' AND nip IS NOT NULL AND deleted_at IS NULL;size:50" json:"nip,omitempty"`
+	NIK                 string       `gorm:"column:nik;uniqueIndex:idx_practitioners_nik,where:nik != '' AND nik IS NOT NULL AND deleted_at IS NULL;size:16" json:"nik"`
+	NIP                 string       `gorm:"column:nip;uniqueIndex:idx_practitioners_nip,where:nip != '' AND nip IS NOT NULL AND deleted_at IS NULL;size:50" json:"nip,omitempty"`
 	Name                string       `gorm:"size:150;not null" json:"name"`
 	Gender              enums.Gender `gorm:"size:10;not null" json:"gender"`
-	SIP                 string      `gorm:"size:50" json:"sip,omitempty"`
-	SIPExpiryDate       *time.Time  `json:"sip_expiry_date,omitempty"`
-	STR                 string      `gorm:"size:50" json:"str,omitempty"` // str biasanya seumur hidup
+	SIP                 string       `gorm:"column:sip;size:50" json:"sip,omitempty"`
+	SIPExpiryDate       *time.Time   `gorm:"column:sip_expiry_date" json:"sip_expiry_date,omitempty"`
+	STR                 string       `gorm:"column:str;size:50" json:"str,omitempty"` // str biasanya seumur hidup
 	ProfessionID        *string     `gorm:"index;size:36" json:"profession_id,omitempty"`
 	Profession          *Profession `gorm:"foreignKey:ProfessionID;references:ID" json:"profession,omitempty"`
 	SpecialtyID         *string     `gorm:"index;size:36" json:"specialty_id,omitempty"`
