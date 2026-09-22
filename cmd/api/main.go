@@ -16,7 +16,10 @@ import (
 	"hosim-go/internal/master/patient"
 	"hosim-go/internal/master/payer"
 	"hosim-go/internal/master/practitioner"
+	"hosim-go/internal/master/referal"
+	"hosim-go/internal/master/room"
 	serviceunit "hosim-go/internal/master/service_unit"
+	tariffclass "hosim-go/internal/master/tariff_class"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -39,15 +42,20 @@ func main() {
 		log.Fatalf("[FATAL] Inisialisasi database gagal: %v\n", err)
 	}
 
-	// Auto-Migrate tabel-tabel Master (Payer, Departemen, Service Unit, Pasien, Practitioner)
+	// Auto-Migrate tabel-tabel Master
 	err = db.AutoMigrate(
 		// Master Penjamin / Payer
 		&payer.PayerType{},
 		&payer.Payer{},
 
-		// Master Departemen / Instalasi & Unit Layanan
+		// Master Departemen / Instalasi, Unit Layanan & Ruangan
 		&departement.Departement{},
 		&serviceunit.ServiceUnit{},
+		&room.Room{},
+
+		// Master Rujukan & Kelas Tarif
+		&referal.Referal{},
+		&tariffclass.TariffClass{},
 
 		// Master Pasien
 		&patient.Patient{},
@@ -73,12 +81,43 @@ func main() {
 		log.Printf("[WARN] Seeder profesi dan spesialisasi gagal: %v\n", err)
 	}
 
-	// 4. Inisialisasi Modul Master Pasien (Dependency Injection)
+	// 4. Inisialisasi Modul Master Data (Dependency Injection)
+	// Master Departemen
+	departementRepo := departement.NewRepository(db)
+	departementService := departement.NewService(departementRepo)
+	departementHandler := departement.NewHandler(departementService)
+
+	// Master Penjamin / Payer
+	payerRepo := payer.NewRepository(db)
+	payerService := payer.NewService(payerRepo)
+	payerHandler := payer.NewHandler(payerService)
+
+	// Master Rujukan / Referal
+	referalRepo := referal.NewRepository(db)
+	referalService := referal.NewService(referalRepo)
+	referalHandler := referal.NewHandler(referalService)
+
+	// Master Unit Layanan / Service Unit
+	serviceUnitRepo := serviceunit.NewRepository(db)
+	serviceUnitService := serviceunit.NewService(serviceUnitRepo)
+	serviceUnitHandler := serviceunit.NewHandler(serviceUnitService)
+
+	// Master Ruangan / Room
+	roomRepo := room.NewRepository(db)
+	roomService := room.NewService(roomRepo)
+	roomHandler := room.NewHandler(roomService)
+
+	// Master Kelas Tarif / Tariff Class
+	tariffClassRepo := tariffclass.NewRepository(db)
+	tariffClassService := tariffclass.NewService(tariffClassRepo)
+	tariffClassHandler := tariffclass.NewHandler(tariffClassService)
+
+	// Master Pasien
 	patientRepo := patient.NewRepository(db)
 	patientService := patient.NewService(patientRepo)
 	patientHandler := patient.NewHandler(patientService)
 
-	// Inisialisasi Modul Master Tenaga Medis (Practitioner)
+	// Master Tenaga Medis (Practitioner)
 	practitionerRepo := practitioner.NewRepository(db)
 	practitionerService := practitioner.NewService(practitionerRepo)
 	practitionerHandler := practitioner.NewHandler(practitionerService)
@@ -125,10 +164,15 @@ func main() {
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", healthHandler)
-		// Daftarkan route modul Master Pasien
-		patientHandler.RegisterRoutes(v1)
 
-		// Daftarkan route modul Master Tenaga Medis (Practitioner)
+		// Daftarkan route seluruh modul Master Data
+		departementHandler.RegisterRoutes(v1)
+		payerHandler.RegisterRoutes(v1)
+		referalHandler.RegisterRoutes(v1)
+		serviceUnitHandler.RegisterRoutes(v1)
+		roomHandler.RegisterRoutes(v1)
+		tariffClassHandler.RegisterRoutes(v1)
+		patientHandler.RegisterRoutes(v1)
 		practitionerHandler.RegisterRoutes(v1)
 	}
 
