@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', 'Roboto', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+
+  /* Google Drive M3 Theme Tokens */
+  --color-primary: var(--md-primary);
+  --color-primary-hover: var(--md-primary-hover);
+  --color-primary-container: var(--md-primary-container);
+  --color-on-primary: var(--md-on-primary);
+  --color-on-primary-container: var(--md-on-primary-container);
+
+  --color-secondary: var(--md-secondary);
+  --color-secondary-container: var(--md-secondary-container);
+  --color-on-secondary: var(--md-on-secondary);
+  --color-on-secondary-container: var(--md-on-secondary-container);
+
+  --color-surface: var(--md-surface);
+  --color-surface-container-lowest: var(--md-surface-container-lowest);
+  --color-surface-container-low: var(--md-surface-container-low);
+  --color-surface-container: var(--md-surface-container);
+  --color-surface-container-high: var(--md-surface-container-high);
+  --color-surface-container-highest: var(--md-surface-container-highest);
+
+  --color-on-surface: var(--md-on-surface);
+  --color-on-surface-variant: var(--md-on-surface-variant);
+  --color-outline: var(--md-outline);
+  --color-outline-variant: var(--md-outline-variant);
+
+  --color-error: var(--md-error);
+  --color-error-container: var(--md-error-container);
+  --color-on-error: var(--md-on-error);
+}
+
+:root {
+  /* Google Drive Authentic Material Design 3 Palette */
+  --md-primary: #0b57d0;             /* Iconic Google Drive Blue */
+  --md-primary-hover: #0842a0;
+  --md-primary-container: #d3e3fd;   /* Google Drive active pill container */
+  --md-on-primary: #ffffff;
+  --md-on-primary-container: #041e49;
+
+  --md-secondary: #444746;
+  --md-secondary-container: #e8eaed;
+  --md-on-secondary: #ffffff;
+  --md-on-secondary-container: #1f1f1f;
+
+  /* Google Drive Background Canvas & Surfaces */
+  --md-surface: #f8fafd;             /* Google Drive light grayish-blue canvas */
+  --md-surface-container-lowest: #ffffff;  /* Content island card */
+  --md-surface-container-low: #f0f4f9;     /* Sidebar & subtle inputs */
+  --md-surface-container: #e9eef6;         /* Search bar / chips background */
+  --md-surface-container-high: #e1e5ea;
+  --md-surface-container-highest: #d8dde3;
+
+  --md-on-surface: #1f1f1f;          /* Google high-contrast dark text */
+  --md-on-surface-variant: #444746;  /* Google secondary label text */
+  --md-outline: #747775;
+  --md-outline-variant: #e1e5ea;     /* Google Drive subtle card border */
+
+  /* Google Semantic Accents (Gmail / Sheets / Drive) */
+  --md-error: #b3261e;
+  --md-error-container: #f9dedc;
+  --md-on-error: #ffffff;
+  --md-on-error-container: #410e0b;
+}
+
+/* Google Drive style scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dadce0;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #bdc1c6;
+}
