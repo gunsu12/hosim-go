@@ -28,11 +28,12 @@ type Patient struct {
 	MaritalStatus       string                    `gorm:"size:20" json:"marital_status"`
 	Religion            string                    `gorm:"size:20" json:"religion"`
 	Education           string                    `gorm:"size:20" json:"education"`
-	Occupation          string                    `gorm:"size:20" json:"occupation"`
+	Occupation          string                    `gorm:"size:20" json:"occupation"` // pekerjaan
 	Nationality         string                    `gorm:"size:20" json:"nationality"`
+	Languages           string                    `gorm:"size:20" json:"languages"` // bahasa yang digunakan
 	BloodType           string                    `gorm:"size:20" json:"blood_type"`
 	Rhesus              string                    `gorm:"size:10" json:"rhesus,omitempty"`
-	SpecialNeeds        string                    `gorm:"size:150" json:"special_needs,omitempty"`
+	SpecialNeeds        string                    `gorm:"size:150" json:"special_needs,omitempty"` // kebutuhan khusus
 	IsUnknown           bool                      `gorm:"default:false" json:"is_unknown"`
 	IsDeceased          bool                      `gorm:"default:false" json:"is_deceased"`
 	DeceasedAt          *time.Time                `json:"deceased_at,omitempty"`
