@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"hosim-go/internal/auth"
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
 	"hosim-go/internal/master/departement"
@@ -20,6 +21,7 @@ import (
 	"hosim-go/internal/master/room"
 	serviceunit "hosim-go/internal/master/service_unit"
 	tariffclass "hosim-go/internal/master/tariff_class"
+	"hosim-go/internal/middleware"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +30,11 @@ import (
 func main() {
 	// 1. Inisialisasi Konfigurasi
 	cfg := config.LoadConfig()
+
+	// Peringatan keamanan jika berjalan di production dengan default secret
+	if cfg.IsProduction() && cfg.JWTSecret == "hosim-secret-key-change-this-in-production-12345678" {
+		log.Println("[WARN] PERINGATAN KEAMANAN: Aplikasi berjalan pada mode production tetapi JWT_SECRET masih menggunakan nilai default!")
+	}
 
 	// 2. Set mode Gin (Release untuk production, Debug untuk development)
 	if cfg.IsProduction() {
@@ -70,6 +77,12 @@ func main() {
 		&practitioner.Profession{},
 		&practitioner.Specialty{},
 		&practitioner.Practitioner{},
+
+		// Autentikasi, Role & Hak Akses (RBAC)
+		&auth.Permission{},
+		&auth.Role{},
+		&auth.User{},
+		&auth.RefreshToken{},
 	)
 	if err != nil {
 		log.Fatalf("[FATAL] AutoMigrate database gagal: %v\n", err)
@@ -81,7 +94,17 @@ func main() {
 		log.Printf("[WARN] Seeder profesi dan spesialisasi gagal: %v\n", err)
 	}
 
-	// 4. Inisialisasi Modul Master Data (Dependency Injection)
+	// Jalankan Seeder Roles & Permissions RBAC (termasuk default akun admin)
+	if err := auth.SeedRBAC(db); err != nil {
+		log.Printf("[WARN] Seeder RBAC gagal: %v\n", err)
+	}
+
+	// 4. Inisialisasi Modul Autentikasi & Master Data (Dependency Injection)
+	// Modul Autentikasi
+	authRepo := auth.NewRepository(db)
+	authService := auth.NewService(authRepo, cfg)
+	authHandler := auth.NewHandler(authService, cfg.JWTSecret)
+
 	// Master Departemen
 	departementRepo := departement.NewRepository(db)
 	departementService := departement.NewService(departementRepo)
@@ -165,15 +188,22 @@ func main() {
 	{
 		v1.GET("/health", healthHandler)
 
-		// Daftarkan route seluruh modul Master Data
-		departementHandler.RegisterRoutes(v1)
-		payerHandler.RegisterRoutes(v1)
-		referalHandler.RegisterRoutes(v1)
-		serviceUnitHandler.RegisterRoutes(v1)
-		roomHandler.RegisterRoutes(v1)
-		tariffClassHandler.RegisterRoutes(v1)
-		patientHandler.RegisterRoutes(v1)
-		practitionerHandler.RegisterRoutes(v1)
+		// Daftarkan route Autentikasi (/api/v1/auth/*)
+		authHandler.RegisterRoutes(v1)
+
+		// Rute Master Data Terproteksi (Memerlukan JWT Access Token)
+		protected := v1.Group("")
+		protected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+		{
+			departementHandler.RegisterRoutes(protected)
+			payerHandler.RegisterRoutes(protected)
+			referalHandler.RegisterRoutes(protected)
+			serviceUnitHandler.RegisterRoutes(protected)
+			roomHandler.RegisterRoutes(protected)
+			tariffClassHandler.RegisterRoutes(protected)
+			patientHandler.RegisterRoutes(protected)
+			practitionerHandler.RegisterRoutes(protected)
+		}
 	}
 
 	// 7. Jalankan Server dengan Graceful Shutdown

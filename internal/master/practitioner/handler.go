@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"hosim-go/internal/middleware"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -21,13 +22,25 @@ func NewHandler(service Service) *Handler {
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	practitioners := router.Group("/practitioners")
 	{
-		practitioners.POST("", h.Create)
-		practitioners.GET("", h.List)
-		practitioners.GET("/:id", h.GetByID)
-		practitioners.GET("/nik/:nik", h.GetByNIK)
-		practitioners.GET("/nip/:nip", h.GetByNIP)
-		practitioners.PUT("/:id", h.Update)
-		practitioners.DELETE("/:id", h.Delete)
+		// Cipta, Ubah & Hapus data dokter dibatasi ketat
+		practitioners.POST("", middleware.RequirePermission("practitioner:create"), h.Create)
+		practitioners.PUT("/:id", middleware.RequirePermission("practitioner:update"), h.Update)
+		practitioners.DELETE("/:id", middleware.RequirePermission("practitioner:delete"), h.Delete)
+		practitioners.GET("/nik/:nik", middleware.RequirePermission("practitioner:read"), h.GetByNIK)
+		practitioners.GET("/nip/:nip", middleware.RequirePermission("practitioner:read"), h.GetByNIP)
+
+		// Opsi 1: GET /practitioners diizinkan untuk Admin Master ATAU petugas yang butuh data dokter
+		practitioners.GET("", middleware.RequireAnyPermission(
+			"practitioner:read",   // Admin Master Data
+			"outpatient:register", // Suster/Paramedis Pendaftaran Rawat Jalan
+			"appointment:view",    // Petugas Janji Temu
+		), h.List)
+
+		practitioners.GET("/:id", middleware.RequireAnyPermission(
+			"practitioner:read",
+			"outpatient:register",
+			"appointment:view",
+		), h.GetByID)
 	}
 
 	router.GET("/professions", h.ListProfessions)

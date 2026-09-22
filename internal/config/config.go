@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -20,6 +21,11 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBSSLMode  string
+
+	// Konfigurasi JWT & Autentikasi
+	JWTSecret          string
+	JWTAccessDuration  time.Duration
+	JWTRefreshDuration time.Duration
 }
 
 // LoadConfig membaca environment variables dari .env (jika ada) dan OS env
@@ -42,16 +48,19 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		AppName:    getEnv("APP_NAME", "HOSIM-GO"),
-		AppEnv:     getEnv("APP_ENV", "development"),
-		AppPort:    getEnv("APP_PORT", "8080"),
-		DBDriver:   getEnv("DB_DRIVER", "postgres"),
-		DBName:     getEnv("DB_NAME", "hosim_go"),
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", "postgres"),
-		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+		AppName:            getEnv("APP_NAME", "HOSIM-GO"),
+		AppEnv:             getEnv("APP_ENV", "development"),
+		AppPort:            getEnv("APP_PORT", "8080"),
+		DBDriver:           getEnv("DB_DRIVER", "postgres"),
+		DBName:             getEnv("DB_NAME", "hosim_go"),
+		DBHost:             getEnv("DB_HOST", "localhost"),
+		DBPort:             getEnv("DB_PORT", "5432"),
+		DBUser:             getEnv("DB_USER", "postgres"),
+		DBPassword:         getEnv("DB_PASSWORD", "postgres"),
+		DBSSLMode:          getEnv("DB_SSLMODE", "disable"),
+		JWTSecret:          getEnv("JWT_SECRET", "hosim-secret-key-change-this-in-production-12345678"),
+		JWTAccessDuration:  15 * time.Minute,
+		JWTRefreshDuration: 7 * 24 * time.Hour,
 	}
 }
 
