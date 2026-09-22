@@ -200,6 +200,35 @@ func SeedRBAC(db *gorm.DB) error {
 		log.Println("[SEEDER] Default akun admin berhasil dibuat (username: admin, password: admin123)")
 	}
 
+	// 4. Seed Default Practitioner / Doctor User
+	var doctorRole Role
+	if err := db.Where("code = ?", "DOCTOR").First(&doctorRole).Error; err == nil {
+		var doctorCount int64
+		db.Model(&User{}).Where("username = ?", "dokter").Count(&doctorCount)
+		if doctorCount == 0 {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte("dokter123"), bcrypt.DefaultCost)
+			if err != nil {
+				return err
+			}
+
+			doctor := User{
+				Username:  "dokter",
+				Email:     "hendra.wijaya@hosim.local",
+				Password:  string(hashedPassword),
+				Name:      "dr. Hendra Wijaya, Sp.B",
+				RoleID:    &doctorRole.ID,
+				IsActive:  true,
+				CreatedBy: "SEEDER",
+				UpdatedBy: "SEEDER",
+			}
+
+			if err := db.Create(&doctor).Error; err != nil {
+				return err
+			}
+			log.Println("[SEEDER] Default akun dokter berhasil dibuat (username: dokter, password: dokter123)")
+		}
+	}
+
 	log.Println("[SEEDER] Seluruh Role & Permission RBAC berhasil diinisialisasi.")
 	return nil
 }

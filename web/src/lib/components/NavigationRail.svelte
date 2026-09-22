@@ -9,11 +9,13 @@
     ChevronRight,
     Plus
   } from '@lucide/svelte';
+  import { auth } from '../stores/auth.svelte';
 
   export interface SubMenuItem {
     id: string;
     label: string;
     badge?: string | null;
+    permission?: string;
   }
 
   export interface MenuItem {
@@ -46,9 +48,9 @@
       shortLabel: 'Klinis',
       icon: Stethoscope,
       children: [
-        { id: 'physical', label: 'Status Lokalis & Anatomi', badge: 'Body' },
-        { id: 'anamnesis', label: 'Anamnesis & SOAP', badge: null },
-        { id: 'odontogram', label: 'Odontogram Gigi', badge: 'Gigi' }
+        { id: 'physical', label: 'Status Lokalis & Anatomi', badge: 'Body', permission: 'patient:read' },
+        { id: 'anamnesis', label: 'Anamnesis & SOAP', badge: null, permission: 'patient:read' },
+        { id: 'odontogram', label: 'Odontogram Gigi', badge: 'Gigi', permission: 'patient:read' }
       ]
     },
     {
@@ -57,9 +59,9 @@
       shortLabel: 'Penunjang',
       icon: FlaskConical,
       children: [
-        { id: 'lab', label: 'Laboratorium Cito', badge: 'Cito' },
-        { id: 'radiology', label: 'Radiologi & Imaging', badge: null },
-        { id: 'pharmacy', label: 'Farmasi & E-Resep', badge: null }
+        { id: 'lab', label: 'Laboratorium Cito', badge: 'Cito', permission: 'patient:read' },
+        { id: 'radiology', label: 'Radiologi & Imaging', badge: null, permission: 'patient:read' },
+        { id: 'pharmacy', label: 'Farmasi & E-Resep', badge: null, permission: 'patient:read' }
       ]
     },
     {
@@ -68,14 +70,14 @@
       shortLabel: 'Master',
       icon: Database,
       children: [
-        { id: 'master-patient', label: 'Pasien (Patient)', badge: null },
-        { id: 'master-practitioner', label: 'Tenaga Medis (Practitioner)', badge: null },
-        { id: 'master-departement', label: 'Departemen & Instalasi', badge: null },
-        { id: 'master-service-unit', label: 'Unit Layanan & Poli', badge: null },
-        { id: 'master-room', label: 'Ruangan & Bed (Room)', badge: null },
-        { id: 'master-payer', label: 'Penjamin & Asuransi (Payer)', badge: null },
-        { id: 'master-referal', label: 'Faskes Rujukan (Referal)', badge: null },
-        { id: 'master-tariff-class', label: 'Kelas Tarif (Tariff Class)', badge: null }
+        { id: 'master-patient', label: 'Pasien (Patient)', badge: null, permission: 'patient:read' },
+        { id: 'master-practitioner', label: 'Tenaga Medis (Practitioner)', badge: null, permission: 'practitioner:read' },
+        { id: 'master-departement', label: 'Departemen & Instalasi', badge: null, permission: 'department:read' },
+        { id: 'master-service-unit', label: 'Unit Layanan & Poli', badge: null, permission: 'service_unit:read' },
+        { id: 'master-room', label: 'Ruangan & Bed (Room)', badge: null, permission: 'room:read' },
+        { id: 'master-payer', label: 'Penjamin & Asuransi (Payer)', badge: null, permission: 'payer:read' },
+        { id: 'master-referal', label: 'Faskes Rujukan (Referal)', badge: null, permission: 'referal:read' },
+        { id: 'master-tariff-class', label: 'Kelas Tarif (Tariff Class)', badge: null, permission: 'tariff_class:read' }
       ]
     },
     {
@@ -84,11 +86,20 @@
       shortLabel: 'Aktivitas',
       icon: History,
       children: [
-        { id: 'history', label: 'Riwayat Kunjungan RME', badge: null },
-        { id: 'schedule', label: 'Jadwal Kontrol Poliklinik', badge: null }
+        { id: 'history', label: 'Riwayat Kunjungan RME', badge: null, permission: 'patient:read' },
+        { id: 'schedule', label: 'Jadwal Kontrol Poliklinik', badge: null, permission: 'appointment:view' }
       ]
     }
   ];
+
+  const visibleNavigation = $derived(
+    navigationStructure
+      .map(item => ({
+        ...item,
+        children: item.children.filter(sub => !sub.permission || auth.hasPermission(sub.permission))
+      }))
+      .filter(item => item.children.length > 0)
+  );
 
   function toggleAccordion(parentId: string): void {
     if (openParentIds.includes(parentId)) {
@@ -109,7 +120,7 @@
 
   // Otomatis buka accordion parent jika activeNav berada di dalamnya (misal saat refresh/direct link URL)
   $effect(() => {
-    const parent = navigationStructure.find(p => p.children?.some(c => c.id === activeNav));
+    const parent = visibleNavigation.find(p => p.children?.some(c => c.id === activeNav));
     if (parent && !openParentIds.includes(parent.id)) {
       openParentIds = [...openParentIds, parent.id];
     }
@@ -142,7 +153,7 @@
 
   <!-- List Menu Item dengan Sub-Menu -->
   <nav class="flex flex-col gap-1.5 w-full">
-    {#each navigationStructure as item}
+    {#each visibleNavigation as item}
       {@const parentActive = isParentActive(item)}
       {@const isOpen = openParentIds.includes(item.id)}
       {@const isFlyoutOpen = flyoutMenuId === item.id}

@@ -7,7 +7,15 @@ const STORAGE_KEY = 'hosim_auth_session';
 function loadInitialSession(): AuthSession | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Bersihkan jika session tersimpan masih berupa mock demo token lama
+      if (parsed?.access_token?.startsWith('mock-jwt-token-demo-') || parsed?.isDemo) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+      return parsed;
+    }
   } catch (e) {
     console.error('Failed to load session', e);
   }
@@ -17,6 +25,15 @@ function loadInitialSession(): AuthSession | null {
 export function createAuthStore() {
   let session = $state<AuthSession | null>(loadInitialSession());
 
+  if (typeof window !== 'undefined') {
+    window.addEventListener('hosim:session-refreshed', (e: any) => {
+      session = e.detail;
+    });
+    window.addEventListener('hosim:session-expired', () => {
+      session = null;
+    });
+  }
+
   return {
     get user(): UserProfile | null {
       return session?.user || null;
@@ -25,43 +42,40 @@ export function createAuthStore() {
       return session?.access_token || null;
     },
     get isAuthenticated(): boolean {
-      return !!session?.user;
+      return !!session?.user && !!session?.access_token;
+    },
+    get isDemo(): boolean {
+      return !!session?.isDemo;
+    },
+    hasRole(role: string): boolean {
+      if (!session?.user?.role) return false;
+      return session.user.role.toUpperCase() === role.toUpperCase();
+    },
+    hasPermission(permission: string): boolean {
+      if (!session?.user) return false;
+      if (session.user.role?.toUpperCase() === 'ADMIN') return true;
+      const perms = session.user.permissions || [];
+      return perms.includes('*') || perms.map(p => p.toLowerCase()).includes(permission.toLowerCase());
+    },
+    hasAnyPermission(...permissions: string[]): boolean {
+      if (!session?.user) return false;
+      if (session.user.role?.toUpperCase() === 'ADMIN') return true;
+      const perms = session.user.permissions || [];
+      if (perms.includes('*')) return true;
+      const lowerPerms = perms.map(p => p.toLowerCase());
+      return permissions.some(req => lowerPerms.includes(req.toLowerCase()));
     },
     async login(username: string, password: string): Promise<{ success: boolean; user: UserProfile; isDemo?: boolean }> {
       try {
         const res = await apiLogin(username, password);
-        if (res && res.status === 'success' && res.data) {
+        if (res && (res.success === true || res.status === 'success') && res.data) {
           session = res.data;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(res.data));
           return { success: true, user: res.data.user };
         }
-        throw new Error(res.message || 'Login gagal');
-      } catch (err) {
-        // Fallback demo mode jika backend offline atau login kredensial bawaan
-        if (
-          (username === 'admin' && password === 'admin123') ||
-          (username === 'dokter' && password === 'dokter123')
-        ) {
-          const isDoctor = username === 'dokter';
-          const mockData: AuthSession = {
-            access_token: 'mock-jwt-token-demo-' + Date.now(),
-            refresh_token: 'mock-refresh-token',
-            token_type: 'Bearer',
-            expires_in: 86400,
-            user: {
-              id: isDoctor ? 'USR-DOC-001' : 'USR-ADM-001',
-              username: username,
-              email: isDoctor ? 'hendra@hosim.local' : 'admin@hosim.local',
-              name: isDoctor ? 'dr. Hendra Wijaya, Sp.B' : 'Administrator Sistem',
-              role: isDoctor ? 'DOCTOR' : 'ADMIN',
-              permissions: ['*']
-            },
-            isDemo: true
-          };
-          session = mockData;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(mockData));
-          return { success: true, user: mockData.user, isDemo: true };
-        }
+        throw new Error(res?.message || 'Login gagal');
+      } catch (err: any) {
+        console.error('Gagal login ke backend API:', err);
         throw err;
       }
     },

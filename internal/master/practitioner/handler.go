@@ -19,6 +19,19 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
+func getOperator(c *gin.Context) string {
+	if op := c.GetHeader("X-User-ID"); op != "" {
+		return op
+	}
+	if username := middleware.GetUsername(c); username != "" {
+		return username
+	}
+	if uid := middleware.GetUserID(c); uid != "" {
+		return uid
+	}
+	return "petugas-sdm"
+}
+
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	practitioners := router.Group("/practitioners")
 	{
@@ -43,8 +56,8 @@ func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 		), h.GetByID)
 	}
 
-	router.GET("/professions", h.ListProfessions)
-	router.GET("/specialties", h.ListSpecialties)
+	router.GET("/professions", middleware.RequireAnyPermission("practitioner:read", "practitioner:create", "outpatient:register"), h.ListProfessions)
+	router.GET("/specialties", middleware.RequireAnyPermission("practitioner:read", "practitioner:create", "outpatient:register"), h.ListSpecialties)
 }
 
 func (h *Handler) Create(ctx *gin.Context) {
@@ -54,10 +67,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "petugas-sdm"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.CreatePractitioner(ctx.Request.Context(), req, operatorID)
 	if err != nil {
@@ -165,10 +175,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "petugas-sdm"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.UpdatePractitioner(ctx.Request.Context(), id, req, operatorID)
 	if err != nil {
@@ -194,10 +201,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "petugas-sdm"
-	}
+	operatorID := getOperator(ctx)
 
 	err := h.service.DeletePractitioner(ctx.Request.Context(), id, operatorID)
 	if err != nil {

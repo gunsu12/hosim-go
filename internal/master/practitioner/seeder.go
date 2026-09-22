@@ -2,6 +2,9 @@ package practitioner
 
 import (
 	"log"
+	"time"
+
+	"hosim-go/pkg/enums"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -75,5 +78,53 @@ func SeedProfessionsAndSpecialties(db *gorm.DB) error {
 	}
 
 	log.Println("[SEEDER] Seeding master Profesi dan Spesialisasi berhasil.")
+	return nil
+}
+
+// SeedDefaultPractitioner mengisi data awal tenaga medis dokter secara idempoten
+func SeedDefaultPractitioner(db *gorm.DB) error {
+	var count int64
+	db.Model(&Practitioner{}).Where("name LIKE ?", "%Hendra Wijaya%").Count(&count)
+	if count > 0 {
+		return nil
+	}
+
+	var prof Profession
+	_ = db.Where("code = ?", "DOKTER").First(&prof).Error
+
+	var spec Specialty
+	_ = db.Where("code = ?", "SP-B").First(&spec).Error
+
+	expiry := time.Now().AddDate(3, 0, 0)
+	doc := Practitioner{
+		NIK:                 "3171012345678901",
+		NIP:                 "198501152010121001",
+		Name:                "dr. Hendra Wijaya, Sp.B",
+		Gender:              enums.GenderMale,
+		SIP:                 "503/SIP.DS/0123/2023",
+		SIPExpiryDate:       &expiry,
+		STR:                 "31.1.1.100.2.19.123456",
+		Phone:               "081234567890",
+		Email:               "hendra.wijaya@hosim.local",
+		IhsPractitionerID:   "P12345678901",
+		IhsPractitionerName: "dr. Hendra Wijaya, Sp.B",
+		IsActive:            true,
+		CreatedBy:           "SEEDER",
+		UpdatedBy:           "SEEDER",
+	}
+
+	if prof.ID != "" {
+		doc.ProfessionID = &prof.ID
+	}
+	if spec.ID != "" {
+		doc.SpecialtyID = &spec.ID
+	}
+
+	if err := db.Create(&doc).Error; err != nil {
+		log.Printf("[WARN] Seeder default practitioner gagal: %v\n", err)
+		return err
+	}
+
+	log.Println("[SEEDER] Data dokter simulasi (dr. Hendra Wijaya, Sp.B) berhasil dibuat.")
 	return nil
 }

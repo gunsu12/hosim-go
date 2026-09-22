@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"hosim-go/internal/middleware"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -18,17 +19,30 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
+func getOperator(c *gin.Context) string {
+	if op := c.GetHeader("X-User-ID"); op != "" {
+		return op
+	}
+	if username := middleware.GetUsername(c); username != "" {
+		return username
+	}
+	if uid := middleware.GetUserID(c); uid != "" {
+		return uid
+	}
+	return "SYSTEM"
+}
+
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	payers := router.Group("/payers")
 	{
-		payers.POST("", h.Create)
-		payers.GET("", h.List)
-		payers.GET("/:id", h.GetByID)
-		payers.PUT("/:id", h.Update)
-		payers.DELETE("/:id", h.Delete)
+		payers.POST("", middleware.RequirePermission("payer:create"), h.Create)
+		payers.GET("", middleware.RequirePermission("payer:read"), h.List)
+		payers.GET("/:id", middleware.RequirePermission("payer:read"), h.GetByID)
+		payers.PUT("/:id", middleware.RequirePermission("payer:update"), h.Update)
+		payers.DELETE("/:id", middleware.RequirePermission("payer:delete"), h.Delete)
 	}
 
-	router.GET("/payer-types", h.ListPayerTypes)
+	router.GET("/payer-types", middleware.RequirePermission("payer:read"), h.ListPayerTypes)
 }
 
 func (h *Handler) Create(ctx *gin.Context) {
@@ -38,10 +52,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.CreatePayer(ctx.Request.Context(), req, operatorID)
 	if err != nil {
@@ -122,10 +133,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.UpdatePayer(ctx.Request.Context(), id, req, operatorID)
 	if err != nil {
@@ -151,10 +159,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	err := h.service.DeletePayer(ctx.Request.Context(), id, operatorID)
 	if err != nil {

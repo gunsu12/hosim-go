@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"hosim-go/internal/middleware"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -18,16 +19,29 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
+func getOperator(c *gin.Context) string {
+	if op := c.GetHeader("X-User-ID"); op != "" {
+		return op
+	}
+	if username := middleware.GetUsername(c); username != "" {
+		return username
+	}
+	if uid := middleware.GetUserID(c); uid != "" {
+		return uid
+	}
+	return "petugas-loket"
+}
+
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	patients := router.Group("/patients")
 	{
-		patients.POST("", h.Create)
-		patients.GET("", h.List)
-		patients.GET("/:id", h.GetByID)
-		patients.GET("/nik/:nik", h.GetByNIK)
-		patients.GET("/rm/:rmNo", h.GetByMedicalRecordNo)
-		patients.PUT("/:id", h.Update)
-		patients.DELETE("/:id", h.Delete)
+		patients.POST("", middleware.RequirePermission("patient:create"), h.Create)
+		patients.GET("", middleware.RequirePermission("patient:read"), h.List)
+		patients.GET("/:id", middleware.RequirePermission("patient:read"), h.GetByID)
+		patients.GET("/nik/:nik", middleware.RequirePermission("patient:read"), h.GetByNIK)
+		patients.GET("/rm/:rmNo", middleware.RequirePermission("patient:read"), h.GetByMedicalRecordNo)
+		patients.PUT("/:id", middleware.RequirePermission("patient:update"), h.Update)
+		patients.DELETE("/:id", middleware.RequirePermission("patient:delete"), h.Delete)
 	}
 }
 
@@ -38,10 +52,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "petugas-loket"
-	}
+	operatorID := getOperator(ctx)
 
 	patient, err := h.service.RegisterPatient(ctx.Request.Context(), req, operatorID)
 	if err != nil {
@@ -135,11 +146,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	// Ambil ID operator dari header/token (sementara default: "petugas-loket")
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "petugas-loket"
-	}
+	operatorID := getOperator(ctx)
 
 	patient, err := h.service.UpdatePatient(ctx.Request.Context(), id, req, operatorID)
 	if err != nil {
@@ -167,11 +174,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	// Ambil ID operator dari header/token (sementara default: "petugas-loket")
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "petugas-loket"
-	}
+	operatorID := getOperator(ctx)
 
 	err := h.service.DeletePatient(ctx.Request.Context(), id, operatorID)
 	if err != nil {

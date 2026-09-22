@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"hosim-go/internal/middleware"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -18,14 +19,27 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
+func getOperator(c *gin.Context) string {
+	if op := c.GetHeader("X-User-ID"); op != "" {
+		return op
+	}
+	if username := middleware.GetUsername(c); username != "" {
+		return username
+	}
+	if uid := middleware.GetUserID(c); uid != "" {
+		return uid
+	}
+	return "SYSTEM"
+}
+
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	referals := router.Group("/referals")
 	{
-		referals.POST("", h.Create)
-		referals.GET("", h.List)
-		referals.GET("/:id", h.GetByID)
-		referals.PUT("/:id", h.Update)
-		referals.DELETE("/:id", h.Delete)
+		referals.POST("", middleware.RequirePermission("referal:create"), h.Create)
+		referals.GET("", middleware.RequirePermission("referal:read"), h.List)
+		referals.GET("/:id", middleware.RequirePermission("referal:read"), h.GetByID)
+		referals.PUT("/:id", middleware.RequirePermission("referal:update"), h.Update)
+		referals.DELETE("/:id", middleware.RequirePermission("referal:delete"), h.Delete)
 	}
 }
 
@@ -36,10 +50,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.CreateReferal(ctx.Request.Context(), req, operatorID)
 	if err != nil {
@@ -120,10 +131,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.UpdateReferal(ctx.Request.Context(), id, req, operatorID)
 	if err != nil {
@@ -149,10 +157,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	err := h.service.DeleteReferal(ctx.Request.Context(), id, operatorID)
 	if err != nil {

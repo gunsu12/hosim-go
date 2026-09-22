@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { Search, Stethoscope, Wifi, WifiOff, HelpCircle, Settings, SlidersHorizontal, Menu, LogOut, UserCheck } from '@lucide/svelte';
+  import { Search, Stethoscope, Wifi, WifiOff, HelpCircle, Settings, SlidersHorizontal, Menu, LogOut, UserCheck, ShieldCheck } from '@lucide/svelte';
   import { onMount } from 'svelte';
   import { checkBackendHealth } from '../api';
+  import { auth } from '../stores/auth.svelte';
   import type { UserProfile } from '../types';
 
   interface Props {
@@ -101,6 +102,19 @@
       {/if}
     </div>
 
+    <!-- Active Role Indicator Pill -->
+    {#if user?.role === 'ADMIN'}
+      <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 shadow-xs" title="Superadmin: Akses Penuh">
+        <ShieldCheck class="w-3.5 h-3.5 text-purple-600" />
+        <span>Admin Sistem</span>
+      </div>
+    {:else}
+      <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 shadow-xs" title="Praktisi Medis: Hak Akses Klinis">
+        <Stethoscope class="w-3.5 h-3.5 text-blue-600" />
+        <span>Dokter / Nakes</span>
+      </div>
+    {/if}
+
     <!-- Help & Settings Icons -->
     <button type="button" class="p-2 text-[#444746] hover:text-[#1f1f1f] hover:bg-[#e9eef6] rounded-full transition-colors cursor-pointer hidden sm:block" title="Bantuan">
       <HelpCircle class="w-5 h-5" />
@@ -121,16 +135,45 @@
 
     <!-- Profile Popover Google Style -->
     {#if isProfileMenuOpen}
-      <div class="absolute right-0 top-12 mt-2 w-72 bg-white rounded-3xl border border-[#e1e5ea] shadow-lg p-5 z-50 animate-in fade-in duration-150">
+      <div class="absolute right-0 top-12 mt-2 w-80 bg-white rounded-3xl border border-[#e1e5ea] shadow-lg p-5 z-50 animate-in fade-in duration-150">
         <div class="flex flex-col items-center text-center pb-4 border-b border-[#e1e5ea]">
-          <div class="w-14 h-14 rounded-full bg-[#0b57d0] text-white flex items-center justify-center text-xl font-bold mb-2 shadow-xs">
+          <div class="w-14 h-14 rounded-full {user?.role === 'ADMIN' ? 'bg-purple-600' : 'bg-[#0b57d0]'} text-white flex items-center justify-center text-xl font-bold mb-2 shadow-xs transition-colors">
             {(user?.name || 'Hendra').charAt(0).toUpperCase()}
           </div>
           <div class="font-semibold text-sm text-[#1f1f1f]">{user?.name || 'dr. Hendra Wijaya, Sp.B'}</div>
           <div class="text-xs text-[#444746] mt-0.5">{user?.email || 'hendra@hosim.local'}</div>
-          <div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#e8f0fe] text-[#0b57d0]">
+          <div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold {user?.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-[#e8f0fe] text-[#0b57d0]'}">
             <UserCheck class="w-3 h-3" />
             <span>Role: {user?.role || 'DOCTOR'}</span>
+          </div>
+        </div>
+
+        <!-- Role Simulation Quick Switch -->
+        <div class="py-3 border-b border-[#e1e5ea] flex flex-col gap-1.5">
+          <div class="text-[10px] font-bold text-[#747775] uppercase tracking-wider px-1">
+            Simulasi Role (Uji Coba Cepat):
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onclick={async () => {
+                await auth.login('admin', 'admin123');
+                isProfileMenuOpen = false;
+              }}
+              class="px-2.5 py-2 rounded-xl text-xs font-semibold border text-center transition-all cursor-pointer {user?.role === 'ADMIN' ? 'bg-purple-100 text-purple-900 border-purple-300 ring-2 ring-purple-200' : 'bg-[#f0f4f9] text-[#444746] hover:bg-purple-50 hover:text-purple-700 border-[#e1e5ea]'}"
+            >
+              👑 Admin Sistem
+            </button>
+            <button
+              type="button"
+              onclick={async () => {
+                await auth.login('dokter', 'dokter123');
+                isProfileMenuOpen = false;
+              }}
+              class="px-2.5 py-2 rounded-xl text-xs font-semibold border text-center transition-all cursor-pointer {user?.role === 'DOCTOR' ? 'bg-blue-100 text-blue-900 border-blue-300 ring-2 ring-blue-200' : 'bg-[#f0f4f9] text-[#444746] hover:bg-blue-50 hover:text-blue-700 border-[#e1e5ea]'}"
+            >
+              🩺 Dokter / Nakes
+            </button>
           </div>
         </div>
 
@@ -138,7 +181,7 @@
           <button
             type="button"
             onclick={() => { isProfileMenuOpen = false; if (onLogout) onLogout(); }}
-            class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#b3261e] hover:bg-[#fce8e6] transition-colors cursor-pointer"
+            class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#b3261e] hover:bg-[#fce8e6] transition-colors cursor-pointer"
           >
             <LogOut class="w-4 h-4" />
             <span>Keluar dari Akun (Logout)</span>

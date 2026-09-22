@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"hosim-go/internal/middleware"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -18,14 +19,27 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
+func getOperator(c *gin.Context) string {
+	if op := c.GetHeader("X-User-ID"); op != "" {
+		return op
+	}
+	if username := middleware.GetUsername(c); username != "" {
+		return username
+	}
+	if uid := middleware.GetUserID(c); uid != "" {
+		return uid
+	}
+	return "SYSTEM"
+}
+
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	rooms := router.Group("/rooms")
 	{
-		rooms.POST("", h.Create)
-		rooms.GET("", h.List)
-		rooms.GET("/:id", h.GetByID)
-		rooms.PUT("/:id", h.Update)
-		rooms.DELETE("/:id", h.Delete)
+		rooms.POST("", middleware.RequirePermission("room:create"), h.Create)
+		rooms.GET("", middleware.RequirePermission("room:read"), h.List)
+		rooms.GET("/:id", middleware.RequirePermission("room:read"), h.GetByID)
+		rooms.PUT("/:id", middleware.RequirePermission("room:update"), h.Update)
+		rooms.DELETE("/:id", middleware.RequirePermission("room:delete"), h.Delete)
 	}
 }
 
@@ -36,10 +50,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.CreateRoom(ctx.Request.Context(), req, operatorID)
 	if err != nil {
@@ -122,10 +133,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.UpdateRoom(ctx.Request.Context(), id, req, operatorID)
 	if err != nil {
@@ -152,10 +160,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	err := h.service.DeleteRoom(ctx.Request.Context(), id, operatorID)
 	if err != nil {

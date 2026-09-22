@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"hosim-go/internal/middleware"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -18,14 +19,27 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
+func getOperator(c *gin.Context) string {
+	if op := c.GetHeader("X-User-ID"); op != "" {
+		return op
+	}
+	if username := middleware.GetUsername(c); username != "" {
+		return username
+	}
+	if uid := middleware.GetUserID(c); uid != "" {
+		return uid
+	}
+	return "SYSTEM"
+}
+
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	units := router.Group("/service-units")
 	{
-		units.POST("", h.Create)
-		units.GET("", h.List)
-		units.GET("/:id", h.GetByID)
-		units.PUT("/:id", h.Update)
-		units.DELETE("/:id", h.Delete)
+		units.POST("", middleware.RequirePermission("service_unit:create"), h.Create)
+		units.GET("", middleware.RequirePermission("service_unit:read"), h.List)
+		units.GET("/:id", middleware.RequirePermission("service_unit:read"), h.GetByID)
+		units.PUT("/:id", middleware.RequirePermission("service_unit:update"), h.Update)
+		units.DELETE("/:id", middleware.RequirePermission("service_unit:delete"), h.Delete)
 	}
 }
 
@@ -36,10 +50,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.CreateServiceUnit(ctx.Request.Context(), req, operatorID)
 	if err != nil {
@@ -133,10 +144,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	result, err := h.service.UpdateServiceUnit(ctx.Request.Context(), id, req, operatorID)
 	if err != nil {
@@ -161,10 +169,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
-	operatorID := ctx.GetHeader("X-User-ID")
-	if operatorID == "" {
-		operatorID = "SYSTEM"
-	}
+	operatorID := getOperator(ctx)
 
 	err := h.service.DeleteServiceUnit(ctx.Request.Context(), id, operatorID)
 	if err != nil {

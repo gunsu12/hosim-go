@@ -59,8 +59,8 @@ func LoadConfig() *Config {
 		DBPassword:         getEnv("DB_PASSWORD", "postgres"),
 		DBSSLMode:          getEnv("DB_SSLMODE", "disable"),
 		JWTSecret:          getEnv("JWT_SECRET", "hosim-secret-key-change-this-in-production-12345678"),
-		JWTAccessDuration:  15 * time.Minute,
-		JWTRefreshDuration: 7 * 24 * time.Hour,
+		JWTAccessDuration:  getEnvDuration("JWT_ACCESS_DURATION", 15*time.Minute),
+		JWTRefreshDuration: getEnvDuration("JWT_REFRESH_DURATION", 7*24*time.Hour),
 	}
 }
 
@@ -72,6 +72,15 @@ func (c *Config) IsProduction() bool {
 func getEnv(key, fallback string) string {
 	if val := os.Getenv(key); val != "" {
 		return val
+	}
+	return fallback
+}
+
+func getEnvDuration(key string, fallback time.Duration) time.Duration {
+	if val := os.Getenv(key); val != "" {
+		if d, err := time.ParseDuration(val); err == nil {
+			return d
+		}
 	}
 	return fallback
 }

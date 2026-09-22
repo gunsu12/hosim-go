@@ -93,6 +93,9 @@ func main() {
 	if err := practitioner.SeedProfessionsAndSpecialties(db); err != nil {
 		log.Printf("[WARN] Seeder profesi dan spesialisasi gagal: %v\n", err)
 	}
+	if err := practitioner.SeedDefaultPractitioner(db); err != nil {
+		log.Printf("[WARN] Seeder data dokter gagal: %v\n", err)
+	}
 
 	// Jalankan Seeder Roles & Permissions RBAC (termasuk default akun admin)
 	if err := auth.SeedRBAC(db); err != nil {
