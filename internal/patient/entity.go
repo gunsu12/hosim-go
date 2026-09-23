@@ -4,7 +4,7 @@ import (
 	"time"
 	"uuid"
 
-	"hosim-go/internal/master/payer"
+	"hosim-go/internal/finance/payer"
 	"hosim-go/pkg/enums"
 
 	"gorm.io/gorm"

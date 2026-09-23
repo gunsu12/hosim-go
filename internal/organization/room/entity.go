@@ -1,7 +1,7 @@
 package room
 
 import (
-	serviceunit "hosim-go/internal/master/service_unit"
+	"hosim-go/internal/organization/serviceunit"
 	"hosim-go/pkg/enums"
 	"time"
 	"uuid"

@@ -32,3 +32,9 @@ Thumbs.db
 # Frontend build artifacts
 web/dist/
 web/node_modules/
+
+# Frontend docs
+/docs/docs
+
+#agent skills
+.agent/

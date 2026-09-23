@@ -1,4 +1,4 @@
-package tariffclass
+package tarifclass
 
 import (
 	"context"

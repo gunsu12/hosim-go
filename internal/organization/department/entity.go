@@ -1,4 +1,4 @@
-package departement
+package department
 
 import (
 	"hosim-go/pkg/enums"
@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Departement struct {
+type Department struct {
 	ID                string                `gorm:"primaryKey;size:36" json:"id"`
 	Code              string                `gorm:"uniqueIndex;size:255" json:"code"`
 	Name              string                `gorm:"size:255" json:"name"`
@@ -28,7 +28,15 @@ type Departement struct {
 	DeletedBy         string                `json:"-"`
 }
 
-func (d *Departement) BeforeCreate(tx *gorm.DB) error {
+// TableName mengembalikan nama tabel departements agar sesuai dengan migrasi database
+func (Department) TableName() string {
+	return "departements"
+}
+
+// Departement adalah type alias untuk Department demi backwards compatibility
+type Departement = Department
+
+func (d *Department) BeforeCreate(tx *gorm.DB) error {
 	if d.ID == "" {
 		d.ID = uuid.NewV7().String()
 	}

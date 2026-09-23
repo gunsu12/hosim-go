@@ -7,7 +7,7 @@ import (
 
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
-	"hosim-go/internal/master/patient"
+	"hosim-go/internal/patient"
 	"hosim-go/migrations"
 
 	"github.com/pressly/goose/v3"

@@ -1,4 +1,4 @@
-package departement
+package department
 
 import (
 	"errors"

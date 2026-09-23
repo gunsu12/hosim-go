@@ -1,7 +1,7 @@
 package serviceunit
 
 import (
-	"hosim-go/internal/master/departement"
+	"hosim-go/internal/organization/department"
 	"time"
 	"uuid"
 
@@ -9,11 +9,11 @@ import (
 )
 
 type ServiceUnit struct {
-	ID                   string                   `gorm:"primaryKey;size:36" json:"id"`
-	Code                 string                   `gorm:"uniqueIndex;size:255" json:"code"`
-	Name                 string                   `gorm:"size:255" json:"name"`
-	DepartementID        *string                  `gorm:"index;size:36" json:"departement_id,omitempty"`
-	Departement          *departement.Departement `gorm:"foreignKey:DepartementID;references:ID" json:"departement,omitempty"`
+	ID                   string                 `gorm:"primaryKey;size:36" json:"id"`
+	Code                 string                 `gorm:"uniqueIndex;size:255" json:"code"`
+	Name                 string                 `gorm:"size:255" json:"name"`
+	DepartementID        *string                `gorm:"index;size:36" json:"departement_id,omitempty"`
+	Departement          *department.Department `gorm:"foreignKey:DepartementID;references:ID" json:"departement,omitempty"`
 	Address              *string                  `gorm:"size:255" json:"address,omitempty"`
 	Phone                *string                  `gorm:"size:255" json:"phone,omitempty"`
 	Email                *string                  `gorm:"size:255" json:"email,omitempty"`

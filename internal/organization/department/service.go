@@ -1,4 +1,4 @@
-package departement
+package department
 
 import (
 	"context"
@@ -13,8 +13,10 @@ import (
 
 var (
 	ErrDepartementNotFound     = errors.New("departemen tidak ditemukan")
+	ErrDepartmentNotFound      = ErrDepartementNotFound
 	ErrCodeAlreadyExists       = errors.New("departemen dengan kode tersebut sudah terdaftar")
 	ErrInvalidDepartementType  = errors.New("tipe departemen tidak valid (pilihan: emergency, outpatient, inpatient, diagnostic, medical_checkup, other)")
+	ErrInvalidDepartmentType   = ErrInvalidDepartementType
 	ErrInvalidEmail            = errors.New("format email tidak valid")
 	ErrNameRequired            = errors.New("nama departemen wajib diisi")
 	ErrCodeRequired            = errors.New("kode departemen wajib diisi")

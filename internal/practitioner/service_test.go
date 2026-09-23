@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"hosim-go/internal/master/practitioner"
+	"hosim-go/internal/practitioner"
 	"hosim-go/pkg/enums"
 
 	"gorm.io/gorm"

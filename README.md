@@ -61,22 +61,35 @@ Setiap domain master data diisolasi ke dalam folder terpisah di backend (`intern
 ```text
 hosim-go/
 ├── cmd/
-│   └── api/
-│       └── main.go              # Entry point Go Gin API & Graceful Shutdown
+│   ├── api/                     # Entry point Go Gin API & Graceful Shutdown
+│   ├── migrate/                 # Tool migrasi database skema via Goose
+│   └── seed/                    # Tool database seeder (RBAC, SatuSehat, Dokter)
 ├── internal/
-│   ├── auth/                    # Modul Autentikasi JWT (Login, Token, Password Hash)
+│   ├── organization/            # Domain Organisasi & Fasilitas:
+│   │   ├── department/          # Instalasi & Departemen
+│   │   ├── serviceunit/         # Poliklinik & Unit Layanan
+│   │   ├── room/                # Ruangan Perawatan & Tindakan
+│   │   ├── referal/             # Faskes Mitra Rujukan
+│   │   ├── bed/                 # Bed Management
+│   │   ├── storage/             # Gudang Logistik/Farmasi Pusat
+│   │   └── depo/                # Depo Farmasi Ruangan
+│   ├── patient/                 # Domain Pasien & Rekam Medis
+│   ├── practitioner/            # Domain Dokter, Nakes, & Spesialisasi
+│   ├── catalog/                 # Katalog Medis (item, icd10, icd9, vitalsign)
+│   ├── finance/                 # Keuangan & Penjamin (customer, payer, tarifclass, tariff)
+│   ├── clinical/                # Pelayanan Klinis EHR (encounter, observation, condition, procedure, dll)
+│   ├── emergency/               # Alur Pelayanan Gawat Darurat (IGD)
+│   ├── outpatient/              # Alur Pelayanan Rawat Jalan (Poliklinik)
+│   ├── inpatient/               # Alur Pelayanan Rawat Inap (Bangsal)
+│   ├── pharmacy/                # Farmasi (prescription, dispensing)
+│   ├── inventory/               # Manajemen Stok & Logistik
+│   ├── billing/                 # Kasir, Tagihan, & Invoice
+│   ├── integration/             # Interoperabilitas (satusehat, bpjs, lis, pacs)
+│   ├── audit/                   # Audit Trail & Jejak Aktivitas
+│   ├── auth/                    # Modul Autentikasi JWT & RBAC
 │   ├── config/                  # Pengaturan environment (.env loader)
-│   ├── database/                # Koneksi database GORM (SQLite / PostgreSQL)
-│   ├── middleware/              # Middleware JWT Auth, CORS, Logger
-│   └── master/                  # Modular Monolith Master Data:
-│       ├── patient/             # Domain Pasien
-│       ├── practitioner/        # Domain Dokter & Nakes
-│       ├── departement/         # Domain Instalasi
-│       ├── service_unit/        # Domain Poliklinik / Unit Layanan
-│       ├── room/                # Domain Kamar & Bed
-│       ├── payer/               # Domain Asuransi & Penjamin
-│       ├── referal/             # Domain Faskes Rujukan
-│       └── tariff_class/        # Domain Kelas Tarif
+│   ├── database/                # Koneksi database GORM & Seeder
+│   └── middleware/              # Middleware JWT Auth, CORS, Logger
 ├── pkg/
 │   ├── enums/                   # Enum tipe data medis & faskes
 │   ├── jwt/                     # Helper generator & verifikasi token

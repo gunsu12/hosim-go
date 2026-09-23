@@ -1,4 +1,4 @@
-package tariffclass
+package tarifclass
 
 import (
 	"time"
@@ -19,6 +19,11 @@ type TariffClass struct {
 	CreatedBy   string         `gorm:"default:'SYSTEM'" json:"-"`
 	UpdatedBy   string         `gorm:"default:'SYSTEM'" json:"-"`
 	DeletedBy   string         `gorm:"default:'SYSTEM'" json:"-"`
+}
+
+// TableName mengembalikan nama tabel di database
+func (TariffClass) TableName() string {
+	return "tariff_classes"
 }
 
 func (b *TariffClass) BeforeCreate(tx *gorm.DB) error {

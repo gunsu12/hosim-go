@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"hosim-go/internal/master/patient"
+	"hosim-go/internal/patient"
 )
 
 // 1. Buat Mock Repository (tanpa database asli)

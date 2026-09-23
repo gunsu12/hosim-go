@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"hosim-go/internal/master/patient"
+	"hosim-go/internal/patient"
 
 	"github.com/gin-gonic/gin"
 )

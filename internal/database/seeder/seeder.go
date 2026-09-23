@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"hosim-go/internal/auth"
-	"hosim-go/internal/master/practitioner"
+	"hosim-go/internal/practitioner"
 
 	"gorm.io/gorm"
 )

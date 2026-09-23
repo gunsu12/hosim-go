@@ -1,4 +1,4 @@
-package departement
+package department
 
 import (
 	"context"
@@ -14,12 +14,12 @@ type ListParams struct {
 }
 
 type Repository interface {
-	Create(ctx context.Context, dept *Departement) (*Departement, error)
-	Update(ctx context.Context, dept *Departement) (*Departement, error)
+	Create(ctx context.Context, dept *Department) (*Department, error)
+	Update(ctx context.Context, dept *Department) (*Department, error)
 	Delete(ctx context.Context, id string, deletedBy string) error
-	FindByID(ctx context.Context, id string) (*Departement, error)
-	FindByCode(ctx context.Context, code string) (*Departement, error)
-	FindAll(ctx context.Context, params ListParams) ([]Departement, int64, error)
+	FindByID(ctx context.Context, id string) (*Department, error)
+	FindByCode(ctx context.Context, code string) (*Department, error)
+	FindAll(ctx context.Context, params ListParams) ([]Department, int64, error)
 }
 
 type repository struct {
