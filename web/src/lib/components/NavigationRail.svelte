@@ -75,7 +75,7 @@
         { id: 'master-departement', label: 'Departemen & Instalasi', badge: null, permission: 'department:read' },
         { id: 'master-service-unit', label: 'Unit Layanan & Poli', badge: null, permission: 'service_unit:read' },
         { id: 'master-room', label: 'Ruangan & Bed (Room)', badge: null, permission: 'room:read' },
-        { id: 'master-payer', label: 'Penjamin & Asuransi (Payer)', badge: null, permission: 'payer:read' },
+        { id: 'master-customer', label: 'Debitur & Penjamin (Customer)', badge: null, permission: 'customer:read' },
         { id: 'master-referal', label: 'Faskes Rujukan (Referal)', badge: null, permission: 'referal:read' },
         { id: 'master-tariff-class', label: 'Kelas Tarif (Tariff Class)', badge: null, permission: 'tariff_class:read' }
       ]

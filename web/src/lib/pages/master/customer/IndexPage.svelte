@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Search, Plus, ShieldCheck, CreditCard } from '@lucide/svelte';
   import M3Button from '../../../components/m3/M3Button.svelte';
-  import type { PayerRecord } from '../../../types/master/payer';
+  import type { CustomerRecord } from '../../../types/master/customer';
 
   let searchQuery = $state('');
 
-  let payers = $state<PayerRecord[]>([
+  let customers = $state<CustomerRecord[]>([
     {
       id: 'PAY-001',
       code: 'BPJS-PBI',
@@ -54,7 +54,7 @@
   ]);
 
   let filtered = $derived(
-    payers.filter(p =>
+    customers.filter(p =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.typeName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -66,17 +66,17 @@
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
       <div class="flex items-center gap-2">
-        <h2 class="text-lg font-semibold text-[#1f1f1f] tracking-tight">Master Penjamin / Asuransi (Payer)</h2>
+        <h2 class="text-lg font-semibold text-[#1f1f1f] tracking-tight">Master Debitur / Penjamin (Customer)</h2>
         <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-[#e8f0fe] text-[#0b57d0]">
-          domain: internal/master/payer
+          domain: internal/finance/customer
         </span>
       </div>
       <p class="text-xs text-[#444746]">Konfigurasi penjamin pembiayaan pasien (BPJS Kesehatan VClaim, Asuransi Swasta, Perusahaan, & Umum).</p>
     </div>
 
-    <M3Button variant="filled" onclick={() => alert('Tambah Penjamin Baru')}>
+    <M3Button variant="filled" onclick={() => alert('Tambah Customer Baru')}>
       <Plus class="w-4 h-4" />
-      <span>Tambah Penjamin</span>
+      <span>Tambah Customer</span>
     </M3Button>
   </div>
 
@@ -86,11 +86,11 @@
       <input
         type="text"
         bind:value={searchQuery}
-        placeholder="Cari nama penjamin atau tipe asuransi..."
+        placeholder="Cari nama customer atau tipe penjamin..."
         class="w-full h-10 pl-10 pr-4 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-none transition-all"
       />
     </div>
-    <span class="text-xs text-[#444746]">Total: <strong>{filtered.length}</strong> penjamin</span>
+    <span class="text-xs text-[#444746]">Total: <strong>{filtered.length}</strong> customer</span>
   </div>
 
   <div class="bg-white rounded-2xl border border-[#e1e5ea] shadow-xs overflow-hidden">
@@ -99,7 +99,7 @@
         <thead>
           <tr class="bg-[#f0f4f9] border-b border-[#e1e5ea] text-[#444746]">
             <th class="py-3 px-4 font-semibold">Kode</th>
-            <th class="py-3 px-4 font-semibold">Nama Penjamin / Asuransi</th>
+            <th class="py-3 px-4 font-semibold">Nama Customer / Penjamin</th>
             <th class="py-3 px-4 font-semibold">Kategori Penjamin</th>
             <th class="py-3 px-4 font-semibold">Call Center</th>
             <th class="py-3 px-4 font-semibold text-center">Wajib Kartu</th>
@@ -133,7 +133,7 @@
               <td class="py-3.5 px-4 text-right">
                 <button
                   type="button"
-                  onclick={() => alert(`Edit Penjamin: ${p.name}`)}
+                  onclick={() => alert(`Edit Customer: ${p.name}`)}
                   class="text-xs text-[#0b57d0] hover:underline font-semibold cursor-pointer"
                 >
                   Edit

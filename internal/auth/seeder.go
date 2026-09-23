@@ -28,11 +28,11 @@ var DefaultPermissions = []Permission{
 	{Code: "service_unit:update", Name: "Ubah Unit Layanan", Module: "Master Unit Layanan"},
 	{Code: "service_unit:delete", Name: "Hapus Unit Layanan", Module: "Master Unit Layanan"},
 
-	// Penjamin
-	{Code: "payer:read", Name: "Lihat Penjamin", Module: "Master Penjamin"},
-	{Code: "payer:create", Name: "Tambah Penjamin", Module: "Master Penjamin"},
-	{Code: "payer:update", Name: "Ubah Penjamin", Module: "Master Penjamin"},
-	{Code: "payer:delete", Name: "Hapus Penjamin", Module: "Master Penjamin"},
+	// Customer / Penjamin
+	{Code: "customer:read", Name: "Lihat Customer/Penjamin", Module: "Master Customer"},
+	{Code: "customer:create", Name: "Tambah Customer/Penjamin", Module: "Master Customer"},
+	{Code: "customer:update", Name: "Ubah Customer/Penjamin", Module: "Master Customer"},
+	{Code: "customer:delete", Name: "Hapus Customer/Penjamin", Module: "Master Customer"},
 
 	// Rujukan
 	{Code: "referal:read", Name: "Lihat Rujukan", Module: "Master Rujukan"},
@@ -110,7 +110,7 @@ func SeedRBAC(db *gorm.DB) error {
 				Description: "Pelayanan medis, rekam medis, dan pendaftaran",
 			},
 			PermCodes: []string{
-				"department:read", "room:read", "service_unit:read", "payer:read", "referal:read", "tariff_class:read",
+				"department:read", "room:read", "service_unit:read", "customer:read", "referal:read", "tariff_class:read",
 				"practitioner:read", "patient:read", "patient:create", "patient:update",
 				"outpatient:view", "appointment:view",
 			},
@@ -122,7 +122,7 @@ func SeedRBAC(db *gorm.DB) error {
 				Description: "Petugas keperawatan dan pendaftaran rawat jalan",
 			},
 			PermCodes: []string{
-				"department:read", "room:read", "service_unit:read", "payer:read", "referal:read", "tariff_class:read",
+				"department:read", "room:read", "service_unit:read", "customer:read", "referal:read", "tariff_class:read",
 				"patient:read", "patient:create", "patient:update",
 				"outpatient:view", "outpatient:register", "appointment:view",
 			},
@@ -134,7 +134,7 @@ func SeedRBAC(db *gorm.DB) error {
 				Description: "Melihat data master umum",
 			},
 			PermCodes: []string{
-				"department:read", "room:read", "service_unit:read", "payer:read", "referal:read", "tariff_class:read",
+				"department:read", "room:read", "service_unit:read", "customer:read", "referal:read", "tariff_class:read",
 				"practitioner:read", "patient:read",
 			},
 		},

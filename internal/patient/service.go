@@ -82,7 +82,8 @@ type CreatePatientRequest struct {
 	IsUnknown           bool                      `json:"is_unknown"`            // True jika Mr. X / Mrs. X (IGD)
 	IsDeceased          bool                      `json:"is_deceased"`           // True jika pasien meninggal
 	DeceasedAt          *string                   `json:"deceased_at"`           // Format: YYYY-MM-DD HH:mm:ss atau YYYY-MM-DD (opsional)
-	PayerID             *string                   `json:"payer_id"`              // ID Penjamin
+	CustomerID          *string                   `json:"customer_id"`           // ID Customer / Penjamin
+	PayerID             *string                   `json:"payer_id"`              // Alias untuk customer_id (kompatibilitas)
 	InsuranceType       *string                   `json:"insurance_type"`        // Jenis Asuransi
 	InsuranceNumber     *string                   `json:"insurance_number"`      // Nomor Asuransi
 	InsuranceExpiryDate *string                   `json:"insurance_expiry_date"` // Format: YYYY-MM-DD (opsional)
@@ -114,11 +115,16 @@ func (req *CreatePatientRequest) Sanitize() {
 	req.Rhesus = strings.TrimSpace(req.Rhesus)
 	req.SpecialNeeds = strings.TrimSpace(req.SpecialNeeds)
 
-	if req.PayerID != nil {
-		trimmed := strings.TrimSpace(*req.PayerID)
+	if req.CustomerID == nil && req.PayerID != nil {
+		req.CustomerID = req.PayerID
+	}
+	if req.CustomerID != nil {
+		trimmed := strings.TrimSpace(*req.CustomerID)
 		if trimmed == "" {
+			req.CustomerID = nil
 			req.PayerID = nil
 		} else {
+			req.CustomerID = &trimmed
 			req.PayerID = &trimmed
 		}
 	}
@@ -363,7 +369,7 @@ func (s *service) RegisterPatient(ctx context.Context, req CreatePatientRequest,
 		IsUnknown:           req.IsUnknown,
 		IsDeceased:          req.IsDeceased,
 		DeceasedAt:          deceasedTime,
-		PayerID:             req.PayerID,
+		CustomerID:          req.CustomerID,
 		InsuranceType:       req.InsuranceType,
 		InsuranceNumber:     req.InsuranceNumber,
 		InsuranceExpiryDate: insuranceExpiry,
@@ -505,8 +511,8 @@ func (s *service) UpdatePatient(ctx context.Context, id string, req UpdatePatien
 		patient.DeceasedAt = nil
 	}
 
-	// Update data penjamin & asuransi
-	patient.PayerID = req.PayerID
+	// Update data customer / penjamin & asuransi
+	patient.CustomerID = req.CustomerID
 	patient.InsuranceType = req.InsuranceType
 	patient.InsuranceNumber = req.InsuranceNumber
 	if req.InsuranceExpiryDate != nil && *req.InsuranceExpiryDate != "" {

@@ -17,7 +17,8 @@ export const ROUTE_MAP: Record<string, string> = {
   'master-departement': '/master/departement',
   'master-service-unit': '/master/service-unit',
   'master-room': '/master/room',
-  'master-payer': '/master/payer',
+  'master-customer': '/master/customer',
+  'master-payer': '/master/customer',
   'master-referal': '/master/referal',
   'master-tariff-class': '/master/tariff-class',
 

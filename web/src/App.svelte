@@ -25,7 +25,7 @@
     DepartementPage,
     ServiceUnitPage,
     RoomPage,
-    PayerPage,
+    CustomerPage,
     ReferalPage,
     TariffClassPage
   } from '$lib/pages/master';
@@ -162,8 +162,8 @@
           <ServiceUnitPage />
         {:else if activeNav === 'master-room'}
           <RoomPage />
-        {:else if activeNav === 'master-payer'}
-          <PayerPage />
+        {:else if activeNav === 'master-customer' || activeNav === 'master-payer'}
+          <CustomerPage />
         {:else if activeNav === 'master-referal'}
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}

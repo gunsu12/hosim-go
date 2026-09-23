@@ -1,4 +1,4 @@
-package payer
+package customer
 
 import (
 	"errors"
@@ -33,20 +33,20 @@ func getOperator(c *gin.Context) string {
 }
 
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
-	payers := router.Group("/payers")
+	customers := router.Group("/customers")
 	{
-		payers.POST("", middleware.RequirePermission("payer:create"), h.Create)
-		payers.GET("", middleware.RequirePermission("payer:read"), h.List)
-		payers.GET("/:id", middleware.RequirePermission("payer:read"), h.GetByID)
-		payers.PUT("/:id", middleware.RequirePermission("payer:update"), h.Update)
-		payers.DELETE("/:id", middleware.RequirePermission("payer:delete"), h.Delete)
+		customers.POST("", middleware.RequirePermission("customer:create"), h.Create)
+		customers.GET("", middleware.RequirePermission("customer:read"), h.List)
+		customers.GET("/:id", middleware.RequirePermission("customer:read"), h.GetByID)
+		customers.PUT("/:id", middleware.RequirePermission("customer:update"), h.Update)
+		customers.DELETE("/:id", middleware.RequirePermission("customer:delete"), h.Delete)
 	}
 
-	router.GET("/payer-types", middleware.RequirePermission("payer:read"), h.ListPayerTypes)
+	router.GET("/customer-types", middleware.RequirePermission("customer:read"), h.ListCustomerTypes)
 }
 
 func (h *Handler) Create(ctx *gin.Context) {
-	var req CreatePayerRequest
+	var req CreateCustomerRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.Error(ctx, http.StatusBadRequest, "Validasi gagal: format data tidak sesuai", err.Error())
 		return
@@ -54,13 +54,13 @@ func (h *Handler) Create(ctx *gin.Context) {
 
 	operatorID := getOperator(ctx)
 
-	result, err := h.service.CreatePayer(ctx.Request.Context(), req, operatorID)
+	result, err := h.service.CreateCustomer(ctx.Request.Context(), req, operatorID)
 	if err != nil {
-		if errors.Is(err, ErrPayerCodeAlreadyExists) {
+		if errors.Is(err, ErrCustomerCodeAlreadyExists) {
 			response.Error(ctx, http.StatusConflict, err.Error(), nil)
 			return
 		}
-		if errors.Is(err, ErrPayerTypeNotFound) || errors.Is(err, ErrInvalidEmail) ||
+		if errors.Is(err, ErrCustomerTypeNotFound) || errors.Is(err, ErrInvalidEmail) ||
 			errors.Is(err, ErrNameRequired) || errors.Is(err, ErrCodeRequired) {
 			response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
 			return
@@ -69,15 +69,15 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(ctx, http.StatusCreated, "Penjamin berhasil dibuat", result)
+	response.Success(ctx, http.StatusCreated, "Customer berhasil dibuat", result)
 }
 
 func (h *Handler) List(ctx *gin.Context) {
 	params := ListParams{
-		Page:        1,
-		Limit:       10,
-		Search:      ctx.Query("search"),
-		PayerTypeID: ctx.Query("payer_type_id"),
+		Page:           1,
+		Limit:          10,
+		Search:         ctx.Query("search"),
+		CustomerTypeID: ctx.Query("customer_type_id"),
 	}
 
 	if ctx.Query("page") != "" {
@@ -98,23 +98,23 @@ func (h *Handler) List(ctx *gin.Context) {
 		params.Limit = limit
 	}
 
-	payers, count, err := h.service.ListPayers(ctx.Request.Context(), params)
+	customers, count, err := h.service.ListCustomers(ctx.Request.Context(), params)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "Daftar penjamin berhasil diambil", gin.H{
-		"data":  payers,
+	response.Success(ctx, http.StatusOK, "Daftar customer berhasil diambil", gin.H{
+		"data":  customers,
 		"count": count,
 	})
 }
 
 func (h *Handler) GetByID(ctx *gin.Context) {
 	id := ctx.Param("id")
-	payer, err := h.service.GetPayerByID(ctx.Request.Context(), id)
+	customer, err := h.service.GetCustomerByID(ctx.Request.Context(), id)
 	if err != nil {
-		if errors.Is(err, ErrPayerNotFound) {
+		if errors.Is(err, ErrCustomerNotFound) {
 			response.Error(ctx, http.StatusNotFound, err.Error(), nil)
 			return
 		}
@@ -122,12 +122,12 @@ func (h *Handler) GetByID(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "Penjamin berhasil diambil", payer)
+	response.Success(ctx, http.StatusOK, "Customer berhasil diambil", customer)
 }
 
 func (h *Handler) Update(ctx *gin.Context) {
 	id := ctx.Param("id")
-	var req UpdatePayerRequest
+	var req UpdateCustomerRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.Error(ctx, http.StatusBadRequest, "Validasi gagal: format data tidak sesuai", err.Error())
 		return
@@ -135,17 +135,17 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 	operatorID := getOperator(ctx)
 
-	result, err := h.service.UpdatePayer(ctx.Request.Context(), id, req, operatorID)
+	result, err := h.service.UpdateCustomer(ctx.Request.Context(), id, req, operatorID)
 	if err != nil {
-		if errors.Is(err, ErrPayerNotFound) {
+		if errors.Is(err, ErrCustomerNotFound) {
 			response.Error(ctx, http.StatusNotFound, err.Error(), nil)
 			return
 		}
-		if errors.Is(err, ErrPayerCodeAlreadyExists) {
+		if errors.Is(err, ErrCustomerCodeAlreadyExists) {
 			response.Error(ctx, http.StatusConflict, err.Error(), nil)
 			return
 		}
-		if errors.Is(err, ErrPayerTypeNotFound) || errors.Is(err, ErrInvalidEmail) ||
+		if errors.Is(err, ErrCustomerTypeNotFound) || errors.Is(err, ErrInvalidEmail) ||
 			errors.Is(err, ErrNameRequired) || errors.Is(err, ErrCodeRequired) {
 			response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
 			return
@@ -154,20 +154,20 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "Penjamin berhasil diperbarui", result)
+	response.Success(ctx, http.StatusOK, "Customer berhasil diperbarui", result)
 }
 
 func (h *Handler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	operatorID := getOperator(ctx)
 
-	err := h.service.DeletePayer(ctx.Request.Context(), id, operatorID)
+	err := h.service.DeleteCustomer(ctx.Request.Context(), id, operatorID)
 	if err != nil {
-		if errors.Is(err, ErrPayerNotFound) {
+		if errors.Is(err, ErrCustomerNotFound) {
 			response.Error(ctx, http.StatusNotFound, err.Error(), nil)
 			return
 		}
-		if errors.Is(err, ErrPayerImmutable) {
+		if errors.Is(err, ErrCustomerImmutable) {
 			response.Error(ctx, http.StatusForbidden, err.Error(), nil)
 			return
 		}
@@ -175,15 +175,15 @@ func (h *Handler) Delete(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "Penjamin berhasil dihapus", nil)
+	response.Success(ctx, http.StatusOK, "Customer berhasil dihapus", nil)
 }
 
-func (h *Handler) ListPayerTypes(ctx *gin.Context) {
-	types, err := h.service.ListPayerTypes(ctx.Request.Context())
+func (h *Handler) ListCustomerTypes(ctx *gin.Context) {
+	types, err := h.service.ListCustomerTypes(ctx.Request.Context())
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "Daftar tipe penjamin berhasil diambil", types)
+	response.Success(ctx, http.StatusOK, "Daftar tipe customer berhasil diambil", types)
 }

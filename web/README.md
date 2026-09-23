@@ -52,7 +52,7 @@ web/src/
 │   │       ├── departement/        # Domain Instalasi / Departemen (IndexPage.svelte)
 │   │       ├── service_unit/       # Domain Poliklinik & Unit Layanan (IndexPage.svelte)
 │   │       ├── room/               # Domain Kamar Bedah, Rawat Inap, & Bed (IndexPage.svelte)
-│   │       ├── payer/              # Domain Penjamin BPJS & Asuransi (IndexPage.svelte)
+│   │       ├── customer/           # Domain Debitur/Customer BPJS & Asuransi (IndexPage.svelte)
 │   │       ├── referal/            # Domain Faskes Rujukan Faskes 1/RS (IndexPage.svelte)
 │   │       ├── tariff_class/       # Domain Kelas Tarif Layanan & KRIS (IndexPage.svelte)
 │   │       └── index.ts            # Barrel export terpusat modul master data
@@ -64,7 +64,7 @@ web/src/
 │   │   ├── common.ts               # BaseEntity, ApiResponse<T>, PaginatedResult<T>
 │   │   ├── auth.ts                 # UserProfile, AuthSession, LoginPayload
 │   │   ├── clinical.ts             # BodyFinding, ClinicalNotes, FindingCategory
-│   │   ├── master/                 # Domain Master Types (patient, room, payer, referal, dll.)
+│   │   ├── master/                 # Domain Master Types (patient, room, customer, referal, dll.)
 │   │   └── index.ts                # Root types barrel export
 │   │
 │   ├── api.ts                      # HTTP Client (Login, Backend Health Check)
@@ -121,7 +121,7 @@ Menggunakan modul [`router.ts`](file:///c:/laragon/www/hosim-go/web/src/lib/rout
 | `master-departement` | `#/master/departement` | Master Instalasi & Departemen |
 | `master-service-unit` | `#/master/service-unit` | Master Poliklinik & Unit Layanan |
 | `master-room` | `#/master/room` | Master Ruangan & Tempat Tidur |
-| `master-payer` | `#/master/payer` | Master Penjamin & Asuransi |
+| `master-customer` | `#/master/customer` | Master Debitur & Penjamin (Customer) |
 | `master-referal` | `#/master/referal` | Master Faskes Asal/Tujuan Rujukan |
 | `master-tariff-class` | `#/master/tariff-class` | Master Kelas Tarif & Standar KRIS |
 

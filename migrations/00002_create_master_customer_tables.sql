@@ -1,9 +1,9 @@
 -- +goose Up
 -- ========================================================
--- Modul: Master Penjamin (Payer & Payer Type)
+-- Modul: Master Customer / Penjamin (Customer & Customer Type)
 -- ========================================================
 
-CREATE TABLE IF NOT EXISTS payer_types (
+CREATE TABLE IF NOT EXISTS customer_types (
     id VARCHAR(36) PRIMARY KEY,
     code VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -15,10 +15,10 @@ CREATE TABLE IF NOT EXISTS payer_types (
     deleted_by VARCHAR(50)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_payer_types_code ON payer_types(code);
-CREATE INDEX IF NOT EXISTS idx_payer_types_deleted_at ON payer_types(deleted_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_customer_types_code ON customer_types(code);
+CREATE INDEX IF NOT EXISTS idx_customer_types_deleted_at ON customer_types(deleted_at);
 
-CREATE TABLE IF NOT EXISTS payers (
+CREATE TABLE IF NOT EXISTS customers (
     id VARCHAR(36) PRIMARY KEY,
     code VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS payers (
     contact_person VARCHAR(255),
     require_card BOOLEAN DEFAULT TRUE,
     description VARCHAR(255),
-    payer_type_id VARCHAR(36) REFERENCES payer_types(id) ON DELETE SET NULL,
+    customer_type_id VARCHAR(36) REFERENCES customer_types(id) ON DELETE SET NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     is_immutable BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -40,11 +40,11 @@ CREATE TABLE IF NOT EXISTS payers (
     deleted_by VARCHAR(50)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_payers_code ON payers(code);
-CREATE INDEX IF NOT EXISTS idx_payers_payer_type_id ON payers(payer_type_id);
-CREATE INDEX IF NOT EXISTS idx_payers_is_active ON payers(is_active);
-CREATE INDEX IF NOT EXISTS idx_payers_deleted_at ON payers(deleted_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_code ON customers(code);
+CREATE INDEX IF NOT EXISTS idx_customers_customer_type_id ON customers(customer_type_id);
+CREATE INDEX IF NOT EXISTS idx_customers_is_active ON customers(is_active);
+CREATE INDEX IF NOT EXISTS idx_customers_deleted_at ON customers(deleted_at);
 
 -- +goose Down
-DROP TABLE IF EXISTS payers;
-DROP TABLE IF EXISTS payer_types;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS customer_types;

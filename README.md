@@ -44,7 +44,7 @@ Setiap domain master data diisolasi ke dalam folder terpisah di backend (`intern
 3. **Departemen / Instalasi (`departement`)**: Master instalasi utama (Rawat Jalan, Rawat Inap, Bedah Sentral IBS, IGD, Lab).
 4. **Unit Layanan (`service_unit`)**: Daftar poliklinik dan unit tujuan pendaftaran.
 5. **Ruangan & Bed (`room`)**: Manajemen kapasitas tempat tidur, ruang operasi, bangsal rawat inap, dan ICU.
-6. **Penjamin / Asuransi (`payer`)**: Konfigurasi BPJS Kesehatan (PBI & Non-PBI), asuransi komersial, dan pasien umum.
+6. **Debitur / Penjamin (`customer`)**: Konfigurasi BPJS Kesehatan (PBI & Non-PBI), asuransi komersial, dan pasien umum.
 7. **Faskes Rujukan (`referal`)**: Registrasi faskes pengirim rujukan (Puskesmas/Faskes 1, Klinik Pratama, RS Tipe B/C).
 8. **Kelas Tarif (`tariff_class`)**: Klasifikasi akomodasi kamar (VVIP, VIP, KRIS Kelas 1-3) dan koefisien tarif layanan.
 
@@ -76,7 +76,7 @@ hosim-go/
 │   ├── patient/                 # Domain Pasien & Rekam Medis
 │   ├── practitioner/            # Domain Dokter, Nakes, & Spesialisasi
 │   ├── catalog/                 # Katalog Medis (item, icd10, icd9, vitalsign)
-│   ├── finance/                 # Keuangan & Penjamin (customer, payer, tarifclass, tariff)
+│   ├── finance/                 # Keuangan & Penjamin (customer, tarifclass, tariff)
 │   ├── clinical/                # Pelayanan Klinis EHR (encounter, observation, condition, procedure, dll)
 │   ├── emergency/               # Alur Pelayanan Gawat Darurat (IGD)
 │   ├── outpatient/              # Alur Pelayanan Rawat Jalan (Poliklinik)

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS patients (
     is_unknown BOOLEAN DEFAULT FALSE,
     is_deceased BOOLEAN DEFAULT FALSE,
     deceased_at TIMESTAMPTZ,
-    payer_id VARCHAR(36) REFERENCES payers(id) ON DELETE SET NULL,
+    customer_id VARCHAR(36) REFERENCES customers(id) ON DELETE SET NULL,
     insurance_type VARCHAR(20),
     insurance_number VARCHAR(50),
     insurance_expiry_date TIMESTAMPTZ,
@@ -53,7 +53,7 @@ WHERE ihs_patient_id IS NOT NULL AND ihs_patient_id != '' AND deleted_at IS NULL
 CREATE INDEX IF NOT EXISTS idx_patients_family_card_no ON patients(family_card_no);
 CREATE INDEX IF NOT EXISTS idx_patients_name_birth ON patients(full_name, birth_date);
 CREATE INDEX IF NOT EXISTS idx_patients_phone ON patients(phone);
-CREATE INDEX IF NOT EXISTS idx_patients_payer_id ON patients(payer_id);
+CREATE INDEX IF NOT EXISTS idx_patients_customer_id ON patients(customer_id);
 CREATE INDEX IF NOT EXISTS idx_patients_insurance_number ON patients(insurance_number);
 CREATE INDEX IF NOT EXISTS idx_patients_deleted_at ON patients(deleted_at);
 

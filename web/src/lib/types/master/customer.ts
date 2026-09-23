@@ -1,6 +1,6 @@
-// Master Payer Domain Types (internal/master/payer)
+// Master Customer / Penjamin Domain Types (internal/finance/customer)
 
-export interface PayerRecord {
+export interface CustomerRecord {
   id: string;
   code: string;
   name: string;

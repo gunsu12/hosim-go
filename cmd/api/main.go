@@ -13,7 +13,7 @@ import (
 	"hosim-go/internal/auth"
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
-	"hosim-go/internal/finance/payer"
+	"hosim-go/internal/finance/customer"
 	tariffclass "hosim-go/internal/finance/tarifclass"
 	"hosim-go/internal/middleware"
 	"hosim-go/internal/organization/department"
@@ -75,10 +75,10 @@ func main() {
 	departmentService := department.NewService(departmentRepo)
 	departmentHandler := department.NewHandler(departmentService)
 
-	// Master Penjamin / Payer
-	payerRepo := payer.NewRepository(db)
-	payerService := payer.NewService(payerRepo)
-	payerHandler := payer.NewHandler(payerService)
+	// Master Debitur / Customer
+	customerRepo := customer.NewRepository(db)
+	customerService := customer.NewService(customerRepo)
+	customerHandler := customer.NewHandler(customerService)
 
 	// Master Rujukan / Referal
 	referalRepo := referal.NewRepository(db)
@@ -161,7 +161,7 @@ func main() {
 		protected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
 		{
 			departmentHandler.RegisterRoutes(protected)
-			payerHandler.RegisterRoutes(protected)
+			customerHandler.RegisterRoutes(protected)
 			referalHandler.RegisterRoutes(protected)
 			serviceUnitHandler.RegisterRoutes(protected)
 			roomHandler.RegisterRoutes(protected)

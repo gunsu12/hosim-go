@@ -169,7 +169,7 @@ func (r *repository) Delete(ctx context.Context, id string, deletedBy string) er
 func (r *repository) FindByID(ctx context.Context, id string) (*Patient, error) {
 	var patient Patient
 	err := r.db.WithContext(ctx).
-		Preload("Payer").
+		Preload("Customer").
 		Preload("EmergencyContacts", "is_active = ?", true).
 		Preload("Relations", "is_active = ?", true).
 		Preload("Allergies", "is_active = ?", true).
@@ -188,7 +188,7 @@ func (r *repository) FindByID(ctx context.Context, id string) (*Patient, error) 
 func (r *repository) FindByNIK(ctx context.Context, nik string) (*Patient, error) {
 	var patient Patient
 	err := r.db.WithContext(ctx).
-		Preload("Payer").
+		Preload("Customer").
 		Preload("EmergencyContacts", "is_active = ?", true).
 		Preload("Relations", "is_active = ?", true).
 		Preload("Allergies", "is_active = ?", true).
@@ -206,7 +206,7 @@ func (r *repository) FindByNIK(ctx context.Context, nik string) (*Patient, error
 func (r *repository) FindByMedicalRecordNo(ctx context.Context, medicalRecordNo string) (*Patient, error) {
 	var patient Patient
 	err := r.db.WithContext(ctx).
-		Preload("Payer").
+		Preload("Customer").
 		Preload("EmergencyContacts", "is_active = ?", true).
 		Preload("Relations", "is_active = ?", true).
 		Preload("Allergies", "is_active = ?", true).
@@ -245,7 +245,7 @@ func (r *repository) FindAll(ctx context.Context, params ListParams) ([]Patient,
 	// 4. Ambil datanya sesuai limit dan offset halaman
 	offset := (params.Page - 1) * params.Limit
 	err := query.
-		Preload("Payer").
+		Preload("Customer").
 		Order("created_at DESC").
 		Limit(params.Limit).
 		Offset(offset).

@@ -193,7 +193,7 @@ func TestDoctorVsAdminRBAC(t *testing.T) {
 
 	// Token DOCTOR dengan permissions standar dari seeder RBAC
 	doctorPerms := []string{
-		"department:read", "room:read", "service_unit:read", "payer:read", "referal:read", "tariff_class:read",
+		"department:read", "room:read", "service_unit:read", "customer:read", "referal:read", "tariff_class:read",
 		"practitioner:read", "patient:read", "patient:create", "patient:update",
 		"outpatient:view", "appointment:view",
 	}
