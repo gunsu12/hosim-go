@@ -8,8 +8,9 @@ import (
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
 	"hosim-go/internal/master/patient"
-	"hosim-go/internal/master/payer"
+	"hosim-go/migrations"
 
+	"github.com/pressly/goose/v3"
 	"gorm.io/gorm"
 )
 
@@ -20,19 +21,16 @@ func setupTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("failed to connect to postgres database: %v", err)
 	}
 
-	err = db.AutoMigrate(
-		&payer.PayerType{},
-		&payer.Payer{},
-		&patient.Patient{},
-		&patient.PatientEmergencyContact{},
-		&patient.PatientRelation{},
-		&patient.PatientAllergy{},
-		&patient.PatientAddress{},
-		&patient.PatientDrugHistory{},
-		&patient.PatientChronicalDisease{},
-	)
+	sqlDB, err := db.DB()
 	if err != nil {
-		t.Fatalf("failed to auto migrate: %v", err)
+		t.Fatalf("failed to get generic sql.DB: %v", err)
+	}
+	goose.SetBaseFS(migrations.FS)
+	if err := goose.SetDialect("postgres"); err != nil {
+		t.Fatalf("failed to set dialect: %v", err)
+	}
+	if err := goose.Up(sqlDB, "."); err != nil {
+		t.Fatalf("failed to run goose migrations in test: %v", err)
 	}
 
 	tx := db.Begin()

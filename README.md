@@ -16,8 +16,7 @@ Didesain untuk performa tinggi, keandalan 24/7, integritas data transaksi medis 
 
 ### Backend (Go Gin)
 - **Bahasa & Framework**: Go 1.22+ dengan [Gin Web Framework](https://github.com/gin-gonic/gin).
-- **Database (Development)**: SQLite (Pure Go via `github.com/glebarez/sqlite`, zero CGO dependency).
-- **Database (Production Ready)**: PostgreSQL via [GORM](https://gorm.io/).
+- **Database**: PostgreSQL via [GORM](https://gorm.io/) & [Goose v3](https://github.com/pressly/goose) untuk skema migrasi.
 - **Autentikasi**: JWT (JSON Web Token) dengan stateless authorization & role-based permissions.
 - **Pola Arsitektur**: Clean Architecture & Domain-Driven Modular Monolith (`Entity` -> `Repository` -> `Service` -> `Handler`).
 
@@ -115,17 +114,32 @@ hosim-go/
 
 ### 2. Menjalankan Backend (Go Gin)
 
-1. Pastikan file `.env` sudah siap (default menggunakan SQLite):
+1. Pastikan file `.env` sudah siap (menggunakan PostgreSQL):
    ```env
    APP_NAME=HOSIM-GO
    APP_ENV=development
    APP_PORT=8080
-   DB_DRIVER=sqlite
-   DB_NAME=hosim.db
+   DB_DRIVER=postgres
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USER=postgres
+   DB_PASSWORD=postgres
+   DB_NAME=hosim_go
+   DB_SSLMODE=disable
    JWT_SECRET=super-secret-jwt-key-hosim-2026
    ```
 
-2. Jalankan server:
+2. Jalankan migrasi skema database (Goose):
+   ```bash
+   go run cmd/migrate/main.go up
+   ```
+
+3. Jalankan seeder data awal (RBAC, superadmin, data referensi SatuSehat):
+   ```bash
+   go run cmd/seed/main.go
+   ```
+
+4. Jalankan server API backend:
    ```bash
    go run cmd/api/main.go
    ```

@@ -22,9 +22,11 @@ import (
 	serviceunit "hosim-go/internal/master/service_unit"
 	tariffclass "hosim-go/internal/master/tariff_class"
 	"hosim-go/internal/middleware"
+	"hosim-go/migrations"
 	"hosim-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pressly/goose/v3"
 )
 
 func main() {
@@ -49,57 +51,17 @@ func main() {
 		log.Fatalf("[FATAL] Inisialisasi database gagal: %v\n", err)
 	}
 
-	// Auto-Migrate tabel-tabel Master
-	err = db.AutoMigrate(
-		// Master Penjamin / Payer
-		&payer.PayerType{},
-		&payer.Payer{},
-
-		// Master Departemen / Instalasi, Unit Layanan & Ruangan
-		&departement.Departement{},
-		&serviceunit.ServiceUnit{},
-		&room.Room{},
-
-		// Master Rujukan & Kelas Tarif
-		&referal.Referal{},
-		&tariffclass.TariffClass{},
-
-		// Master Pasien
-		&patient.Patient{},
-		&patient.PatientEmergencyContact{},
-		&patient.PatientRelation{},
-		&patient.PatientAllergy{},
-		&patient.PatientAddress{},
-		&patient.PatientDrugHistory{},
-		&patient.PatientChronicalDisease{},
-
-		// Master Nakes / Practitioner
-		&practitioner.Profession{},
-		&practitioner.Specialty{},
-		&practitioner.Practitioner{},
-
-		// Autentikasi, Role & Hak Akses (RBAC)
-		&auth.Permission{},
-		&auth.Role{},
-		&auth.User{},
-		&auth.RefreshToken{},
-	)
-	if err != nil {
-		log.Fatalf("[FATAL] AutoMigrate database gagal: %v\n", err)
-	}
-	log.Println("[DATABASE] Skema tabel database berhasil dimigrasi.")
-
-	// Jalankan Seeder data referensi (Profesi & Spesialisasi SatuSehat)
-	if err := practitioner.SeedProfessionsAndSpecialties(db); err != nil {
-		log.Printf("[WARN] Seeder profesi dan spesialisasi gagal: %v\n", err)
-	}
-	if err := practitioner.SeedDefaultPractitioner(db); err != nil {
-		log.Printf("[WARN] Seeder data dokter gagal: %v\n", err)
-	}
-
-	// Jalankan Seeder Roles & Permissions RBAC (termasuk default akun admin)
-	if err := auth.SeedRBAC(db); err != nil {
-		log.Printf("[WARN] Seeder RBAC gagal: %v\n", err)
+	// Opsional: Jalankan migrasi skema database jika AUTO_MIGRATE=true diset di environment
+	if os.Getenv("AUTO_MIGRATE") == "true" {
+		if sqlDB, err := db.DB(); err == nil {
+			goose.SetBaseFS(migrations.FS)
+			_ = goose.SetDialect("postgres")
+			if err := goose.Up(sqlDB, "."); err != nil {
+				log.Printf("[WARN] Auto-migrate via Goose gagal: %v\n", err)
+			} else {
+				log.Println("[DATABASE] Skema database berhasil dimigrasi via Goose.")
+			}
+		}
 	}
 
 	// 4. Inisialisasi Modul Autentikasi & Master Data (Dependency Injection)

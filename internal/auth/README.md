@@ -80,7 +80,7 @@ sequenceDiagram
     actor Client as Frontend / Mobile App
     participant AuthHandler as Auth Handler (/api/v1/auth)
     participant AuthService as Auth Service
-    participant DB as PostgreSQL / SQLite
+    participant DB as PostgreSQL
     participant JWT as pkg/jwt
 
     %% LOGIN FLOW

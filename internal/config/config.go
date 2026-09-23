@@ -14,8 +14,8 @@ type Config struct {
 	AppEnv  string
 	AppPort string
 
-	DBDriver   string // "sqlite" atau "postgres"
-	DBName     string // Nama file untuk SQLite, atau nama database untuk Postgres
+	DBDriver   string // Driver database ("postgres")
+	DBName     string // Nama database PostgreSQL
 	DBHost     string
 	DBPort     string
 	DBUser     string
