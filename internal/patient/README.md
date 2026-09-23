@@ -297,7 +297,7 @@ sequenceDiagram
 | [`service.go`](file:///c:/laragon/www/hosim-go/internal/patient/service.go) | Berisi logika bisnis, sanitasi input, validasi tanggal lahir/kematian, format NIK/No KK, normalisasi gender, generator nomor rekam medis 8 digit, dan pemetaan error domain. |
 | [`handler.go`](file:///c:/laragon/www/hosim-go/internal/patient/handler.go) | HTTP Controller berbasis Gin: registrasi routing, binding payload, resolusi operator (`getOperator`), proteksi izin RBAC, serta formatting response standar (`pkg/response`). |
 | [`service_test.go`](file:///c:/laragon/www/hosim-go/internal/patient/service_test.go) | Unit test komprehensif logika bisnis: duplikasi NIK, auto-generate No RM, validasi format tanggal, sanitasi, dan mapping penjamin (`CustomerID`). |
-| [`repository_test.go`](file:///c:/laragon/www/hosim-go/internal/patient/repository_test.go) | Integrasi test database GORM: soft delete cascading, isolasi NIK aktif vs terhapus, dan query No RM terakhir. |
+| [`repository_test.go`](file:///c:/laragon/www/hosim-go/internal/patient/repository_test.go) | Integrasi test database GORM: soft delete cascading, isolasi NIK aktif vs data soft-deleted, dan query No RM terakhir. |
 | [`handler_test.go`](file:///c:/laragon/www/hosim-go/internal/patient/handler_test.go) | Unit test HTTP Gin controller: penanganan kode status 201, 400, 404, dan 409. |
 
 ---
