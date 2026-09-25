@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="HOSIM-GO Banner" width="100%" />
+</p>
+
 # HOSIM-GO (Hospital Information Management System in Go)
 
 HOSIM-GO adalah sistem informasi manajemen rumah sakit (SIMRS) dan rekam medis elektronik (EHR / RME) modern yang dibangun menggunakan arsitektur **Clean Architecture & Modular Monolith** di backend (**Go Gin**) dan antarmuka web modern berbasis **Svelte 5 Runes & TypeScript**.
