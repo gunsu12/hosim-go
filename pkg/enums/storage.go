@@ -10,6 +10,8 @@ const (
 	StorageTypeDepo StorageType = "depo"
 	// ini tipe pembantu karena ketika distribusi maka barang akan nyangkut disini sebelum di konfirmasi
 	StorageTypeVirtual StorageType = "virtual"
+	// lemari penyimpanan
+	StorageTypeCabinet StorageType = "cabinet"
 )
 
 func (s StorageType) String() string {

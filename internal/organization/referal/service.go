@@ -39,18 +39,7 @@ type UpdateReferalRequest struct {
 }
 
 func isValidReferalType(t enums.ReferalType) bool {
-	switch t {
-	case enums.ReferalTypeDoctor,
-		enums.ReferalTypeHospital,
-		enums.ReferalTypePharmacy,
-		enums.ReferalTypeLab,
-		enums.ReferalTypeRadiology,
-		enums.ReferalTypeTherapy,
-		enums.ReferalTypeOther:
-		return true
-	default:
-		return false
-	}
+	return t.IsValid()
 }
 
 type Service interface {
