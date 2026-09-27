@@ -1,4 +1,4 @@
-package tarifclass
+package tariffclass
 
 import (
 	"errors"

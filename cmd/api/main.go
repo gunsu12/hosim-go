@@ -14,7 +14,7 @@ import (
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
 	"hosim-go/internal/finance/customer"
-	tariffclass "hosim-go/internal/finance/tarifclass"
+	"hosim-go/internal/finance/tariffclass"
 	"hosim-go/internal/middleware"
 	"hosim-go/internal/organization/department"
 	"hosim-go/internal/organization/referal"

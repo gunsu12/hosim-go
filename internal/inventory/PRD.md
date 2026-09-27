@@ -44,7 +44,8 @@ erDiagram
         string batch_number "Nomor batch dari pabrikan"
         date expired_date "Tanggal kedaluwarsa (Kunci FEFO)"
         numeric quantity "Sisa stok fisik per batch"
-        numeric purchase_price "Harga beli satuan batch ini"
+        numeric hna "Harga Netto Apotek resmi (acuan margin & HET)"
+        numeric purchase_price "HPP / Harga beli riil satuan (dasar COGS)"
         boolean is_active "Status aktif / karantina"
     }
 
@@ -96,8 +97,14 @@ erDiagram
 | `batch_number` | `VARCHAR(50)` | Not Null | Nomor Lot/Batch dari produsen |
 | `expired_date` | `DATE` | Not Null, Index | Tanggal kedaluwarsa untuk pengurutan FEFO |
 | `quantity` | `NUMERIC(15,4)` | Not Null, Default 0 | Sisa stok fisik pada batch ini |
-| `purchase_price` | `NUMERIC(15,2)` | Default 0 | Harga perolehan/beli satuan |
+| `hna` | `NUMERIC(15,2)` | Default 0 | Harga Netto Apotek resmi (acuan dasar formulasi harga jual & HET) |
+| `purchase_price` | `NUMERIC(15,2)` | Default 0 | HPP / Harga beli bersih satuan setelah diskon faktur (dasar COGS) |
 | `is_active` | `BOOLEAN` | Default true | `false` jika obat ditarik/rusak/dikarantina |
+
+#### Catatan Finansial & Akuntansi Persediaan (HNA vs HPP / COGS):
+- **`hna` (Harga Netto Apotek)**: Harga patokan resmi/katalog dari PBF sebelum diskon faktur dan PPN. Nilai ini menjadi basis penghitungan **Harga Jual Pasien / Tarif Farmasi** (`HNA * (1 + margin) + PPN`) serta kontrol kepatuhan regulasi batas HET Kemenkes RI.
+- **`purchase_price` (HPP)**: Harga perolehan riil per satuan setelah dipotong diskon faktur pembelian. Nilai ini menjadi basis pengakuan beban persediaan dan penghitungan **COGS (*Cost of Goods Sold*)** saat obat dikeluarkan (`Dispense`):
+  $$\text{COGS} = \text{Kuantitas Dispense} \times \text{purchase\_price (HPP)}$$
 
 #### Integritas Database:
 - **Unique Constraint**: `UNIQUE (stock_balance_id, batch_number, expired_date)`.
@@ -164,7 +171,7 @@ $$\text{Available Quantity} = \text{quantity} - \text{reserved\_quantity}$$
 - **Trigger**: Gudang menerima pengiriman barang dari PBF/Vendor.
 - **Operasi Database**:
   - Tambah stok fisik: `quantity = quantity + received_qty`.
-  - Tambah atau buat row baru di `stock_batches` dengan kuantitas dan tanggal ED terkait.
+  - Tambah atau buat row baru di `stock_batches` dengan kuantitas, tanggal ED, `hna`, dan `purchase_price` (HPP).
   - Catat kartu stok di `stock_movements` (`quantity = +received_qty`, `movement_type = 'PURCHASE_RECEIPT'`).
 
 ---
