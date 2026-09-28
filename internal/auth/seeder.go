@@ -46,6 +46,12 @@ var DefaultPermissions = []Permission{
 	{Code: "tariff_class:update", Name: "Ubah Kelas Tarif", Module: "Master Kelas Tarif"},
 	{Code: "tariff_class:delete", Name: "Hapus Kelas Tarif", Module: "Master Kelas Tarif"},
 
+	// Komponen Tarif
+	{Code: "tariff_component:read", Name: "Lihat Komponen Tarif", Module: "Master Komponen Tarif"},
+	{Code: "tariff_component:create", Name: "Tambah Komponen Tarif", Module: "Master Komponen Tarif"},
+	{Code: "tariff_component:update", Name: "Ubah Komponen Tarif", Module: "Master Komponen Tarif"},
+	{Code: "tariff_component:delete", Name: "Hapus Komponen Tarif", Module: "Master Komponen Tarif"},
+
 	// Pasien
 	{Code: "patient:read", Name: "Lihat Pasien", Module: "Master Pasien"},
 	{Code: "patient:create", Name: "Tambah Pasien", Module: "Master Pasien"},

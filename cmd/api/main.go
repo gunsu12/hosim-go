@@ -15,6 +15,7 @@ import (
 	"hosim-go/internal/database"
 	"hosim-go/internal/finance/customer"
 	"hosim-go/internal/finance/tariffclass"
+	"hosim-go/internal/finance/tariffcomponent"
 	"hosim-go/internal/middleware"
 	"hosim-go/internal/organization/department"
 	"hosim-go/internal/organization/referal"
@@ -100,6 +101,11 @@ func main() {
 	tariffClassService := tariffclass.NewService(tariffClassRepo)
 	tariffClassHandler := tariffclass.NewHandler(tariffClassService)
 
+	// Master Komponen Tarif / Tariff Component
+	tariffComponentRepo := tariffcomponent.NewRepository(db)
+	tariffComponentService := tariffcomponent.NewService(tariffComponentRepo)
+	tariffComponentHandler := tariffcomponent.NewHandler(tariffComponentService)
+
 	// Master Pasien
 	patientRepo := patient.NewRepository(db)
 	patientService := patient.NewService(patientRepo)
@@ -166,6 +172,7 @@ func main() {
 			serviceUnitHandler.RegisterRoutes(protected)
 			roomHandler.RegisterRoutes(protected)
 			tariffClassHandler.RegisterRoutes(protected)
+			tariffComponentHandler.RegisterRoutes(protected)
 			patientHandler.RegisterRoutes(protected)
 			practitionerHandler.RegisterRoutes(protected)
 		}
