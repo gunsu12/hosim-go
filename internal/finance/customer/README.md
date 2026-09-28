@@ -19,49 +19,76 @@ Dalam konteks manajemen rumah sakit, `Customer` mengacu pada **entitas penjamin 
 3. **Untuk customer tipe Corporate dan Insurance** itu boleh di hapus atau di nonaktifkan, karena biasanya data ini akan di update seiring waktu
 
 ## 3. Relasi dan Kardinalitas Data
-```
+
+```mermaid
 erDiagram
-    customer_types ||--o{ customers : "has many"
+    CUSTOMER_TYPE ||--o{ CUSTOMER : "mengelompokkan (1:N)"
 
-    customers {
-        string id PK "size:36"
-        string code UK "size:255"
-        string name "size:255"
-        string address "nullable, size:255"
-        string phone "nullable, size:255"
-        string email "nullable, size:255"
-        string website "nullable, size:255"
-        string contact_person "nullable, size:255"
-        bool require_card "nullable, default:true"
-        string description "nullable, size:255"
-        string customer_type_id FK "nullable, size:36"
-        bool is_active "default:true"
-        bool is_immutable "default:false"
-        timestamp created_at "default:CURRENT_TIMESTAMP"
-        timestamp updated_at "default:CURRENT_TIMESTAMP"
-        timestamp deleted_at "nullable"
-        string created_by "default:SYSTEM"
-        string updated_by "default:SYSTEM"
-        string deleted_by "nullable"
+    CUSTOMER {
+        string id PK "UUID v7 (size: 36)"
+        string code UK "Kode penjamin unik (size: 255)"
+        string name "Nama penjamin / instansi (size: 255)"
+        string address "Alamat kantor/instansi (nullable)"
+        string phone "Nomor telepon kontak (nullable)"
+        string email "Email penjamin (nullable)"
+        string website "Situs resmi (nullable)"
+        string contact_person "Nama PIC penjamin (nullable)"
+        bool require_card "Wajib kartu fisik peserta (default: true)"
+        string description "Keterangan/catatan tambahan"
+        string customer_type_id FK "Relasi ke tipe penjamin"
+        bool is_active "Status operasional penjamin"
+        bool is_immutable "Tanda data sistem (tidak boleh dihapus)"
+        timestamp created_at "Timestamp pembuatan"
+        timestamp updated_at "Timestamp modifikasi"
+        timestamp deleted_at "Soft delete marker"
     }
 
-    customer_types {
-        string id PK "size:36"
-        string code UK "size:255"
-        string name "size:255"
-        timestamp created_at "default:CURRENT_TIMESTAMP"
-        timestamp updated_at "default:CURRENT_TIMESTAMP"
-        timestamp deleted_at "nullable"
-        string created_by "default:SYSTEM"
-        string updated_by "default:SYSTEM"
-        string deleted_by "nullable"
+    CUSTOMER_TYPE {
+        string id PK "UUID v7 (size: 36)"
+        string code UK "Kode tipe (BPJS, ASURANSI, dsb)"
+        string name "Nama tipe penjamin"
     }
 ```
+
+---
 
 ## 4. 📂 Peta File Sumber Daya (Code Tour)
 
-- [`entity.go`](file:///c:/laragon/www/hosim-go/internal/finance/customer/entity.go): Definisi struct `Customer`, GORM tag, relasi, dan hook ID UUIDv7.
-- [`repository.go`](file:///c:/laragon/www/hosim-go/internal/finance/customer/repository.go): Implementasi repository interface `IRepository`.
-- [`service.go`](file:///c:/laragon/www/hosim-go/internal/finance/customer/service.go): Implementasi service interface `IService`.
-- [`handler.go`](file:///c:/laragon/www/hosim-go/internal/finance/customer/handler.go): Implementasi handler interface `IHandler`.
-- [`doc.go`](file:///c:/laragon/www/hosim-go/internal/finance/customer/doc.go): Dokumentasi package Go.
+- [`entity.go`](entity.go): Definisi struct entitas `Customer` dan `CustomerType`, GORM tag, relasi, dan hook `BeforeCreate` UUID v7.
+- [`repository.go`](repository.go): Implementasi query database GORM (`Create`, `Update`, `Delete`, `FindByID`, `FindByCode`, `FindAll`, `FindAllCustomerTypes`).
+- [`service.go`](service.go): Aturan bisnis, validasi email/kode/nama, perlindungan status `is_immutable`, dan normalisasi string.
+- [`handler.go`](handler.go): Transport layer Gin HTTP handler untuk endpoint REST API penjamin dan tipe customer.
+- [`doc.go`](doc.go): Dokumentasi package Go.
+
+---
+
+## 5. 🌐 Kontrak REST API
+
+Base Path: `/api/v1` (Terproteksi JWT)
+
+| Method | Endpoint | Permission | Deskripsi |
+|---|---|---|---|
+| `GET` | `/customer-types` | `customer:read` | Ambil referensi seluruh tipe customer |
+| `GET` | `/customers` | `customer:read` | List data penjamin (paginasi & pencarian) |
+| `POST` | `/customers` | `customer:create` | Tambah customer/penjamin baru |
+| `GET` | `/customers/:id` | `customer:read` | Detail customer/penjamin berdasarkan ID |
+| `PUT` | `/customers/:id` | `customer:update` | Ubah data customer/penjamin |
+| `DELETE` | `/customers/:id` | `customer:delete` | Soft delete customer (kecuali `is_immutable=true`) |
+
+### Contoh Request Body (`POST /customers`)
+```json
+{
+  "code": "CUST-ASR-PRUD",
+  "name": "PT Prudential Life Assurance",
+  "address": "Prudential Tower, Jl. Jend. Sudirman Kav. 79, Jakarta",
+  "phone": "021-29958888",
+  "email": "corporate.claim@prudential.co.id",
+  "contact_person": "Budi Santoso (Head of Claims)",
+  "require_card": true,
+  "description": "Penjamin Asuransi Kesehatan Korporat",
+  "customer_type_id": "01923e42-1234-7000-8000-000000000001",
+  "is_active": true,
+  "is_immutable": false
+}
+```
+

@@ -1,0 +1,15 @@
+meta {
+  name: Delete Room
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/rooms/{{roomId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

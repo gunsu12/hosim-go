@@ -1,0 +1,33 @@
+meta {
+  name: Update Department
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/departments/{{departmentId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "DEP-RAWAT-JALAN",
+    "name": "Departemen Rawat Jalan & Spesialis",
+    "address": "Gedung A Lantai 1 & 2",
+    "phone": "021-5550102",
+    "email": "rawatjalan.spesialis@hosim.local",
+    "website": "https://hosim.local",
+    "description": "Instalasi Rawat Jalan, Poliklinik Umum dan Poliklinik Spesialis",
+    "departement_type": "outpatient",
+    "is_active": true
+  }
+}

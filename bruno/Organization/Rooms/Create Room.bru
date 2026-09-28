@@ -1,0 +1,36 @@
+meta {
+  name: Create Room
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/rooms
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "RM-POLI-PD-01",
+    "name": "Ruang Pemeriksaan Penyakit Dalam 1",
+    "capacity": 1,
+    "location": "Lantai 1 Sayap Barat No. 101",
+    "room_type": "OUTPATIENT",
+    "service_unit_id": "{{serviceUnitId}}"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("roomId", res.body.data.id);
+  }
+}

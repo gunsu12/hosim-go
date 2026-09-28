@@ -1,0 +1,30 @@
+meta {
+  name: Update Room
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/rooms/{{roomId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "RM-POLI-PD-01",
+    "name": "Ruang Pemeriksaan Penyakit Dalam 1 (Renovated)",
+    "capacity": 2,
+    "location": "Lantai 1 Sayap Barat No. 101",
+    "room_type": "OUTPATIENT",
+    "service_unit_id": "{{serviceUnitId}}"
+  }
+}

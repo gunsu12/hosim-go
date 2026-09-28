@@ -1,0 +1,23 @@
+meta {
+  name: List Rooms
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/rooms?page=1&limit=10&search=&service_unit_id=&room_type=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+  service_unit_id: 
+  room_type: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

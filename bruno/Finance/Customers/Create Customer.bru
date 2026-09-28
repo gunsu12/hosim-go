@@ -1,0 +1,40 @@
+meta {
+  name: Create Customer
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/customers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "CUST-ASR-PRUD",
+    "name": "PT Prudential Life Assurance",
+    "address": "Prudential Tower, Jl. Jend. Sudirman Kav. 79, Jakarta",
+    "phone": "021-29958888",
+    "email": "corporate.claim@prudential.co.id",
+    "contact_person": "Budi Santoso",
+    "require_card": true,
+    "description": "Penjamin Asuransi Kesehatan Swasta",
+    "is_active": true,
+    "is_immutable": false
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("customerId", res.body.data.id);
+  }
+}

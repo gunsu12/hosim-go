@@ -1,0 +1,22 @@
+meta {
+  name: List Customers
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/customers?page=1&limit=10&search=&is_active=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+  is_active: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

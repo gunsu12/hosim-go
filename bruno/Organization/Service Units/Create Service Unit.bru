@@ -1,0 +1,41 @@
+meta {
+  name: Create Service Unit
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/service-units
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "UNIT-POLI-PENYAKIT-DALAM",
+    "name": "Klinik Penyakit Dalam",
+    "departement_id": "{{departmentId}}",
+    "type": "medical",
+    "address": "Gedung A Lantai 1 Sayap Barat",
+    "phone": "021-5550103",
+    "email": "poli.interna@hosim.local",
+    "website": "https://hosim.local",
+    "description": "Layanan konsultasi spesialis penyakit dalam",
+    "is_registration_target": true,
+    "is_active": true
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("serviceUnitId", res.body.data.id);
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Get Service Unit by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/service-units/{{serviceUnitId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

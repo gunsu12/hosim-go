@@ -1,0 +1,28 @@
+meta {
+  name: Update Tariff Class
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/tariff-classes/{{tariffClassId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "KELAS-VIP",
+    "name": "Kelas VIP (Updated)",
+    "is_active": true,
+    "description": "Fasilitas rawat inap VIP privat fasilitas terlengkap"
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Get Referal by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/referals/{{referalId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

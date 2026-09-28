@@ -1,0 +1,30 @@
+meta {
+  name: Update Tariff Component
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/tariff-components/{{tariffComponentId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "KOMP-001",
+    "name": "Jasa Medis Dokter Spesialis (Updated)",
+    "description": "Komponen jasa medis dokter spesialis update",
+    "is_hospital_revenue": false,
+    "is_operator_revenue": true,
+    "is_paramedic_revenue": false
+  }
+}

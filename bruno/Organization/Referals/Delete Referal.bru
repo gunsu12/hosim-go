@@ -1,0 +1,15 @@
+meta {
+  name: Delete Referal
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/referals/{{referalId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

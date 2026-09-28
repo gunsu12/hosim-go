@@ -1,0 +1,30 @@
+meta {
+  name: Update Referal
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/referals/{{referalId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "REF-RSUP-CIPTO",
+    "name": "RSUP Nasional Dr. Cipto Mangunkusumo (Pusat Rujukan Nasional)",
+    "type": "HOSPITAL",
+    "address": "Jl. Diponegoro No. 71, Kenari, Senen, Jakarta Pusat 10430",
+    "phone": "021-1500135",
+    "email": "kontak@rscm.co.id"
+  }
+}

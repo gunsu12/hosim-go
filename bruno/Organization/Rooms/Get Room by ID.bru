@@ -1,0 +1,15 @@
+meta {
+  name: Get Room by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/rooms/{{roomId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

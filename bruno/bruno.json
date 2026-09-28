@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "HOSIM-GO",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

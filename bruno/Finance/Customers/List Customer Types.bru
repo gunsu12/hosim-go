@@ -1,0 +1,15 @@
+meta {
+  name: List Customer Types
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/customer-types
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

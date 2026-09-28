@@ -1,0 +1,34 @@
+meta {
+  name: Update Service Unit
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/service-units/{{serviceUnitId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "UNIT-POLI-PENYAKIT-DALAM",
+    "name": "Klinik Penyakit Dalam Terpadu",
+    "departement_id": "{{departmentId}}",
+    "address": "Gedung A Lantai 1 Sayap Barat No. 101-103",
+    "phone": "021-5550103",
+    "email": "poli.interna@hosim.local",
+    "website": "https://hosim.local",
+    "description": "Layanan konsultasi spesialis penyakit dalam dan subspesialis",
+    "is_registration_target": true,
+    "is_active": true
+  }
+}

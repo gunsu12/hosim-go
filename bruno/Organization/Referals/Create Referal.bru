@@ -1,0 +1,36 @@
+meta {
+  name: Create Referal
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/referals
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "REF-RSUP-CIPTO",
+    "name": "RSUP Nasional Dr. Cipto Mangunkusumo",
+    "type": "HOSPITAL",
+    "address": "Jl. Diponegoro No. 71, Kenari, Senen, Jakarta Pusat",
+    "phone": "021-1500135",
+    "email": "info@rscm.co.id"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("referalId", res.body.data.id);
+  }
+}

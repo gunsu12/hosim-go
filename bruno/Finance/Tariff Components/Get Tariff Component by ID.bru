@@ -1,0 +1,15 @@
+meta {
+  name: Get Tariff Component by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/tariff-components/{{tariffComponentId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

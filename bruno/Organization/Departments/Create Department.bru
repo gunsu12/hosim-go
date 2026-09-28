@@ -1,0 +1,39 @@
+meta {
+  name: Create Department
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/departments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "DEP-RAWAT-JALAN",
+    "name": "Departemen Rawat Jalan",
+    "address": "Gedung A Lantai 1",
+    "phone": "021-5550101",
+    "email": "rawatjalan@hosim.local",
+    "website": "https://hosim.local",
+    "description": "Instalasi Rawat Jalan dan Poliklinik Terpadu",
+    "departement_type": "outpatient",
+    "is_active": true
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("departmentId", res.body.data.id);
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: List Referals
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/referals?page=1&limit=10&search=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+}
+
+auth:bearer {
+  token: {{token}}
+}
