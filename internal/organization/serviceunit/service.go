@@ -6,6 +6,8 @@ import (
 	"net/mail"
 	"strings"
 
+	"hosim-go/pkg/enums"
+
 	"gorm.io/gorm"
 )
 
@@ -18,31 +20,37 @@ var (
 )
 
 type CreateServiceUnitRequest struct {
-	Code                 string  `json:"code" binding:"required"`
-	Name                 string  `json:"name" binding:"required"`
-	DepartementID        *string `json:"departement_id"`
-	Address              *string `json:"address"`
-	Phone                *string `json:"phone"`
-	Email                *string `json:"email"`
-	Website              *string `json:"website"`
-	Description          *string `json:"description"`
-	IhsLocationId        *string `json:"ihs_location_id"`
-	IsRegistrationTarget *bool   `json:"is_registration_target"`
-	IsActive             *bool   `json:"is_active"`
+	Code                 string                 `json:"code" binding:"required"`
+	Name                 string                 `json:"name" binding:"required"`
+	DepartementID        *string                `json:"departement_id"`
+	Address              *string                `json:"address"`
+	Phone                *string                `json:"phone"`
+	Email                *string                `json:"email"`
+	Website              *string                `json:"website"`
+	Description          *string                `json:"description"`
+	IhsLocationId        *string                `json:"ihs_location_id"`
+	IsRegistrationTarget *bool                  `json:"is_registration_target"`
+	IsActive             *bool                  `json:"is_active"`
+	Type                 *enums.ServiceUnitType `json:"type"`
+	StorageID            *string                `json:"storage_id"`
+	DefaultClassID       *string                `json:"default_class_id"`
 }
 
 type UpdateServiceUnitRequest struct {
-	Code                 string  `json:"code" binding:"required"`
-	Name                 string  `json:"name" binding:"required"`
-	DepartementID        *string `json:"departement_id"`
-	Address              *string `json:"address"`
-	Phone                *string `json:"phone"`
-	Email                *string `json:"email"`
-	Website              *string `json:"website"`
-	Description          *string `json:"description"`
-	IhsLocationId        *string `json:"ihs_location_id"`
-	IsRegistrationTarget *bool   `json:"is_registration_target"`
-	IsActive             *bool   `json:"is_active"`
+	Code                 string                 `json:"code" binding:"required"`
+	Name                 string                 `json:"name" binding:"required"`
+	DepartementID        *string                `json:"departement_id"`
+	Address              *string                `json:"address"`
+	Phone                *string                `json:"phone"`
+	Email                *string                `json:"email"`
+	Website              *string                `json:"website"`
+	Description          *string                `json:"description"`
+	IhsLocationId        *string                `json:"ihs_location_id"`
+	IsRegistrationTarget *bool                  `json:"is_registration_target"`
+	IsActive             *bool                  `json:"is_active"`
+	Type                 *enums.ServiceUnitType `json:"type"`
+	StorageID            *string                `json:"storage_id"`
+	DefaultClassID       *string                `json:"default_class_id"`
 }
 
 func sanitizeStringPtr(s *string) *string {
@@ -107,6 +115,14 @@ func (s *service) CreateServiceUnit(ctx context.Context, req CreateServiceUnitRe
 		isRegistrationTarget = *req.IsRegistrationTarget
 	}
 
+	unitType := enums.ServiceUnitMedical
+	if req.Type != nil && *req.Type != "" {
+		if *req.Type != enums.ServiceUnitMedical && *req.Type != enums.ServiceUnitNonMedical {
+			return nil, errors.New("tipe unit layanan tidak valid (pilihan: medical, nonmedical)")
+		}
+		unitType = *req.Type
+	}
+
 	su := &ServiceUnit{
 		Code:                 req.Code,
 		Name:                 req.Name,
@@ -119,6 +135,9 @@ func (s *service) CreateServiceUnit(ctx context.Context, req CreateServiceUnitRe
 		IhsLocationId:        sanitizeStringPtr(req.IhsLocationId),
 		IsRegistrationTarget: isRegistrationTarget,
 		IsActive:             isActive,
+		Type:                 unitType,
+		StorageID:            sanitizeStringPtr(req.StorageID),
+		DefaultClassID:       sanitizeStringPtr(req.DefaultClassID),
 		CreatedBy:            operatorID,
 		UpdatedBy:            operatorID,
 	}
@@ -175,6 +194,18 @@ func (s *service) UpdateServiceUnit(ctx context.Context, id string, req UpdateSe
 	}
 	if req.IsActive != nil {
 		su.IsActive = *req.IsActive
+	}
+	if req.Type != nil && *req.Type != "" {
+		if *req.Type != enums.ServiceUnitMedical && *req.Type != enums.ServiceUnitNonMedical {
+			return nil, errors.New("tipe unit layanan tidak valid (pilihan: medical, nonmedical)")
+		}
+		su.Type = *req.Type
+	}
+	if req.StorageID != nil {
+		su.StorageID = sanitizeStringPtr(req.StorageID)
+	}
+	if req.DefaultClassID != nil {
+		su.DefaultClassID = sanitizeStringPtr(req.DefaultClassID)
 	}
 	su.UpdatedBy = operatorID
 

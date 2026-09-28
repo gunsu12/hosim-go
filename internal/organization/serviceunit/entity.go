@@ -25,10 +25,10 @@ type ServiceUnit struct {
 	IhsLocationId        *string                  `gorm:"size:255" json:"ihs_location_id,omitempty"`
 	IsRegistrationTarget bool                     `gorm:"default:true;index" json:"is_registration_target"`
 	IsActive             bool                     `gorm:"default:true;index" json:"is_active"`
-	Type                 enums.ServiceUnitType    `gorm:"size:20;not null" json:"type"`
-	StorageID            string                   `gorm:"size:36;not null" json:"storage_id"`
+	Type                 enums.ServiceUnitType    `gorm:"size:20;default:'medical';not null" json:"type"`
+	StorageID            *string                  `gorm:"size:36" json:"storage_id,omitempty"`
 	Storage              *storage.Storage         `gorm:"foreignKey:StorageID;references:ID" json:"storage,omitempty"`
-	DefaultClassID       string                   `gorm:"size:36;not null" json:"default_class_id"`
+	DefaultClassID       *string                  `gorm:"size:36" json:"default_class_id,omitempty"`
 	DefaultClass         *tariffclass.TariffClass `gorm:"foreignKey:DefaultClassID;references:ID" json:"default_class,omitempty"`
 	CreatedAt            time.Time                `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt            time.Time                `gorm:"default:CURRENT_TIMESTAMP;OnUpdate:CURRENT_TIMESTAMP" json:"updated_at"`
