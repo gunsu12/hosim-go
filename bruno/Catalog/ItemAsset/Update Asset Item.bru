@@ -1,0 +1,36 @@
+meta {
+  name: Update Asset Item
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/items/assets/{{assetId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "AST-USG-DOPPLER",
+    "name": "USG Color Doppler 4D Stationary Expert",
+    "generic_name": "Mesin USG Obgyn",
+    "category_id": "{{assetCategoryId}}",
+    "product_line_id": "{{assetProductLineId}}",
+    "brand": "GE Healthcare",
+    "model_name": "Voluson E10",
+    "is_medical_equipment": true,
+    "expected_life_years": 10,
+    "depreciation_method": "STRAIGHT_LINE",
+    "maintenance_interval_days": 180,
+    "is_active": true
+  }
+}

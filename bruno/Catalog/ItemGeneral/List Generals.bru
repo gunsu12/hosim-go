@@ -1,0 +1,29 @@
+meta {
+  name: List Generals
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/items?item_type=GENERAL&page=1&limit=10
+  body: none
+  auth: bearer
+}
+
+params:query {
+  item_type: GENERAL
+  page: 1
+  limit: 10
+  ~search: kasa
+  ~category_id: 
+  ~product_line_id: 
+  ~is_active: true
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

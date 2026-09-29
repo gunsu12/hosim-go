@@ -1,0 +1,37 @@
+meta {
+  name: Create Product Line
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/item-product-lines
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "PL-OBAT-REGULER",
+    "name": "Persediaan Obat Paten & Generik",
+    "inventory_coa_code": "114.01.001",
+    "cogs_coa_code": "510.01.001",
+    "purchase_discount_coa_code": "510.01.002",
+    "purchase_tax_coa_code": "115.01.001",
+    "is_active": true
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("productLineId", res.body.data.id);
+  }
+}

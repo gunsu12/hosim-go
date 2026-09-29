@@ -1,0 +1,19 @@
+meta {
+  name: Get Tariff by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/items/{{tariffId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Delete Unit
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/items/{{itemId}}/units/{{unitId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

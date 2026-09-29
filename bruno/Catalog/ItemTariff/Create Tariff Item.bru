@@ -1,0 +1,37 @@
+meta {
+  name: Create Tariff Item
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/items/tariffs
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "TAR-KONSUL-SPESIALIS",
+    "name": "Konsultasi Dokter Spesialis Rawat Jalan",
+    "name_alias": "Outpatient Specialist Consultation",
+    "category_id": "{{tariffCategoryId}}",
+    "base_unit_name": "Kali",
+    "charge_type": "TINDAKAN",
+    "notes": "Layanan konsultasi medis dan evaluasi fisik oleh dokter spesialis di poliklinik rawat jalan"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("tariffId", res.body.data.id);
+  }
+}

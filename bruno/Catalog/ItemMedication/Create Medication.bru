@@ -1,0 +1,48 @@
+meta {
+  name: Create Medication
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/items/medications
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "MED-AMOX-500",
+    "name": "Amoxicillin 500mg Kaplet",
+    "generic_name": "Amoxicillin Trihydrate",
+    "category_id": "{{medicationCategoryId}}",
+    "product_line_id": "{{medicationProductLineId}}",
+    "base_unit_name": "Tablet",
+    "kfa_code": "93000123",
+    "bpom_nie": "DKL1234567809A1",
+    "dosage_form": "Kaplet",
+    "strength_amount": "500",
+    "strength_unit": "mg",
+    "default_route": "Oral",
+    "medication_type": "Keras",
+    "is_high_alert": false,
+    "is_lasa": false,
+    "is_fornas": true,
+    "is_antibiotic": true,
+    "storage_temperature": "Suhu Ruang (15-25C)"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("medicationId", res.body.data.id);
+  }
+}

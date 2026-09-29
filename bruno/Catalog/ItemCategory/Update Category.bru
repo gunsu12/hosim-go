@@ -1,0 +1,31 @@
+meta {
+  name: Update Category
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/item-categories/{{categoryId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "CAT-OBAT-PATEN",
+    "name": "Obat Paten, Generik & Alkes Farmasi",
+    "item_type": "MEDICATION",
+    "income_coa_code": "410.02.001",
+    "discount_coa_code": "410.02.002",
+    "sales_tax_coa_code": "215.01.001",
+    "is_active": true
+  }
+}

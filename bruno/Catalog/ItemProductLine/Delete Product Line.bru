@@ -1,0 +1,19 @@
+meta {
+  name: Delete Product Line
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/item-product-lines/{{productLineId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Update General Item
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/items/generals/{{generalId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "GEN-KASA-10X10",
+    "name": "Kasa Hidrofil Steril 10x10 cm (Kemenkes)",
+    "generic_name": "Kasa Steril Medis",
+    "category_id": "{{generalCategoryId}}",
+    "product_line_id": "{{generalProductLineId}}",
+    "general_type": "BMHP_MEDIS",
+    "is_sterile": true,
+    "is_disposable": true,
+    "is_cssd_item": true,
+    "sterilization_method": "STEAM_AUTOCLAVE",
+    "is_active": true
+  }
+}

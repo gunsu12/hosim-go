@@ -1,0 +1,19 @@
+meta {
+  name: Get Product Line by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/item-product-lines/{{productLineId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

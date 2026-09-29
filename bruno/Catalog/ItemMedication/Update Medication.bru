@@ -1,0 +1,42 @@
+meta {
+  name: Update Medication
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/items/medications/{{medicationId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "MED-AMOX-500",
+    "name": "Amoxicillin 500mg Kaplet Forte",
+    "generic_name": "Amoxicillin Trihydrate",
+    "category_id": "{{medicationCategoryId}}",
+    "product_line_id": "{{medicationProductLineId}}",
+    "kfa_code": "93000123",
+    "bpom_nie": "DKL1234567809A1",
+    "dosage_form": "Kaplet",
+    "strength_amount": "500",
+    "strength_unit": "mg",
+    "default_route": "Oral",
+    "medication_type": "Keras",
+    "is_high_alert": false,
+    "is_lasa": false,
+    "is_fornas": true,
+    "is_antibiotic": true,
+    "storage_temperature": "Suhu Ruang (15-25C)",
+    "is_active": true
+  }
+}

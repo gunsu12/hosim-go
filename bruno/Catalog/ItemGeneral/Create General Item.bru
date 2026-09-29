@@ -1,0 +1,41 @@
+meta {
+  name: Create General Item
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/items/generals
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "GEN-KASA-10X10",
+    "name": "Kasa Hidrofil Steril 10x10 cm",
+    "generic_name": "Kasa Steril",
+    "category_id": "{{generalCategoryId}}",
+    "product_line_id": "{{generalProductLineId}}",
+    "base_unit_name": "Pcs",
+    "general_type": "BMHP_MEDIS",
+    "is_sterile": true,
+    "is_disposable": true,
+    "is_cssd_item": true,
+    "sterilization_method": "STEAM_AUTOCLAVE"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("generalId", res.body.data.id);
+  }
+}

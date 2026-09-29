@@ -1,0 +1,19 @@
+meta {
+  name: Delete Asset Item
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/items/{{assetId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

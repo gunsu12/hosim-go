@@ -18,16 +18,16 @@ Penggunaan:
 
 Opsi Flag:
   -type string   Kategori seeder yang ingin dijalankan (default: "all")
-                 Pilihan: all, rbac, satusehat, practitioner
+                 Pilihan: all, rbac, satusehat, practitioner, catalog
 
 Contoh:
   go run cmd/seed/main.go
+  go run cmd/seed/main.go -type=catalog
   go run cmd/seed/main.go -type=rbac
-  go run cmd/seed/main.go -type=satusehat
 `
 
 func main() {
-	seedType := flag.String("type", "all", "Kategori seeder: all | rbac | satusehat | practitioner")
+	seedType := flag.String("type", "all", "Kategori seeder: all | rbac | satusehat | practitioner | catalog")
 	flag.Usage = func() {
 		fmt.Print(usage)
 	}
@@ -55,8 +55,10 @@ func main() {
 		seedErr = seeder.RunSatuSehatReferences(db)
 	case "practitioner":
 		seedErr = seeder.RunPractitioners(db)
+	case "catalog":
+		seedErr = seeder.RunCatalog(db)
 	default:
-		log.Printf("[ERROR] Tipe seeder '%s' tidak valid. Gunakan: all, rbac, satusehat, practitioner\n", *seedType)
+		log.Printf("[ERROR] Tipe seeder '%s' tidak valid. Gunakan: all, rbac, satusehat, practitioner, catalog\n", *seedType)
 		flag.Usage()
 		os.Exit(1)
 	}

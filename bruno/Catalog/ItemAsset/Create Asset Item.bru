@@ -1,0 +1,42 @@
+meta {
+  name: Create Asset Item
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/items/assets
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "AST-USG-DOPPLER",
+    "name": "USG Color Doppler 4D Stationary",
+    "generic_name": "Mesin USG Kebidanan",
+    "category_id": "{{assetCategoryId}}",
+    "product_line_id": "{{assetProductLineId}}",
+    "base_unit_name": "Unit",
+    "brand": "GE Healthcare",
+    "model_name": "Voluson E8",
+    "is_medical_equipment": true,
+    "expected_life_years": 8,
+    "depreciation_method": "STRAIGHT_LINE",
+    "maintenance_interval_days": 180
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("assetId", res.body.data.id);
+  }
+}

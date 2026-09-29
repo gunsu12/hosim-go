@@ -1,0 +1,26 @@
+meta {
+  name: List Product Lines
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/item-product-lines?page=1&limit=10
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 10
+  ~search: persediaan
+  ~is_active: true
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

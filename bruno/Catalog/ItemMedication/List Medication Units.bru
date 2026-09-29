@@ -1,0 +1,19 @@
+meta {
+  name: List Medication Units
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/items/{{medicationId}}/units
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

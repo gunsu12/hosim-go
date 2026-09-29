@@ -30,7 +30,8 @@ bin/
 Thumbs.db
 
 # Frontend build artifacts
-web/dist/
+web/dist/*
+!web/dist/.gitkeep
 web/node_modules/
 
 # Frontend docs

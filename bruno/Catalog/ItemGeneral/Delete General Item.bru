@@ -1,0 +1,19 @@
+meta {
+  name: Delete General Item
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/items/{{generalId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}

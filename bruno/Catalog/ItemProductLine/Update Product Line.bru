@@ -1,0 +1,31 @@
+meta {
+  name: Update Product Line
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/item-product-lines/{{productLineId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "PL-OBAT-REGULER",
+    "name": "Persediaan Obat Paten, Generik & Narkotika",
+    "inventory_coa_code": "114.01.001",
+    "cogs_coa_code": "510.01.001",
+    "purchase_discount_coa_code": "510.01.002",
+    "purchase_tax_coa_code": "115.01.001",
+    "is_active": true
+  }
+}

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"hosim-go/internal/auth"
+	"hosim-go/internal/catalog/item"
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
 	"hosim-go/internal/finance/customer"
@@ -25,6 +26,8 @@ import (
 	"hosim-go/internal/practitioner"
 	"hosim-go/migrations"
 	"hosim-go/pkg/response"
+	"hosim-go/web"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pressly/goose/v3"
@@ -116,6 +119,24 @@ func main() {
 	practitionerService := practitioner.NewService(practitionerRepo)
 	practitionerHandler := practitioner.NewHandler(practitionerService)
 
+	// Master Katalog Item (Obat, BMHP, Aset, Tarif)
+	itemRepo := item.NewRepository(db)
+	createMedicationUC := item.NewCreateMedicationUseCase(itemRepo)
+	createGeneralUC := item.NewCreateGeneralUseCase(itemRepo)
+	createAssetUC := item.NewCreateAssetUseCase(itemRepo)
+	createTariffUC := item.NewCreateTariffUseCase(itemRepo)
+	updateItemUC := item.NewUpdateItemUseCase(itemRepo)
+	manageUnitUC := item.NewManageUnitUseCase(itemRepo)
+	getItemUC := item.NewGetItemUseCase(itemRepo)
+	itemHandler := item.NewHandler(createMedicationUC, createGeneralUC, createAssetUC, createTariffUC, updateItemUC, manageUnitUC, getItemUC)
+
+	// Master Kategori & Lini Produk Item
+	itemCategoryService := item.NewCategoryService(itemRepo)
+	itemCategoryHandler := item.NewCategoryHandler(itemCategoryService)
+
+	itemProductLineService := item.NewProductLineService(itemRepo)
+	itemProductLineHandler := item.NewProductLineHandler(itemProductLineService)
+
 	// 5. Inisialisasi Router Gin
 	r := gin.New()
 	r.Use(gin.Logger())
@@ -135,7 +156,7 @@ func main() {
 		c.Next()
 	})
 
-	// 6. Health Check Endpoint
+	// 6. Endpoint Health Check
 	healthHandler := func(c *gin.Context) {
 		sqlDB, err := db.DB()
 		dbStatus := "connected"
@@ -152,7 +173,6 @@ func main() {
 		})
 	}
 
-	r.GET("/", healthHandler)
 	r.GET("/health", healthHandler)
 
 	v1 := r.Group("/api/v1")
@@ -175,10 +195,40 @@ func main() {
 			tariffComponentHandler.RegisterRoutes(protected)
 			patientHandler.RegisterRoutes(protected)
 			practitionerHandler.RegisterRoutes(protected)
+			itemHandler.RegisterRoutes(protected)
+			itemCategoryHandler.RegisterRoutes(protected)
+			itemProductLineHandler.RegisterRoutes(protected)
 		}
 	}
 
-	// 7. Jalankan Server dengan Graceful Shutdown
+	// 7. Sajikan Frontend Svelte (Single Binary Embedded SPA)
+	webDist := web.Dist()
+	fileServer := http.FileServer(http.FS(webDist))
+
+	r.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
+
+		// Jika request diawali /api/, kembalikan 404 JSON standar API
+		if strings.HasPrefix(path, "/api/") {
+			response.Error(c, http.StatusNotFound, "Endpoint API tidak ditemukan", nil)
+			return
+		}
+
+		// Periksa apakah file statis yang diminta ada di webDist (misal: /assets/*, /favicon.svg)
+		filePath := strings.TrimPrefix(path, "/")
+		if filePath != "" {
+			if f, err := webDist.Open(filePath); err == nil {
+				_ = f.Close()
+				fileServer.ServeHTTP(c.Writer, c.Request)
+				return
+			}
+		}
+
+		// Fallback ke index.html untuk Single Page Application (SPA)
+		c.FileFromFS("index.html", http.FS(webDist))
+	})
+
+	// 8. Jalankan Server dengan Graceful Shutdown
 	srv := &http.Server{
 		Addr:         ":" + cfg.AppPort,
 		Handler:      r,

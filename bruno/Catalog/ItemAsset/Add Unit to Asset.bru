@@ -1,0 +1,34 @@
+meta {
+  name: Add Unit to Asset
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/items/{{assetId}}/units
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "unit_name": "Set",
+    "conversion_factor": 1.0,
+    "is_purchase_unit": false,
+    "is_dispense_unit": false
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("unitId", res.body.data.id);
+  }
+}

@@ -1,0 +1,31 @@
+meta {
+  name: Update Tariff Item
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/items/tariffs/{{tariffId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "TAR-KONSUL-SPESIALIS",
+    "name": "Konsultasi Dokter Spesialis Sub-Spesialis",
+    "category_id": "{{tariffCategoryId}}",
+    "name_alias": "Sub-Specialist Consultation",
+    "charge_type": "TINDAKAN",
+    "notes": "Layanan konsultasi sub-spesialis terpadu",
+    "is_active": true
+  }
+}

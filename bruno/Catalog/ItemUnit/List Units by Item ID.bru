@@ -1,0 +1,19 @@
+meta {
+  name: List Units by Item ID
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/items/{{itemId}}/units
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
