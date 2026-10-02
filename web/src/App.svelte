@@ -4,18 +4,16 @@
   import PatientBanner from '$lib/components/PatientBanner.svelte';
   import LoginPage from '$lib/components/LoginPage.svelte';
   import NavigationRail from '$lib/components/NavigationRail.svelte';
+  import DesktopLauncher from '$lib/pages/launcher/DesktopLauncher.svelte';
+  import ModulePlaceholder from '$lib/pages/launcher/ModulePlaceholder.svelte';
   import { auth } from '$lib/stores/auth.svelte';
   import type { BodyFinding, ClinicalNotes } from '$lib/types';
-  import { getNavFromCurrentHash, setHashFromNav } from '$lib/router';
+  import { getNavFromCurrentHash, setHashFromNav, getModuleFromNav } from '$lib/router';
 
   // Domain Clinical Pages
   import {
     PhysicalExamPage,
-    SoapPage,
-    OdontogramPage,
-    LabPage,
-    RadiologyPage,
-    PharmacyPage
+    SoapPage
   } from '$lib/pages/clinical';
 
   // Domain Master Pages (Organized in domain folders matching internal/master/)
@@ -34,6 +32,9 @@
   let activeNav = $state<string>(getNavFromCurrentHash());
   let isSidebarExpanded = $state<boolean>(false);
   let saveSuccessAlert = $state<boolean>(false);
+
+  // Modul aktif berdasarkan navId (null jika sedang berada di Desktop Launcher)
+  let activeModule = $derived(getModuleFromNav(activeNav));
 
   // Sinkronkan URL browser setiap kali activeNav berganti
   $effect(() => {
@@ -78,6 +79,10 @@
       saveSuccessAlert = false;
     }, 4000);
   }
+
+  function handleSelectModule(moduleId: string, defaultNavId: string): void {
+    activeNav = defaultNavId;
+  }
 </script>
 
 <!-- Deklaratif Window Event Listener ala Svelte 5 -->
@@ -91,26 +96,31 @@
   <LoginPage />
 {:else}
   <div class="min-h-screen bg-[#f8fafd] flex flex-col font-sans">
-    <!-- Top Bar (Google Drive Header dengan Hamburger Menu & Profil) -->
+    <!-- Top Bar (Header dengan Logo, Modul Switcher, & Profil Pengguna) -->
     <TopBar
       onToggleSidebar={() => isSidebarExpanded = !isSidebarExpanded}
       user={auth.user}
       onLogout={() => auth.logout()}
+      {activeModule}
+      onNavigateToDesktop={() => activeNav = 'desktop'}
     />
 
-    <!-- Main Layout (Compact Side Rail + Spacious White Canvas) -->
+    <!-- Main Layout: Jika di dalam modul tampilkan NavigationRail; jika di Desktop Launcher tampilkan canvas penuh -->
     <div class="flex-1 flex overflow-hidden">
-      <!-- Google M3 Navigation Rail dengan Dukungan Sub-Menu (Flyout & Accordion) -->
-      <NavigationRail
-        bind:activeNav
-        bind:isExpanded={isSidebarExpanded}
-        onNewEncounter={handleSaveExamination}
-      />
+      {#if activeModule}
+        <NavigationRail
+          bind:activeNav
+          {activeModule}
+          bind:isExpanded={isSidebarExpanded}
+          onNewEncounter={handleSaveExamination}
+          onNavigateHome={() => activeNav = 'desktop'}
+        />
+      {/if}
 
-      <!-- Google Drive Spacious White Content Island -->
-      <main class="flex-1 bg-white md:rounded-3xl border border-[#e1e5ea] shadow-xs md:mr-3 md:mb-3 overflow-y-auto p-5 md:p-6 flex flex-col gap-5">
-        <!-- Patient Summary Banner (Hanya ditampilkan pada modul rekam medis / tindakan klinis pasien) -->
-        {#if !activeNav.startsWith('master-')}
+      <!-- Main Content Canvas (Google Drive Spacious Content Island) -->
+      <main class="flex-1 bg-white md:rounded-3xl border border-[#e1e5ea] shadow-xs md:mr-3 md:mb-3 overflow-y-auto p-4 sm:p-6 flex flex-col gap-5">
+        <!-- Patient Summary Banner (Hanya ditampilkan pada konteks pelayanan klinis pasien aktif) -->
+        {#if activeModule === 'clinical' && activeNav !== 'desktop'}
           <PatientBanner />
         {/if}
 
@@ -125,11 +135,14 @@
           </div>
         {/if}
 
-        <!-- Clinical Modules -->
-        {#if activeNav === 'physical'}
+        <!-- 1. DESKTOP LAUNCHER (BERANDA MODUL UTAMA) -->
+        {#if activeNav === 'desktop'}
+          <DesktopLauncher onSelectModule={handleSelectModule} />
+
+        <!-- 2. CLINICAL MODULES -->
+        {:else if activeNav === 'physical'}
           <PhysicalExamPage
             bind:findings
-            {clinicalNotes}
             onSave={handleSaveExamination}
           />
 
@@ -139,19 +152,7 @@
             onSave={handleSaveExamination}
           />
 
-        {:else if activeNav === 'odontogram'}
-          <OdontogramPage />
-
-        {:else if activeNav === 'lab'}
-          <LabPage />
-
-        {:else if activeNav === 'radiology'}
-          <RadiologyPage />
-
-        {:else if activeNav === 'pharmacy'}
-          <PharmacyPage />
-
-        <!-- Master Data Domain Modules -->
+        <!-- 3. MASTER DATA RS DOMAIN MODULES -->
         {:else if activeNav === 'master-patient'}
           <PatientPage />
         {:else if activeNav === 'master-practitioner'}
@@ -168,6 +169,104 @@
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}
           <TariffClassPage />
+
+        <!-- 4. WORKSPACES PREVIEW (ROADMAP & INTEGRASI BACKEND) -->
+        {:else if activeNav === 'outpatient-workspace'}
+          <ModulePlaceholder
+            title="Pelayanan Rawat Jalan (Outpatient)"
+            description="Modul alur registrasi antrean poliklinik, penjadwalan janji temu dokter spesialis, dan konsultasi pemeriksaan pasien."
+            domainPackage="outpatient"
+            backendStatus="Use case alur pendaftaran dan integrasi encounter rawat jalan dalam perancangan"
+            plannedEndpoints={[
+              "POST /api/v1/outpatient/registrations (Daftar Kunjungan Poli)",
+              "GET /api/v1/outpatient/queues (Antrean Realtime Pasien)",
+              "POST /api/v1/outpatient/encounters/:id/consult (Mulai Konsultasi Dokter)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
+
+        {:else if activeNav === 'emergency-workspace'}
+          <ModulePlaceholder
+            title="Instalasi Gawat Darurat (IGD)"
+            description="Modul triase pasien darurat (Emergency Severity Index / ATS), penanganan cito 24 jam, tindakan resusitasi, dan disposisi rawat/rujuk."
+            domainPackage="emergency"
+            backendStatus="Domain triage, emergency disposition, dan sinkronisasi encounter IGD siap diintegrasikan"
+            plannedEndpoints={[
+              "POST /api/v1/emergency/triage (Klasifikasi Derajat Kedaruratan)",
+              "GET /api/v1/emergency/active-cases (Daftar Kasus Kritis IGD)",
+              "POST /api/v1/emergency/disposition (Disposisi Rawat Inap / Operasi Cito)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
+
+        {:else if activeNav === 'inpatient-workspace'}
+          <ModulePlaceholder
+            title="Pelayanan Rawat Inap (Inpatient)"
+            description="Modul admisi rawat inap, alokasi bed bangsal, transfer antar-ruangan (ICU/Bangsal/VK), dan resume pulang pasien."
+            domainPackage="inpatient"
+            backendStatus="Tabel master room, bed, dan service unit terhubung dengan GORM PostgreSQL"
+            plannedEndpoints={[
+              "POST /api/v1/inpatient/admissions (Admisi Rawat Inap & Alokasi Bed)",
+              "POST /api/v1/inpatient/transfers (Transfer Ruangan / Bed)",
+              "POST /api/v1/inpatient/discharges (Pemulangan & Resume Medis Akhir)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
+
+        {:else if activeNav === 'pharmacy-workspace'}
+          <ModulePlaceholder
+            title="Farmasi & E-Resep (Pharmacy)"
+            description="Modul pengelolaan resep elektronik dari dokter, telaah resep (clinical review), peracikan obat, dan dispensing ke pasien."
+            domainPackage="pharmacy"
+            backendStatus="Package internal/pharmacy/prescription dan dispensing disiapkan"
+            plannedEndpoints={[
+              "GET /api/v1/pharmacy/prescriptions/pending (Antrean Resep Masuk)",
+              "POST /api/v1/pharmacy/prescriptions/:id/review (Telaah 7 Benar Obat)",
+              "POST /api/v1/pharmacy/dispensing (Dispensing & Pengurangan Stok Depo)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
+
+        {:else if activeNav === 'inventory-workspace'}
+          <ModulePlaceholder
+            title="Inventori & Logistik RS (Inventory)"
+            description="Modul katalog barang/obat (Item CTI), manajemen depo ruangan dan gudang farmasi, mutasi stok, serta penyesuaian opname."
+            domainPackage="inventory"
+            backendStatus="Tabel master items, storages, dan migrasi Goose 00008-00009 aktif di PostgreSQL"
+            plannedEndpoints={[
+              "GET /api/v1/items (Katalog Obat & BHP)",
+              "POST /api/v1/inventory/movements (Mutasi Stok Antar-Gudang/Depo)",
+              "GET /api/v1/inventory/stock-balance (Monitoring Sisa Stok Realtime)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
+
+        {:else if activeNav === 'billing-workspace'}
+          <ModulePlaceholder
+            title="Kasir & Billing Pasien (Billing)"
+            description="Modul kalkulasi tagihan pelayanan, verifikasi klaim BPJS / asuransi swasta, kasir penerimaan pembayaran, dan cetak kuitansi."
+            domainPackage="billing"
+            backendStatus="Struktur tarif kelas dan komponen tarif internal/finance terhubung dengan database"
+            plannedEndpoints={[
+              "GET /api/v1/billing/encounters/:id/charges (Rincian Biaya Pelayanan)",
+              "POST /api/v1/billing/invoices (Penerbitan Invoice Tagihan Pasien)",
+              "POST /api/v1/billing/payments (Penerimaan Kasir & Bukti Pembayaran)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
+
+        {:else if activeNav === 'audit-workspace'}
+          <ModulePlaceholder
+            title="Audit Trail & Keamanan Sistem (Audit)"
+            description="Audit append-only untuk pencatatan rekam jejak akses data medis, perubahan sensitif, mutasi tarif, dan kepatuhan regulasi."
+            domainPackage="audit"
+            backendStatus="Audit trail port dan logging terproteksi di PostgreSQL"
+            plannedEndpoints={[
+              "GET /api/v1/audit/logs (Log Mutasi Rekam Medis & Master Data)",
+              "GET /api/v1/audit/security-events (Peringatan Akses Sensitif)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
 
         {:else}
           <!-- Tab Aktivitas & Riwayat Pasien -->

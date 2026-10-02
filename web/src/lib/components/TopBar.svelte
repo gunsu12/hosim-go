@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Search, Stethoscope, Wifi, WifiOff, HelpCircle, Settings, SlidersHorizontal, Menu, LogOut, UserCheck, ShieldCheck } from '@lucide/svelte';
+  import { Search, Stethoscope, Wifi, WifiOff, HelpCircle, Settings, SlidersHorizontal, Menu, LogOut, UserCheck, ShieldCheck, LayoutGrid, ChevronRight } from '@lucide/svelte';
   import { onMount } from 'svelte';
   import { checkBackendHealth } from '../api';
   import { auth } from '../stores/auth.svelte';
@@ -9,9 +9,11 @@
     onToggleSidebar?: () => void;
     user?: UserProfile | null;
     onLogout?: () => void;
+    activeModule?: string | null;
+    onNavigateToDesktop?: () => void;
   }
 
-  let { onToggleSidebar, user, onLogout }: Props = $props();
+  let { onToggleSidebar, user, onLogout, activeModule = null, onNavigateToDesktop }: Props = $props();
 
   let isProfileMenuOpen = $state(false);
 
@@ -47,27 +49,50 @@
 </script>
 
 <header class="h-16 px-4 bg-[#f8fafd] flex items-center justify-between select-none sticky top-0 z-50">
-  <!-- Brand Identity ala Google Drive dengan Hamburger Toggle -->
-  <div class="flex items-center gap-2 shrink-0">
+  <!-- Brand Identity & Module Context Switcher -->
+  <div class="flex items-center gap-1.5 shrink-0">
+    {#if activeModule}
+      <button
+        type="button"
+        onclick={onToggleSidebar}
+        class="p-2 text-[#444746] hover:text-[#1f1f1f] hover:bg-[#e9eef6] rounded-full transition-colors cursor-pointer"
+        title="Buka / Tutup Menu Modul"
+      >
+        <Menu class="w-5 h-5" />
+      </button>
+    {/if}
+
     <button
       type="button"
-      onclick={onToggleSidebar}
-      class="p-2.5 text-[#444746] hover:text-[#1f1f1f] hover:bg-[#e9eef6] rounded-full transition-colors cursor-pointer"
-      title="Buka / Tutup Menu Samping"
+      onclick={onNavigateToDesktop}
+      class="flex items-center gap-2 p-1 rounded-xl hover:bg-[#e9eef6] transition-colors cursor-pointer text-left group"
+      title="Buka Desktop Launcher (Semua Modul)"
     >
-      <Menu class="w-5 h-5" />
-    </button>
-    <div class="flex items-center gap-2.5 pl-1">
-      <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-[#0b57d0] text-white shadow-xs">
-        <Stethoscope class="w-5 h-5" />
+      <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-[#0b57d0] text-white shadow-xs group-hover:scale-105 transition-transform">
+        <LayoutGrid class="w-4.5 h-4.5" />
       </div>
       <div>
         <div class="flex items-center gap-1.5">
-          <span class="text-lg font-semibold text-[#1f1f1f] tracking-tight">HOSIM</span>
-          <span class="text-xs text-[#444746] font-normal">Klinis</span>
+          <span class="text-base font-bold text-[#1f1f1f] tracking-tight">HOSIM</span>
         </div>
       </div>
-    </div>
+    </button>
+
+    {#if activeModule}
+      <ChevronRight class="w-3.5 h-3.5 text-[#747775] shrink-0" />
+      <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#0b57d0] border border-[#d3e3fd] shrink-0">
+        {activeModule === 'master' ? 'Master Data RS' : activeModule === 'clinical' ? 'Pelayanan Klinis' : activeModule.toUpperCase()}
+      </span>
+
+      <button
+        type="button"
+        onclick={onNavigateToDesktop}
+        class="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium text-[#444746] hover:bg-[#e9eef6] hover:text-[#0b57d0] transition-colors cursor-pointer border border-[#e1e5ea] ml-1"
+        title="Kembali ke Beranda Modul"
+      >
+        <span>Semua Modul</span>
+      </button>
+    {/if}
   </div>
 
   <!-- Google Drive Style Search Bar (Pencarian Pasien & No. RM) -->

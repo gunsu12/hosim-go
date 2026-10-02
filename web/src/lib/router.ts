@@ -1,15 +1,12 @@
 // Lightweight Hash-based SPA Router for HOSIM EHR
 
 export const ROUTE_MAP: Record<string, string> = {
+  // Desktop Launcher (Root Hub)
+  'desktop': '/desktop',
+
   // Clinical / EHR
   'physical': '/clinical/physical',
   'anamnesis': '/clinical/anamnesis',
-  'odontogram': '/clinical/odontogram',
-
-  // Diagnostics
-  'lab': '/diagnostics/lab',
-  'radiology': '/diagnostics/radiology',
-  'pharmacy': '/diagnostics/pharmacy',
 
   // Master Data Domains
   'master-patient': '/master/patient',
@@ -21,6 +18,15 @@ export const ROUTE_MAP: Record<string, string> = {
   'master-payer': '/master/customer',
   'master-referal': '/master/referal',
   'master-tariff-class': '/master/tariff-class',
+
+  // Workspaces Preview
+  'outpatient-workspace': '/outpatient/workspace',
+  'emergency-workspace': '/emergency/workspace',
+  'inpatient-workspace': '/inpatient/workspace',
+  'pharmacy-workspace': '/pharmacy/workspace',
+  'inventory-workspace': '/inventory/workspace',
+  'billing-workspace': '/billing/workspace',
+  'audit-workspace': '/audit/workspace',
 
   // Activity & Schedule
   'history': '/activity/history',
@@ -38,11 +44,11 @@ export const PATH_TO_NAV: Record<string, string> = Object.entries(ROUTE_MAP).red
  * Mendapatkan navId aktif berdasarkan window.location.hash saat ini
  */
 export function getNavFromCurrentHash(): string {
-  if (typeof window === 'undefined') return 'physical';
+  if (typeof window === 'undefined') return 'desktop';
 
   const hash = window.location.hash.replace(/^#\/?/, '/');
-  if (!hash || hash === '/') {
-    return 'physical';
+  if (!hash || hash === '/' || hash === '/desktop') {
+    return 'desktop';
   }
 
   // Exact match
@@ -62,7 +68,7 @@ export function getNavFromCurrentHash(): string {
     return rawHash;
   }
 
-  return 'physical';
+  return 'desktop';
 }
 
 /**
@@ -81,4 +87,21 @@ export function setHashFromNav(navId: string, replace = false): void {
       window.location.hash = targetHash;
     }
   }
+}
+
+/**
+ * Menentukan modul aktif berdasarkan navId
+ */
+export function getModuleFromNav(navId: string): string | null {
+  if (!navId || navId === 'desktop') return null;
+  if (navId.startsWith('master-')) return 'master';
+  if (navId === 'physical' || navId === 'anamnesis' || navId === 'history' || navId === 'schedule') return 'clinical';
+  if (navId.startsWith('outpatient')) return 'outpatient';
+  if (navId.startsWith('emergency')) return 'emergency';
+  if (navId.startsWith('inpatient')) return 'inpatient';
+  if (navId.startsWith('pharmacy')) return 'pharmacy';
+  if (navId.startsWith('inventory')) return 'inventory';
+  if (navId.startsWith('billing')) return 'billing';
+  if (navId.startsWith('audit')) return 'audit';
+  return null;
 }

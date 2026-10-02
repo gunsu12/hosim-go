@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -205,6 +206,12 @@ func main() {
 	webDist := web.Dist()
 	fileServer := http.FileServer(http.FS(webDist))
 
+	// Baca index.html sekali saat startup untuk fallback SPA (menghindari redirect loop 301 dari http.FileServer)
+	indexHTML, err := fs.ReadFile(webDist, "index.html")
+	if err != nil {
+		log.Printf("[WARN] Frontend build (index.html) tidak ditemukan: %v\n", err)
+	}
+
 	r.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
 
@@ -225,7 +232,11 @@ func main() {
 		}
 
 		// Fallback ke index.html untuk Single Page Application (SPA)
-		c.FileFromFS("index.html", http.FS(webDist))
+		if len(indexHTML) > 0 {
+			c.Data(http.StatusOK, "text/html; charset=utf-8", indexHTML)
+		} else {
+			response.Error(c, http.StatusNotFound, "Halaman tidak ditemukan", nil)
+		}
 	})
 
 	// 8. Jalankan Server dengan Graceful Shutdown
