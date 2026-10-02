@@ -28,6 +28,9 @@
     TariffClassPage
   } from '$lib/pages/master';
 
+  // Domain Auth & User Management Pages
+  import { AuthManagementPage } from '$lib/pages/auth';
+
   // Inisialisasi langsung dari window.location.hash browser agar persisten saat di-refresh (F5)
   let activeNav = $state<string>(getNavFromCurrentHash());
   let isSidebarExpanded = $state<boolean>(false);
@@ -169,6 +172,14 @@
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}
           <TariffClassPage />
+
+        <!-- 3.5 AUTH & USER MANAGEMENT DOMAIN MODULE -->
+        {:else if activeNav === 'auth-users'}
+          <AuthManagementPage initialTab="users" />
+        {:else if activeNav === 'auth-roles'}
+          <AuthManagementPage initialTab="roles" />
+        {:else if activeNav === 'auth-permissions'}
+          <AuthManagementPage initialTab="permissions" />
 
         <!-- 4. WORKSPACES PREVIEW (ROADMAP & INTEGRASI BACKEND) -->
         {:else if activeNav === 'outpatient-workspace'}

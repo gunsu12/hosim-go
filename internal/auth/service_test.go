@@ -112,11 +112,59 @@ func (m *mockAuthRepo) FindAllRoles(ctx context.Context) ([]auth.Role, error) {
 	return []auth.Role{}, nil
 }
 
+func (m *mockAuthRepo) ListUsers(ctx context.Context, search string, roleID string, isActive *bool, page, limit int) ([]auth.User, int64, error) {
+	return []auth.User{}, 0, nil
+}
+
+func (m *mockAuthRepo) UpdateUser(ctx context.Context, user *auth.User) error {
+	return nil
+}
+
+func (m *mockAuthRepo) DeleteUser(ctx context.Context, id string, deletedBy string) error {
+	return nil
+}
+
+func (m *mockAuthRepo) FindRoleByID(ctx context.Context, id string) (*auth.Role, error) {
+	return nil, gorm.ErrRecordNotFound
+}
+
+func (m *mockAuthRepo) CreateRole(ctx context.Context, role *auth.Role, permIDs []string) (*auth.Role, error) {
+	return role, nil
+}
+
+func (m *mockAuthRepo) UpdateRole(ctx context.Context, role *auth.Role, permIDs []string) (*auth.Role, error) {
+	return role, nil
+}
+
+func (m *mockAuthRepo) DeleteRole(ctx context.Context, id string) error {
+	return nil
+}
+
 func (m *mockAuthRepo) FindAllPermissions(ctx context.Context) ([]auth.Permission, error) {
 	if m.findAllPermissionsFn != nil {
 		return m.findAllPermissionsFn(ctx)
 	}
 	return []auth.Permission{}, nil
+}
+
+func (m *mockAuthRepo) FindPermissionByID(ctx context.Context, id string) (*auth.Permission, error) {
+	return nil, gorm.ErrRecordNotFound
+}
+
+func (m *mockAuthRepo) FindPermissionByCode(ctx context.Context, code string) (*auth.Permission, error) {
+	return nil, gorm.ErrRecordNotFound
+}
+
+func (m *mockAuthRepo) CreatePermission(ctx context.Context, perm *auth.Permission) (*auth.Permission, error) {
+	return perm, nil
+}
+
+func (m *mockAuthRepo) UpdatePermission(ctx context.Context, perm *auth.Permission) error {
+	return nil
+}
+
+func (m *mockAuthRepo) DeletePermission(ctx context.Context, id string) error {
+	return nil
 }
 
 func testConfig() *config.Config {

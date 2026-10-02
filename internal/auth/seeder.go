@@ -69,6 +69,18 @@ var DefaultPermissions = []Permission{
 	{Code: "outpatient:register", Name: "Pendaftaran Rawat Jalan", Module: "Rawat Jalan"},
 	{Code: "appointment:view", Name: "Lihat Jadwal Janji Temu", Module: "Rawat Jalan"},
 	{Code: "appointment:create", Name: "Buat Janji Temu", Module: "Rawat Jalan"},
+
+	// Manajemen Pengguna & Hak Akses
+	{Code: "user:read", Name: "Lihat Pengguna", Module: "Manajemen Pengguna"},
+	{Code: "user:create", Name: "Tambah Pengguna", Module: "Manajemen Pengguna"},
+	{Code: "user:update", Name: "Ubah Pengguna", Module: "Manajemen Pengguna"},
+	{Code: "user:delete", Name: "Hapus Pengguna", Module: "Manajemen Pengguna"},
+
+	// Manajemen Peran (Roles)
+	{Code: "role:read", Name: "Lihat Peran", Module: "Manajemen Pengguna"},
+	{Code: "role:create", Name: "Tambah Peran", Module: "Manajemen Pengguna"},
+	{Code: "role:update", Name: "Ubah Peran", Module: "Manajemen Pengguna"},
+	{Code: "role:delete", Name: "Hapus Peran", Module: "Manajemen Pengguna"},
 }
 
 // SeedRBAC menginisialisasi tabel permissions, roles, mapping role_permissions, dan default admin

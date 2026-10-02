@@ -81,7 +81,7 @@
     {#if activeModule}
       <ChevronRight class="w-3.5 h-3.5 text-[#747775] shrink-0" />
       <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#0b57d0] border border-[#d3e3fd] shrink-0">
-        {activeModule === 'master' ? 'Master Data RS' : activeModule === 'clinical' ? 'Pelayanan Klinis' : activeModule.toUpperCase()}
+        {activeModule === 'master' ? 'Master Data RS' : activeModule === 'clinical' ? 'Pelayanan Klinis' : activeModule === 'auth' ? 'Pengguna & Akses' : activeModule.toUpperCase()}
       </span>
 
       <button

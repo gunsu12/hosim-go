@@ -28,6 +28,11 @@ export const ROUTE_MAP: Record<string, string> = {
   'billing-workspace': '/billing/workspace',
   'audit-workspace': '/audit/workspace',
 
+  // User, Role & Permission Management
+  'auth-users': '/auth/users',
+  'auth-roles': '/auth/roles',
+  'auth-permissions': '/auth/permissions',
+
   // Activity & Schedule
   'history': '/activity/history',
   'schedule': '/activity/schedule'
@@ -95,6 +100,7 @@ export function setHashFromNav(navId: string, replace = false): void {
 export function getModuleFromNav(navId: string): string | null {
   if (!navId || navId === 'desktop') return null;
   if (navId.startsWith('master-')) return 'master';
+  if (navId.startsWith('auth-')) return 'auth';
   if (navId === 'physical' || navId === 'anamnesis' || navId === 'history' || navId === 'schedule') return 'clinical';
   if (navId.startsWith('outpatient')) return 'outpatient';
   if (navId.startsWith('emergency')) return 'emergency';

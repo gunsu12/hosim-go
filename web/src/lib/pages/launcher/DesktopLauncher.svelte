@@ -8,6 +8,7 @@
     CreditCard,
     Database,
     Shield,
+    ShieldCheck,
     Search,
     ArrowLeft,
     ChevronRight,
@@ -235,6 +236,28 @@
       statusText: 'Tahap Integrasi',
       permission: 'customer:read',
       features: ['Billing Tagihan Pasien', 'Klaim BPJS & Asuransi', 'Kasir Pembayaran']
+    },
+    {
+      id: 'auth',
+      title: 'Pengguna & Hak Akses (RBAC)',
+      shortTitle: 'Akses & User',
+      category: 'admin_finance',
+      categoryLabel: 'Administrasi, Keuangan & Tata Kelola',
+      description: 'Manajemen pengguna RS, pembuatan akun dokter/nakes, penugasan peran (role), dan konfigurasi matriks perizinan modul.',
+      icon: ShieldCheck,
+      color: {
+        bg: 'bg-violet-50',
+        text: 'text-violet-700',
+        border: 'border-violet-200',
+        hoverBg: 'hover:border-violet-500 hover:shadow-violet-100',
+        badge: 'bg-violet-100 text-violet-800'
+      },
+      defaultNav: 'auth-users',
+      status: 'ready',
+      statusText: 'Aktif & Terintegrasi',
+      permission: 'user:read',
+      features: ['Kelola Pengguna', 'Peran & Matriks Izin', 'Reset Password'],
+      quickStats: 'Terintegrasi Go Auth'
     },
     {
       id: 'audit',

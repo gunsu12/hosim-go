@@ -8,7 +8,8 @@
     ChevronRight,
     Plus,
     ArrowLeft,
-    LayoutGrid
+    LayoutGrid,
+    ShieldCheck
   } from '@lucide/svelte';
   import { auth } from '../stores/auth.svelte';
 
@@ -74,6 +75,17 @@
       ]
     },
     {
+      id: 'auth',
+      label: 'Pengguna & Akses',
+      shortLabel: 'Akses',
+      icon: ShieldCheck,
+      children: [
+        { id: 'auth-users', label: 'Kelola Pengguna', badge: null, permission: 'user:read' },
+        { id: 'auth-roles', label: 'Peran & Hak Akses', badge: null, permission: 'role:read' },
+        { id: 'auth-permissions', label: 'Katalog Izin', badge: null, permission: 'role:read' }
+      ]
+    },
+    {
       id: 'activity',
       label: 'Aktivitas Pasien',
       shortLabel: 'Aktivitas',
@@ -92,6 +104,7 @@
         if (!activeModule) return true;
         if (activeModule === 'master') return item.id === 'master';
         if (activeModule === 'clinical') return item.id === 'clinical' || item.id === 'activity';
+        if (activeModule === 'auth') return item.id === 'auth';
         return item.id === activeModule;
       })
       .map(item => ({
