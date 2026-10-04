@@ -1,0 +1,23 @@
+meta {
+  name: List Price Plan Items
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}/items?page=1&limit=10&search=&tariff_class_id=&is_active=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+  tariff_class_id: 
+  is_active: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

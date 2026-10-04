@@ -1,0 +1,38 @@
+meta {
+  name: Create Price Plan
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/price-plans
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "TPP-2026-REGULER",
+    "name": "Buku Tarif Pelayanan RS Tahun 2026",
+    "description": "Berdasarkan SK Direksi No. 045/SK-DIR/IX/2026",
+    "effective_from": "2026-01-01",
+    "effective_to": null,
+    "is_default": true,
+    "customer_id": null,
+    "default_cito_percent": 25.00
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("pricePlanId", res.body.data.id);
+  }
+}

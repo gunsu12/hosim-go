@@ -287,3 +287,6 @@ stateDiagram-v2
 6. **Integration & Automated Testing**:
    - Unit test formula CITO dan validasi balancing komponen.
    - Integration test fallback hierarkis (Custom Plan -> General Plan -> Error).
+7. **Create Burno Documentation**:
+   - mkdir Finance/PricePlan
+   - create all handler endpoint documentation

@@ -16,6 +16,7 @@ import (
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
 	"hosim-go/internal/finance/customer"
+	"hosim-go/internal/finance/priceplan"
 	"hosim-go/internal/finance/tariffclass"
 	"hosim-go/internal/finance/tariffcomponent"
 	"hosim-go/internal/middleware"
@@ -110,6 +111,31 @@ func main() {
 	tariffComponentService := tariffcomponent.NewService(tariffComponentRepo)
 	tariffComponentHandler := tariffcomponent.NewHandler(tariffComponentService)
 
+	// Master Buku Tarif & Lookup Engine (Price Plan & Pricing Engine)
+	pricePlanRepo := priceplan.NewRepository(db)
+	createPricePlanUC := priceplan.NewCreatePricePlanUseCase(pricePlanRepo)
+	updatePricePlanUC := priceplan.NewUpdatePricePlanUseCase(pricePlanRepo)
+	clonePricePlanUC := priceplan.NewClonePricePlanUseCase(pricePlanRepo)
+	submitPricePlanUC := priceplan.NewSubmitPricePlanUseCase(pricePlanRepo)
+	approvePricePlanUC := priceplan.NewApprovePricePlanUseCase(pricePlanRepo)
+	activatePricePlanUC := priceplan.NewActivatePricePlanUseCase(pricePlanRepo)
+	archivePricePlanUC := priceplan.NewArchivePricePlanUseCase(pricePlanRepo)
+	getPricePlanUC := priceplan.NewGetPricePlanUseCase(pricePlanRepo)
+	manageItemsUC := priceplan.NewManageItemsUseCase(pricePlanRepo)
+	lookupTariffUC := priceplan.NewLookupTariffUseCase(pricePlanRepo)
+	pricePlanHandler := priceplan.NewHandler(
+		createPricePlanUC,
+		updatePricePlanUC,
+		clonePricePlanUC,
+		submitPricePlanUC,
+		approvePricePlanUC,
+		activatePricePlanUC,
+		archivePricePlanUC,
+		getPricePlanUC,
+		manageItemsUC,
+		lookupTariffUC,
+	)
+
 	// Master Pasien
 	patientRepo := patient.NewRepository(db)
 	patientService := patient.NewService(patientRepo)
@@ -194,6 +220,7 @@ func main() {
 			roomHandler.RegisterRoutes(protected)
 			tariffClassHandler.RegisterRoutes(protected)
 			tariffComponentHandler.RegisterRoutes(protected)
+			pricePlanHandler.RegisterRoutes(protected)
 			patientHandler.RegisterRoutes(protected)
 			practitionerHandler.RegisterRoutes(protected)
 			itemHandler.RegisterRoutes(protected)

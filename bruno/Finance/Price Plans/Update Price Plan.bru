@@ -1,0 +1,31 @@
+meta {
+  name: Update Price Plan
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Buku Tarif Pelayanan RS Tahun 2026 (Revisi)",
+    "description": "Pembaruan klausul SK Direksi",
+    "effective_from": "2026-01-01",
+    "effective_to": null,
+    "is_default": true,
+    "customer_id": null,
+    "default_cito_percent": 25.00
+  }
+}

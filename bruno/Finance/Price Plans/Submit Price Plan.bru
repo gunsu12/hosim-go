@@ -1,0 +1,15 @@
+meta {
+  name: Submit Price Plan
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}/submit
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

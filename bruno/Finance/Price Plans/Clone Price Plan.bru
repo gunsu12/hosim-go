@@ -1,0 +1,32 @@
+meta {
+  name: Clone Price Plan
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}/clone
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "new_code": "TPP-2027-REGULER",
+    "new_name": "Buku Tarif Pelayanan RS Tahun 2027",
+    "description": "Kloning dari Buku Tarif 2026 untuk penyesuaian tahunan",
+    "effective_from": "2027-01-01",
+    "effective_to": null,
+    "is_default": false,
+    "customer_id": null,
+    "default_cito_percent": 25.00
+  }
+}

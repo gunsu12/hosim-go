@@ -1,0 +1,29 @@
+meta {
+  name: Lookup Tariff
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/price-plans/lookup
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "customer_id": "{{customerId}}",
+    "tariff_class_id": "{{tariffClassId}}",
+    "item_id": "{{itemId}}",
+    "transaction_date": "2026-09-27T10:00:00Z",
+    "is_cito": false
+  }
+}

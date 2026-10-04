@@ -1,0 +1,47 @@
+meta {
+  name: Batch Upsert Price Plan Items
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}/items/batch-upsert
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "items": [
+      {
+        "item_id": "{{itemId}}",
+        "tariff_class_id": "{{tariffClassId}}",
+        "total_base_price": 250000.00,
+        "total_cito_price": null,
+        "is_active": true,
+        "components": [
+          {
+            "component_id": "{{saranaComponentId}}",
+            "base_amount": 75000.00,
+            "cito_amount": null,
+            "coa_code": "410.01.001"
+          },
+          {
+            "component_id": "{{medisComponentId}}",
+            "base_amount": 175000.00,
+            "cito_amount": null,
+            "coa_code": "214.01.001"
+          }
+        ]
+      }
+    ]
+  }
+}

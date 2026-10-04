@@ -1,0 +1,15 @@
+meta {
+  name: Activate Price Plan
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}/activate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

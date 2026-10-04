@@ -15,6 +15,9 @@ type TariffComponent struct {
 	IsHospitalRevenue  bool           `gorm:"default:false;not null" json:"is_hospital_revenue"`
 	IsOperatorRevenue  bool           `gorm:"default:false;not null" json:"is_operator_revenue"`
 	IsParamedicRevenue bool           `gorm:"default:false;not null" json:"is_paramedic_revenue"`
+	ComponentType      string         `gorm:"size:30;default:'LAINNYA'" json:"component_type"`
+	DefaultCOACode     *string        `gorm:"size:50" json:"default_coa_code,omitempty"`
+	IsActive           bool           `gorm:"default:true;not null" json:"is_active"`
 	CreatedAt          time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt          time.Time      `gorm:"default:CURRENT_TIMESTAMP;OnUpdate:CURRENT_TIMESTAMP" json:"updated_at"`
 	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`

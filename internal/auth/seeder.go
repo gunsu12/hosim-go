@@ -52,6 +52,17 @@ var DefaultPermissions = []Permission{
 	{Code: "tariff_component:update", Name: "Ubah Komponen Tarif", Module: "Master Komponen Tarif"},
 	{Code: "tariff_component:delete", Name: "Hapus Komponen Tarif", Module: "Master Komponen Tarif"},
 
+	// Buku Tarif (Price Plan)
+	{Code: "price_plan:read", Name: "Lihat Buku Tarif", Module: "Buku Tarif"},
+	{Code: "price_plan:create", Name: "Tambah Buku Tarif", Module: "Buku Tarif"},
+	{Code: "price_plan:update", Name: "Ubah Buku Tarif", Module: "Buku Tarif"},
+	{Code: "price_plan:delete", Name: "Hapus Buku Tarif", Module: "Buku Tarif"},
+	{Code: "price_plan:submit", Name: "Ajukan Buku Tarif", Module: "Buku Tarif"},
+	{Code: "price_plan:approve", Name: "Setujui Buku Tarif", Module: "Buku Tarif"},
+	{Code: "price_plan:activate", Name: "Aktifkan Buku Tarif", Module: "Buku Tarif"},
+	{Code: "price_plan:archive", Name: "Arsipkan Buku Tarif", Module: "Buku Tarif"},
+	{Code: "price_plan:lookup", Name: "Lookup Tarif Tindakan", Module: "Buku Tarif"},
+
 	// Pasien
 	{Code: "patient:read", Name: "Lihat Pasien", Module: "Master Pasien"},
 	{Code: "patient:create", Name: "Tambah Pasien", Module: "Master Pasien"},

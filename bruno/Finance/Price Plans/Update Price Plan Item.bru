@@ -1,0 +1,41 @@
+meta {
+  name: Update Price Plan Item
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}/items/{{pricePlanItemId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "total_base_price": 275000.00,
+    "total_cito_price": 350000.00,
+    "is_active": true,
+    "components": [
+      {
+        "component_id": "{{saranaComponentId}}",
+        "base_amount": 75000.00,
+        "cito_amount": 100000.00,
+        "coa_code": "410.01.001"
+      },
+      {
+        "component_id": "{{medisComponentId}}",
+        "base_amount": 200000.00,
+        "cito_amount": 250000.00,
+        "coa_code": "214.01.001"
+      }
+    ]
+  }
+}

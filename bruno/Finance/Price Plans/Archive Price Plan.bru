@@ -1,0 +1,15 @@
+meta {
+  name: Archive Price Plan
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}/archive
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

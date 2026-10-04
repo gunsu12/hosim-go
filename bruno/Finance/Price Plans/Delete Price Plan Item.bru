@@ -1,0 +1,15 @@
+meta {
+  name: Delete Price Plan Item
+  type: http
+  seq: 15
+}
+
+delete {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}/items/{{pricePlanItemId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

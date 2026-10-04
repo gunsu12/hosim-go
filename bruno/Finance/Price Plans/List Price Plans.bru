@@ -1,0 +1,24 @@
+meta {
+  name: List Price Plans
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/price-plans?page=1&limit=10&search=&status=&customer_id=&is_default=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+  status: 
+  customer_id: 
+  is_default: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

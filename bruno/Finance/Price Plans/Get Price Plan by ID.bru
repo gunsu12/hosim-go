@@ -1,0 +1,15 @@
+meta {
+  name: Get Price Plan by ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/price-plans/{{pricePlanId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
