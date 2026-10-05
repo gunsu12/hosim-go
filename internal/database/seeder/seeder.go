@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"hosim-go/internal/accounting/account"
 	"hosim-go/internal/auth"
 	"hosim-go/internal/catalog/item"
 	"hosim-go/internal/practitioner"
@@ -29,6 +30,10 @@ func RunAll(db *gorm.DB) error {
 
 	if err := RunCatalog(db); err != nil {
 		return fmt.Errorf("seeder catalog gagal: %w", err)
+	}
+
+	if err := RunAccountingCOA(db); err != nil {
+		return fmt.Errorf("seeder accounting COA gagal: %w", err)
 	}
 
 	log.Println("[SEEDER] Seluruh data seeder berhasil diinisialisasi.")
@@ -57,4 +62,16 @@ func RunPractitioners(db *gorm.DB) error {
 func RunCatalog(db *gorm.DB) error {
 	log.Println("[SEEDER] Menjalankan seeder Master Katalog (Categories & Product Lines)...")
 	return item.SeedCatalogMasterData(db)
+}
+
+// RunAccountingCOA menginisialisasi bagan akun (Chart of Accounts) standar rumah sakit
+func RunAccountingCOA(db *gorm.DB) error {
+	log.Println("[SEEDER] Menjalankan seeder Bagan Akun Lengkap (Chart of Accounts)...")
+	return account.SeedChartOfAccounts(db)
+}
+
+// RunAccountingHeadAccounts menginisialisasi khusus akun kepala / induk (Header Accounts)
+func RunAccountingHeadAccounts(db *gorm.DB) error {
+	log.Println("[SEEDER] Menjalankan seeder Akun Kepala / Induk (Chart of Accounts)...")
+	return account.SeedHeadAccounts(db)
 }

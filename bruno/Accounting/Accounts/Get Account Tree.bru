@@ -1,0 +1,19 @@
+meta {
+  name: Get Account Tree
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/accounting/accounts/tree?active_only=true
+  body: none
+  auth: bearer
+}
+
+params:query {
+  active_only: true
+}
+
+auth:bearer {
+  token: {{token}}
+}

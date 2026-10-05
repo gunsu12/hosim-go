@@ -63,6 +63,12 @@ var DefaultPermissions = []Permission{
 	{Code: "price_plan:archive", Name: "Arsipkan Buku Tarif", Module: "Buku Tarif"},
 	{Code: "price_plan:lookup", Name: "Lookup Tarif Tindakan", Module: "Buku Tarif"},
 
+	// Akuntansi - Bagan Akun (Chart of Accounts)
+	{Code: "accounting:read", Name: "Lihat Bagan Akun (COA)", Module: "Akuntansi"},
+	{Code: "accounting:create", Name: "Tambah Bagan Akun (COA)", Module: "Akuntansi"},
+	{Code: "accounting:update", Name: "Ubah Bagan Akun (COA)", Module: "Akuntansi"},
+	{Code: "accounting:delete", Name: "Hapus Bagan Akun (COA)", Module: "Akuntansi"},
+
 	// Pasien
 	{Code: "patient:read", Name: "Lihat Pasien", Module: "Master Pasien"},
 	{Code: "patient:create", Name: "Tambah Pasien", Module: "Master Pasien"},

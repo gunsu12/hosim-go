@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"hosim-go/internal/accounting/account"
 	"hosim-go/internal/auth"
 	"hosim-go/internal/catalog/item"
 	"hosim-go/internal/config"
@@ -164,6 +165,11 @@ func main() {
 	itemProductLineService := item.NewProductLineService(itemRepo)
 	itemProductLineHandler := item.NewProductLineHandler(itemProductLineService)
 
+	// Bagan Akun (Chart of Accounts)
+	accountRepo := account.NewRepository(db)
+	accountService := account.NewService(accountRepo)
+	accountHandler := account.NewHandler(accountService)
+
 	// 5. Inisialisasi Router Gin
 	r := gin.New()
 	r.Use(gin.Logger())
@@ -226,6 +232,7 @@ func main() {
 			itemHandler.RegisterRoutes(protected)
 			itemCategoryHandler.RegisterRoutes(protected)
 			itemProductLineHandler.RegisterRoutes(protected)
+			accountHandler.RegisterRoutes(protected)
 		}
 	}
 

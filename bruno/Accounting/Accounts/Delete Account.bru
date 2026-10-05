@@ -1,0 +1,19 @@
+meta {
+  name: Delete Account
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/accounting/accounts/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 01a10000-0000-7000-0000-000000001115
+}
+
+auth:bearer {
+  token: {{token}}
+}

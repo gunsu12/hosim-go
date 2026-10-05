@@ -1,0 +1,31 @@
+meta {
+  name: Create Account
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/accounting/accounts
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "code": "1115",
+    "name": "Bank BSI Syariah Operasional",
+    "parent_id": null,
+    "type": "ASSET",
+    "position": "DEBIT",
+    "description": "Rekening operasional penerimaan klaim BPJS",
+    "is_treasury_account": true,
+    "bank_name": "Bank Syariah Indonesia",
+    "bank_account_number": "7112233445",
+    "currency": "IDR",
+    "is_active": true
+  }
+}

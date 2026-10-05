@@ -1,0 +1,15 @@
+meta {
+  name: List Postable Accounts
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/accounting/accounts/postable
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

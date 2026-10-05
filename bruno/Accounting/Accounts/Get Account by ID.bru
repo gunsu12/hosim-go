@@ -1,0 +1,19 @@
+meta {
+  name: Get Account by ID
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/accounting/accounts/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 01a10000-0000-7000-0000-000000001000
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,15 @@
+meta {
+  name: List Treasury Accounts
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/accounting/accounts/treasury
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
