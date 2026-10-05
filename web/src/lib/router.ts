@@ -18,6 +18,7 @@ export const ROUTE_MAP: Record<string, string> = {
   'master-payer': '/master/customer',
   'master-referal': '/master/referal',
   'master-tariff-class': '/master/tariff-class',
+  'master-coa': '/master/coa',
 
   // Workspaces Preview
   'outpatient-workspace': '/outpatient/workspace',
@@ -27,6 +28,12 @@ export const ROUTE_MAP: Record<string, string> = {
   'inventory-workspace': '/inventory/workspace',
   'billing-workspace': '/billing/workspace',
   'audit-workspace': '/audit/workspace',
+
+  // Accounting & Financial Management
+  'accounting-coa': '/accounting/coa',
+  'accounting-journals': '/accounting/journals',
+  'accounting-ledger': '/accounting/ledger',
+  'accounting-reports': '/accounting/reports',
 
   // User, Role & Permission Management
   'auth-users': '/auth/users',
@@ -109,5 +116,6 @@ export function getModuleFromNav(navId: string): string | null {
   if (navId.startsWith('inventory')) return 'inventory';
   if (navId.startsWith('billing')) return 'billing';
   if (navId.startsWith('audit')) return 'audit';
+  if (navId.startsWith('accounting')) return 'accounting';
   return null;
 }

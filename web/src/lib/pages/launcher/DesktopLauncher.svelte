@@ -18,7 +18,8 @@
     Activity,
     Layers,
     FileText,
-    Users
+    Users,
+    BookOpen
   } from '@lucide/svelte';
   import { auth } from '../../stores/auth.svelte';
 
@@ -215,6 +216,28 @@
       permission: 'department:read',
       features: ['Pasien & Nakes', 'Organisasi & Kamar', 'Payer & Tarif RS'],
       quickStats: '9 Sub-Domain Lengkap'
+    },
+    {
+      id: 'accounting',
+      title: 'Akuntansi & Buku Besar (Accounting)',
+      shortTitle: 'Akuntansi RS',
+      category: 'admin_finance',
+      categoryLabel: 'Administrasi, Keuangan & Tata Kelola',
+      description: 'Bagan Akun Standar (COA), Jurnal Memorial Double-Entry, Buku Kas & Bank Treasury, Neraca Saldo, dan Laporan Fiskal RS.',
+      icon: BookOpen,
+      color: {
+        bg: 'bg-indigo-50',
+        text: 'text-indigo-700',
+        border: 'border-indigo-200',
+        hoverBg: 'hover:border-indigo-500 hover:shadow-indigo-100',
+        badge: 'bg-indigo-100 text-indigo-800'
+      },
+      defaultNav: 'accounting-coa',
+      status: 'ready',
+      statusText: 'COA Aktif & Terintegrasi',
+      permission: 'accounting:read',
+      features: ['Bagan Akun (COA)', 'Jurnal Umum Double-Entry', 'Buku Kas & Bank', 'Laporan Keuangan'],
+      quickStats: 'Standar Akuntansi RS'
     },
     {
       id: 'billing',

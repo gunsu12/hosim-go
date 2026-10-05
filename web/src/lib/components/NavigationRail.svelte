@@ -9,7 +9,8 @@
     Plus,
     ArrowLeft,
     LayoutGrid,
-    ShieldCheck
+    ShieldCheck,
+    BookOpen
   } from '@lucide/svelte';
   import { auth } from '../stores/auth.svelte';
 
@@ -44,7 +45,7 @@
     onNavigateHome = () => {}
   }: Props = $props();
 
-  let openParentIds = $state<string[]>(['clinical', 'master']);
+  let openParentIds = $state<string[]>(['clinical', 'master', 'accounting']);
   let flyoutMenuId = $state<string | null>(null);
 
   const navigationStructure: MenuItem[] = [
@@ -72,6 +73,18 @@
         { id: 'master-customer', label: 'Debitur & Penjamin (Customer)', badge: null, permission: 'customer:read' },
         { id: 'master-referal', label: 'Faskes Rujukan (Referal)', badge: null, permission: 'referal:read' },
         { id: 'master-tariff-class', label: 'Kelas Tarif (Tariff Class)', badge: null, permission: 'tariff_class:read' }
+      ]
+    },
+    {
+      id: 'accounting',
+      label: 'Akuntansi RS',
+      shortLabel: 'Akuntansi',
+      icon: BookOpen,
+      children: [
+        { id: 'accounting-coa', label: 'Bagan Akun (COA)', badge: 'Aktif', permission: 'accounting:read' },
+        { id: 'accounting-journals', label: 'Jurnal Umum Transaksi', badge: 'Tahap 2', permission: 'accounting:read' },
+        { id: 'accounting-ledger', label: 'Buku Besar & Kas/Bank', badge: 'Tahap 3', permission: 'accounting:read' },
+        { id: 'accounting-reports', label: 'Laporan Keuangan & Neraca', badge: 'Tahap 4', permission: 'accounting:read' }
       ]
     },
     {
@@ -105,6 +118,7 @@
         if (activeModule === 'master') return item.id === 'master';
         if (activeModule === 'clinical') return item.id === 'clinical' || item.id === 'activity';
         if (activeModule === 'auth') return item.id === 'auth';
+        if (activeModule === 'accounting') return item.id === 'accounting';
         return item.id === activeModule;
       })
       .map(item => ({

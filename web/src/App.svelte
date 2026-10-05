@@ -28,6 +28,9 @@
     TariffClassPage
   } from '$lib/pages/master';
 
+  // Domain Accounting Pages
+  import { ChartOfAccountsPage } from '$lib/pages/accounting';
+
   // Domain Auth & User Management Pages
   import { AuthManagementPage } from '$lib/pages/auth';
 
@@ -172,6 +175,51 @@
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}
           <TariffClassPage />
+        {:else if activeNav === 'master-coa' || activeNav === 'accounting-coa'}
+          <ChartOfAccountsPage />
+
+        <!-- 3.6 AKUNTANSI & KEUANGAN RS DOMAIN MODULES -->
+        {:else if activeNav === 'accounting-journals'}
+          <ModulePlaceholder
+            title="Jurnal Umum & Transaksi Memorial (General Journal)"
+            description="Modul pencatatan transaksi jurnal umum double-entry berimbang (debit = kredit), jurnal penyesuaian, dan approval posting ke buku besar."
+            domainPackage="accounting/journal"
+            backendStatus="Sesuai PRD Akuntansi internal/accounting/PRD.md (Tahap 2: Journal Engine)"
+            plannedEndpoints={[
+              "POST /api/v1/accounting/journals (Input Transaksi Jurnal Double-Entry)",
+              "GET /api/v1/accounting/journals (Daftar & Filter Status Jurnal)",
+              "POST /api/v1/accounting/journals/:id/post (Posting ke Buku Besar)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
+
+        {:else if activeNav === 'accounting-ledger'}
+          <ModulePlaceholder
+            title="Buku Besar & Kas/Bank (General Ledger & Treasury)"
+            description="Modul rekap mutasi buku besar per akun, mutasi rekening koran kas/bank RS, rekonsiliasi bank, dan ringkasan saldo berjalan."
+            domainPackage="accounting/ledger"
+            backendStatus="Terintegrasi dengan akun bertipe Treasury pada tabel chart_of_accounts"
+            plannedEndpoints={[
+              "GET /api/v1/accounting/ledger/:id (Mutasi Buku Besar Per Akun)",
+              "GET /api/v1/accounting/treasury/book (Buku Kas & Bank Berjalan)",
+              "GET /api/v1/accounting/trial-balance (Neraca Saldo / Trial Balance)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
+
+        {:else if activeNav === 'accounting-reports'}
+          <ModulePlaceholder
+            title="Laporan Keuangan & Fiskal RS (Financial Reports)"
+            description="Laporan Laba Rugi Operasional RS, Neraca Saldo Keuangan, Laporan Arus Kas, Perubahan Ekuitas, serta Tutup Buku Akhir Tahun Fiskal."
+            domainPackage="accounting/report"
+            backendStatus="Mengikuti Pedoman Standar Akuntansi Keuangan Rumah Sakit (PSAK / PARS)"
+            plannedEndpoints={[
+              "GET /api/v1/accounting/reports/balance-sheet (Laporan Posisi Keuangan / Neraca)",
+              "GET /api/v1/accounting/reports/income-statement (Laporan Laba Rugi RS)",
+              "POST /api/v1/accounting/fiscal-years/close (Tutup Buku Akhir Tahun Fiskal)"
+            ]}
+            onBackToLauncher={() => activeNav = 'desktop'}
+          />
 
         <!-- 3.5 AUTH & USER MANAGEMENT DOMAIN MODULE -->
         {:else if activeNav === 'auth-users'}

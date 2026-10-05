@@ -1,6 +1,22 @@
-// API client wrapper for HOSIM Go Backend (TypeScript)
 import type { DepartementRecord, CreateDepartementDTO, UpdateDepartementDTO } from './types/master/departement';
 import type { ServiceUnitRecord, CreateServiceUnitDTO, UpdateServiceUnitDTO } from './types/master/service_unit';
+import type {
+  AccountRecord,
+  AccountTreeNode,
+  CreateAccountDTO,
+  UpdateAccountDTO,
+  AccountListParams,
+  AccountListResponse
+} from './types/accounting/account';
+import type {
+  UserRecord,
+  CreateUserDTO,
+  UpdateUserDTO,
+  RoleRecord,
+  CreateRoleDTO,
+  UpdateRoleDTO,
+  PermissionRecord
+} from './types/auth';
 
 const API_BASE = '/api/v1';
 const STORAGE_KEY = 'hosim_auth_session';
@@ -184,6 +200,87 @@ export async function login(username: string, password: string): Promise<any> {
 }
 
 // ==========================================
+// AUTH: USERS, ROLES & PERMISSIONS API
+// ==========================================
+
+export async function getUsers(params?: {
+  search?: string;
+  role_id?: string;
+  is_active?: boolean;
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedData<UserRecord>> {
+  const q = new URLSearchParams();
+  if (params?.search) q.set('search', params.search);
+  if (params?.role_id) q.set('role_id', params.role_id);
+  if (params?.is_active !== undefined) q.set('is_active', String(params.is_active));
+  if (params?.page) q.set('page', String(params.page));
+  if (params?.limit) q.set('limit', String(params.limit));
+  const queryStr = q.toString() ? `?${q.toString()}` : '';
+  const res = await authFetch<PaginatedData<UserRecord>>(`/auth/users${queryStr}`);
+  return res.data;
+}
+
+export async function getUserById(id: string): Promise<UserRecord> {
+  const res = await authFetch<UserRecord>(`/auth/users/${id}`);
+  return res.data;
+}
+
+export async function createUser(payload: CreateUserDTO): Promise<UserRecord> {
+  const res = await authFetch<UserRecord>('/auth/users', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+}
+
+export async function updateUser(id: string, payload: UpdateUserDTO): Promise<UserRecord> {
+  const res = await authFetch<UserRecord>(`/auth/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await authFetch<null>(`/auth/users/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getRoles(): Promise<RoleRecord[]> {
+  const res = await authFetch<RoleRecord[]>('/auth/roles');
+  return res.data;
+}
+
+export async function createRole(payload: CreateRoleDTO): Promise<RoleRecord> {
+  const res = await authFetch<RoleRecord>('/auth/roles', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+}
+
+export async function updateRole(id: string, payload: UpdateRoleDTO): Promise<RoleRecord> {
+  const res = await authFetch<RoleRecord>(`/auth/roles/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+}
+
+export async function deleteRole(id: string): Promise<void> {
+  await authFetch<null>(`/auth/roles/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function getPermissions(): Promise<PermissionRecord[]> {
+  const res = await authFetch<PermissionRecord[]>('/auth/permissions');
+  return res.data;
+}
+
+// ==========================================
 // MASTER DEPARTEMENT API
 // ==========================================
 
@@ -271,6 +368,70 @@ export async function updateServiceUnit(id: string, payload: UpdateServiceUnitDT
 
 export async function deleteServiceUnit(id: string): Promise<void> {
   await authFetch<null>(`/service-units/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// ==========================================
+// ACCOUNTING: CHART OF ACCOUNTS (COA) API
+// ==========================================
+
+export async function getAccounts(params?: AccountListParams): Promise<AccountListResponse> {
+  const q = new URLSearchParams();
+  if (params?.page) q.set('page', String(params.page));
+  if (params?.limit) q.set('limit', String(params.limit));
+  if (params?.search) q.set('search', params.search);
+  if (params?.type) q.set('type', params.type);
+  if (params?.position) q.set('position', params.position);
+  if (params?.parent_id) q.set('parent_id', params.parent_id);
+  if (params?.is_postable !== undefined) q.set('is_postable', String(params.is_postable));
+  if (params?.is_treasury !== undefined) q.set('is_treasury', String(params.is_treasury));
+  if (params?.is_active !== undefined) q.set('is_active', String(params.is_active));
+  if (params?.level !== undefined) q.set('level', String(params.level));
+  const queryStr = q.toString() ? `?${q.toString()}` : '';
+  const res = await authFetch<AccountListResponse>(`/accounting/accounts${queryStr}`);
+  return res.data;
+}
+
+export async function getAccountTree(activeOnly: boolean = false): Promise<AccountTreeNode[]> {
+  const queryStr = activeOnly ? '?active_only=true' : '';
+  const res = await authFetch<AccountTreeNode[]>(`/accounting/accounts/tree${queryStr}`);
+  return res.data;
+}
+
+export async function getAccountById(id: string): Promise<AccountRecord> {
+  const res = await authFetch<AccountRecord>(`/accounting/accounts/${id}`);
+  return res.data;
+}
+
+export async function getPostableAccounts(): Promise<AccountRecord[]> {
+  const res = await authFetch<AccountRecord[]>('/accounting/accounts/postable');
+  return res.data;
+}
+
+export async function getTreasuryAccounts(): Promise<AccountRecord[]> {
+  const res = await authFetch<AccountRecord[]>('/accounting/accounts/treasury');
+  return res.data;
+}
+
+export async function createAccount(payload: CreateAccountDTO): Promise<AccountRecord> {
+  const res = await authFetch<AccountRecord>('/accounting/accounts', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+}
+
+export async function updateAccount(id: string, payload: UpdateAccountDTO): Promise<AccountRecord> {
+  const res = await authFetch<AccountRecord>(`/accounting/accounts/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+}
+
+export async function deleteAccount(id: string): Promise<void> {
+  await authFetch<null>(`/accounting/accounts/${id}`, {
     method: 'DELETE',
   });
 }
