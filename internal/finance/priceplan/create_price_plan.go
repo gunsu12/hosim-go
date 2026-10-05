@@ -59,8 +59,12 @@ func (uc *createPricePlanUseCase) Execute(ctx context.Context, req CreatePricePl
 		return nil, err
 	}
 
+	if req.IsDefault && req.CustomerID != nil && strings.TrimSpace(*req.CustomerID) != "" {
+		return nil, errors.New("buku tarif default RS tidak boleh diasosiasikan dengan customer/penjamin tertentu")
+	}
+
 	citoPercent := 25.00
-	if req.DefaultCitoPercent != nil && *req.DefaultCitoPercent > 0 {
+	if req.DefaultCitoPercent != nil && *req.DefaultCitoPercent >= 0 {
 		citoPercent = *req.DefaultCitoPercent
 	}
 
@@ -111,6 +115,10 @@ func (uc *updatePricePlanUseCase) Execute(ctx context.Context, id string, req Up
 		return nil, ErrPricePlanImmutable
 	}
 
+	if req.IsDefault && req.CustomerID != nil && strings.TrimSpace(*req.CustomerID) != "" {
+		return nil, errors.New("buku tarif default RS tidak boleh diasosiasikan dengan customer/penjamin tertentu")
+	}
+
 	req.Name = strings.TrimSpace(req.Name)
 	if req.Name == "" {
 		return nil, errors.New("nama buku tarif wajib diisi")
@@ -139,7 +147,7 @@ func (uc *updatePricePlanUseCase) Execute(ctx context.Context, id string, req Up
 	plan.EffectiveTo = to
 	plan.IsDefault = req.IsDefault
 	plan.CustomerID = req.CustomerID
-	if req.DefaultCitoPercent != nil && *req.DefaultCitoPercent > 0 {
+	if req.DefaultCitoPercent != nil && *req.DefaultCitoPercent >= 0 {
 		plan.DefaultCitoPercent = *req.DefaultCitoPercent
 	}
 	plan.UpdatedBy = operator
@@ -173,6 +181,7 @@ func toPlanResponse(p *TariffPricePlan) *PricePlanResponse {
 		DefaultCitoPercent: p.DefaultCitoPercent,
 		ApprovedAt:         p.ApprovedAt,
 		ApprovedBy:         p.ApprovedBy,
+		TotalItems:         p.TotalItems,
 		CreatedAt:          p.CreatedAt,
 		UpdatedAt:          p.UpdatedAt,
 	}

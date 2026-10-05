@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // Repository adalah port persistence untuk buku tarif dan lookup engine
@@ -50,14 +51,17 @@ func (r *repository) CreatePlan(ctx context.Context, plan *TariffPricePlan) erro
 }
 
 func (r *repository) UpdatePlan(ctx context.Context, plan *TariffPricePlan) error {
-	return r.db.WithContext(ctx).Save(plan).Error
+	return r.db.WithContext(ctx).
+		Model(plan).
+		Select("Name", "Description", "EffectiveFrom", "EffectiveTo", "Status", "IsDefault", "CustomerID", "DefaultCitoPercent", "ApprovedAt", "ApprovedBy", "UpdatedBy", "UpdatedAt").
+		Updates(plan).Error
 }
 
 func (r *repository) FindPlanByID(ctx context.Context, id string) (*TariffPricePlan, error) {
 	var plan TariffPricePlan
 	query := r.db.WithContext(ctx).
 		Table("tariff_price_plans").
-		Select("tariff_price_plans.*, customers.name AS customer_name").
+		Select("tariff_price_plans.*, customers.name AS customer_name, (SELECT COUNT(1) FROM tariff_price_plan_items WHERE tariff_price_plan_items.price_plan_id = tariff_price_plans.id AND tariff_price_plan_items.deleted_at IS NULL) AS total_items").
 		Joins("LEFT JOIN customers ON customers.id = tariff_price_plans.customer_id").
 		Where("tariff_price_plans.id = ? AND tariff_price_plans.deleted_at IS NULL", id)
 
@@ -162,7 +166,7 @@ func (r *repository) AddItem(ctx context.Context, item *TariffPricePlanItem) err
 			return ErrItemAlreadyInPlan
 		}
 
-		if err := tx.Create(item).Error; err != nil {
+		if err := tx.Omit(clause.Associations).Create(item).Error; err != nil {
 			return err
 		}
 
@@ -178,7 +182,7 @@ func (r *repository) AddItem(ctx context.Context, item *TariffPricePlanItem) err
 
 func (r *repository) UpdateItem(ctx context.Context, item *TariffPricePlanItem) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Save(item).Error; err != nil {
+		if err := tx.Omit(clause.Associations).Save(item).Error; err != nil {
 			return err
 		}
 
@@ -368,7 +372,7 @@ func (r *repository) BatchUpsertItems(ctx context.Context, planID string, items 
 				existing.TotalCitoPrice = it.TotalCitoPrice
 				existing.IsActive = it.IsActive
 				existing.UpdatedBy = operator
-				if err := tx.Save(&existing).Error; err != nil {
+				if err := tx.Omit(clause.Associations).Save(&existing).Error; err != nil {
 					return err
 				}
 				it.ID = existing.ID
@@ -378,7 +382,7 @@ func (r *repository) BatchUpsertItems(ctx context.Context, planID string, items 
 				}
 			} else if errors.Is(err, gorm.ErrRecordNotFound) {
 				// Insert baru
-				if err := tx.Create(&it).Error; err != nil {
+				if err := tx.Omit(clause.Associations).Create(&it).Error; err != nil {
 					return err
 				}
 			} else {
@@ -517,13 +521,14 @@ func (r *repository) ClonePlan(ctx context.Context, sourcePlanID string, newPlan
 				CreatedBy:      newPlan.CreatedBy,
 				UpdatedBy:      newPlan.CreatedBy,
 			}
-			if err := tx.Create(&newItem).Error; err != nil {
+			if err := tx.Omit(clause.Associations).Create(&newItem).Error; err != nil {
 				return err
 			}
 
 			sComps := compMap[sItem.ID]
-			for _, sc := range sComps {
-				newComp := TariffPricePlanItemComponent{
+			newComps := make([]TariffPricePlanItemComponent, len(sComps))
+			for cIdx, sc := range sComps {
+				newComps[cIdx] = TariffPricePlanItemComponent{
 					PlanItemID:  newItem.ID,
 					ComponentID: sc.ComponentID,
 					BaseAmount:  sc.BaseAmount,
@@ -532,7 +537,9 @@ func (r *repository) ClonePlan(ctx context.Context, sourcePlanID string, newPlan
 					CreatedBy:   newPlan.CreatedBy,
 					UpdatedBy:   newPlan.CreatedBy,
 				}
-				if err := tx.Create(&newComp).Error; err != nil {
+			}
+			if len(newComps) > 0 {
+				if err := tx.CreateInBatches(newComps, 100).Error; err != nil {
 					return err
 				}
 			}

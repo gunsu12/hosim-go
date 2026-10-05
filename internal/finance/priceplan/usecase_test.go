@@ -187,15 +187,20 @@ type mockRepository struct {
 	customPlan  *TariffPricePlan
 	defaultPlan *TariffPricePlan
 	itemsMap    map[string]*TariffPricePlanItem // key: planID:itemID:classID
+	planByID    *TariffPricePlan
+	allItems    []TariffPricePlanItem
 }
 
 func (m *mockRepository) CreatePlan(ctx context.Context, plan *TariffPricePlan) error { return nil }
 func (m *mockRepository) UpdatePlan(ctx context.Context, plan *TariffPricePlan) error { return nil }
 func (m *mockRepository) FindPlanByID(ctx context.Context, id string) (*TariffPricePlan, error) {
-	return nil, nil
+	if m.planByID != nil {
+		return m.planByID, nil
+	}
+	return nil, gorm.ErrRecordNotFound
 }
 func (m *mockRepository) FindPlanByCode(ctx context.Context, code string) (*TariffPricePlan, error) {
-	return nil, nil
+	return nil, gorm.ErrRecordNotFound
 }
 func (m *mockRepository) FindAllPlans(ctx context.Context, params PlanListParams) ([]TariffPricePlan, int64, error) {
 	return nil, 0, nil
@@ -217,7 +222,7 @@ func (m *mockRepository) FindItemsByPlanID(ctx context.Context, planID string, p
 	return nil, 0, nil
 }
 func (m *mockRepository) FindAllItemsByPlanID(ctx context.Context, planID string) ([]TariffPricePlanItem, error) {
-	return nil, nil
+	return m.allItems, nil
 }
 func (m *mockRepository) BatchUpsertItems(ctx context.Context, planID string, items []TariffPricePlanItem, operator string) error {
 	return nil
@@ -421,3 +426,87 @@ func TestLookupTariffUseCase_HierarchicalResolution(t *testing.T) {
 		}
 	})
 }
+
+func TestCalculatePrice_ZeroCitoOverride(t *testing.T) {
+	zeroCito := 0.00
+	item := &TariffPricePlanItem{
+		TotalBasePrice: 200000.00,
+		TotalCitoPrice: &zeroCito,
+		Components: []TariffPricePlanItemComponent{
+			{
+				ComponentID: "c1",
+				BaseAmount:  200000.00,
+				CitoAmount:  &zeroCito,
+			},
+		},
+	}
+
+	totalPrice, comps := item.CalculatePrice(true, 25.00)
+	if totalPrice != 0.00 {
+		t.Errorf("expected 0.00 for explicit zero CITO override, got %f", totalPrice)
+	}
+	if len(comps) != 1 || comps[0].Amount != 0.00 {
+		t.Errorf("expected component amount 0.00, got %+v", comps)
+	}
+}
+
+func TestApprovePricePlan_EmptyItems(t *testing.T) {
+	plan := &TariffPricePlan{
+		ID:     "plan-empty",
+		Status: PricePlanStatusSubmitted,
+	}
+	mockRepo := &mockRepository{
+		planByID: plan,
+		allItems: []TariffPricePlanItem{}, // 0 items
+	}
+	uc := NewApprovePricePlanUseCase(mockRepo)
+
+	_, err := uc.Execute(context.Background(), "plan-empty", "ADMIN")
+	if err == nil {
+		t.Fatalf("expected error when approving plan with 0 items, got nil")
+	}
+}
+
+func TestCreatePricePlan_DefaultWithCustomerDisallowed(t *testing.T) {
+	mockRepo := &mockRepository{}
+	uc := NewCreatePricePlanUseCase(mockRepo)
+
+	custID := "cust-123"
+	_, err := uc.Execute(context.Background(), CreatePricePlanRequest{
+		Code:          "TPP-TEST",
+		Name:          "Test Plan",
+		EffectiveFrom: "2026-01-01",
+		IsDefault:     true,
+		CustomerID:    &custID,
+	}, "ADMIN")
+
+	if err == nil {
+		t.Fatalf("expected error when creating default plan associated with customer, got nil")
+	}
+}
+
+func TestManageItems_DuplicateComponentDisallowed(t *testing.T) {
+	plan := &TariffPricePlan{
+		ID:     "plan-draft",
+		Status: PricePlanStatusDraft,
+	}
+	mockRepo := &mockRepository{
+		planByID: plan,
+	}
+	uc := NewManageItemsUseCase(mockRepo)
+
+	_, err := uc.AddItem(context.Background(), "plan-draft", AddItemRequest{
+		ItemID:         "item-1",
+		TariffClassID:  "class-1",
+		TotalBasePrice: 100000,
+		Components: []ItemComponentRequest{
+			{ComponentID: "c1", BaseAmount: 50000},
+			{ComponentID: "c1", BaseAmount: 50000}, // Duplicate component_id
+		},
+	}, "ADMIN")
+
+	if !errors.Is(err, ErrDuplicateComponent) {
+		t.Fatalf("expected ErrDuplicateComponent, got %v", err)
+	}
+}
+

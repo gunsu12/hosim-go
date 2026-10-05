@@ -32,6 +32,7 @@ var (
 	ErrEffectiveDateInvalid       = errors.New("tanggal mulai berlaku tidak boleh lebih besar dari tanggal berakhir")
 	ErrItemAlreadyInPlan          = errors.New("item untuk kelas tarif tersebut sudah ada di dalam buku tarif ini")
 	ErrComponentNotFound          = errors.New("komponen tarif tidak ditemukan")
+	ErrDuplicateComponent         = errors.New("komponen tarif duplikat dalam satu item tidak diizinkan")
 )
 
 // TariffPricePlan merepresentasikan entitas header buku tarif rumah sakit
@@ -49,6 +50,7 @@ type TariffPricePlan struct {
 	DefaultCitoPercent float64         `gorm:"type:numeric(5,2);default:25.00;not null" json:"default_cito_percent"`
 	ApprovedAt         *time.Time      `json:"approved_at,omitempty"`
 	ApprovedBy         *string         `gorm:"size:50" json:"approved_by,omitempty"`
+	TotalItems         int64           `gorm:"->;column:total_items" json:"total_items"`
 	CreatedAt          time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt          time.Time       `gorm:"default:CURRENT_TIMESTAMP;OnUpdate:CURRENT_TIMESTAMP" json:"updated_at"`
 	DeletedAt          gorm.DeletedAt  `gorm:"index" json:"-"`
@@ -210,7 +212,7 @@ func (i *TariffPricePlanItem) CalculatePrice(isCito bool, defaultCitoPercent flo
 
 	// Kasus CITO:
 	var finalTotalPrice float64
-	if i.TotalCitoPrice != nil && *i.TotalCitoPrice > 0 {
+	if i.TotalCitoPrice != nil && *i.TotalCitoPrice >= 0 {
 		finalTotalPrice = *i.TotalCitoPrice
 	} else {
 		finalTotalPrice = i.TotalBasePrice * (1.0 + (defaultCitoPercent / 100.0))
@@ -220,7 +222,7 @@ func (i *TariffPricePlanItem) CalculatePrice(isCito bool, defaultCitoPercent flo
 	resolved := make([]ResolvedTariffComponent, len(i.Components))
 	for idx, c := range i.Components {
 		var compAmount float64
-		if c.CitoAmount != nil && *c.CitoAmount > 0 {
+		if c.CitoAmount != nil && *c.CitoAmount >= 0 {
 			compAmount = *c.CitoAmount
 		} else {
 			compAmount = c.BaseAmount * (1.0 + (defaultCitoPercent / 100.0))

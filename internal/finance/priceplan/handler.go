@@ -51,14 +51,14 @@ func NewHandler(
 }
 
 func getOperator(c *gin.Context) string {
-	if op := c.GetHeader("X-User-ID"); op != "" {
-		return op
-	}
 	if username := middleware.GetUsername(c); username != "" {
 		return username
 	}
 	if uid := middleware.GetUserID(c); uid != "" {
 		return uid
+	}
+	if op := c.GetHeader("X-User-ID"); op != "" {
+		return op
 	}
 	return "SYSTEM"
 }
@@ -433,7 +433,7 @@ func (h *Handler) AddItem(c *gin.Context) {
 			response.Error(c, http.StatusForbidden, err.Error(), nil)
 			return
 		}
-		if errors.Is(err, ErrTariffComponentsMismatch) {
+		if errors.Is(err, ErrTariffComponentsMismatch) || errors.Is(err, ErrDuplicateComponent) {
 			response.Error(c, http.StatusUnprocessableEntity, err.Error(), nil)
 			return
 		}
@@ -469,7 +469,7 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 			response.Error(c, http.StatusForbidden, err.Error(), nil)
 			return
 		}
-		if errors.Is(err, ErrTariffComponentsMismatch) {
+		if errors.Is(err, ErrTariffComponentsMismatch) || errors.Is(err, ErrDuplicateComponent) {
 			response.Error(c, http.StatusUnprocessableEntity, err.Error(), nil)
 			return
 		}
@@ -521,7 +521,7 @@ func (h *Handler) BatchUpsertItems(c *gin.Context) {
 			response.Error(c, http.StatusForbidden, err.Error(), nil)
 			return
 		}
-		if errors.Is(err, ErrTariffComponentsMismatch) {
+		if errors.Is(err, ErrTariffComponentsMismatch) || errors.Is(err, ErrDuplicateComponent) {
 			response.Error(c, http.StatusUnprocessableEntity, err.Error(), nil)
 			return
 		}

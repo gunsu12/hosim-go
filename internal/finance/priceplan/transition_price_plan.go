@@ -77,7 +77,12 @@ func (uc *approvePricePlanUseCase) Execute(ctx context.Context, id string, opera
 		return nil, err
 	}
 
-	// 2. Validasi keseimbangan komponen untuk setiap item (PRD § 4.2)
+	// 2. Pastikan buku tarif memiliki minimal satu item
+	if len(items) == 0 {
+		return nil, errors.New("buku tarif tidak memiliki item tarif dan tidak dapat disetujui")
+	}
+
+	// 3. Validasi keseimbangan komponen untuk setiap item (PRD § 4.2)
 	for _, item := range items {
 		if err := item.ValidateBalancing(); err != nil {
 			return nil, err

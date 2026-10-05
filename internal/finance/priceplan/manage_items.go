@@ -52,12 +52,17 @@ func (uc *manageItemsUseCase) AddItem(ctx context.Context, planID string, req Ad
 
 	// Hitung dan validasi balancing komponen
 	var sum float64
+	seenComp := make(map[string]bool, len(req.Components))
 	components := make([]TariffPricePlanItemComponent, len(req.Components))
 	for i, c := range req.Components {
 		cID := strings.TrimSpace(c.ComponentID)
 		if cID == "" {
 			return nil, errors.New("component_id pada rincian komponen wajib diisi")
 		}
+		if seenComp[cID] {
+			return nil, ErrDuplicateComponent
+		}
+		seenComp[cID] = true
 		sum += c.BaseAmount
 		components[i] = TariffPricePlanItemComponent{
 			ComponentID: cID,
@@ -129,12 +134,17 @@ func (uc *manageItemsUseCase) UpdateItem(ctx context.Context, planID string, ite
 	}
 
 	var sum float64
+	seenComp := make(map[string]bool, len(req.Components))
 	components := make([]TariffPricePlanItemComponent, len(req.Components))
 	for i, c := range req.Components {
 		cID := strings.TrimSpace(c.ComponentID)
 		if cID == "" {
 			return nil, errors.New("component_id pada rincian komponen wajib diisi")
 		}
+		if seenComp[cID] {
+			return nil, ErrDuplicateComponent
+		}
+		seenComp[cID] = true
 		sum += c.BaseAmount
 		components[i] = TariffPricePlanItemComponent{
 			ComponentID: cID,
@@ -242,12 +252,17 @@ func (uc *manageItemsUseCase) BatchUpsert(ctx context.Context, planID string, re
 		}
 
 		var sum float64
+		seenComp := make(map[string]bool, len(itReq.Components))
 		components := make([]TariffPricePlanItemComponent, len(itReq.Components))
 		for cIdx, c := range itReq.Components {
 			cID := strings.TrimSpace(c.ComponentID)
 			if cID == "" {
 				return errors.New("component_id wajib diisi pada setiap rincian komponen")
 			}
+			if seenComp[cID] {
+				return ErrDuplicateComponent
+			}
+			seenComp[cID] = true
 			sum += c.BaseAmount
 			components[cIdx] = TariffPricePlanItemComponent{
 				ComponentID: cID,
