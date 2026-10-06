@@ -1,5 +1,5 @@
 // Auth Store & Session Management for HOSIM (Svelte 5 Runes + TypeScript)
-import { login as apiLogin } from '../api';
+import { login as apiLogin } from '$lib/api/auth';
 import type { AuthSession, UserProfile } from '../types';
 
 const STORAGE_KEY = 'hosim_auth_session';

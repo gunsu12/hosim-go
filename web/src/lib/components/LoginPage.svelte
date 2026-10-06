@@ -12,7 +12,7 @@
     Sparkles
   } from '@lucide/svelte';
   import { auth } from '../stores/auth.svelte';
-  import { checkBackendHealth } from '../api';
+  import { checkBackendHealth } from '$lib/api/client';
   import { onMount } from 'svelte';
   import type { UserProfile } from '../types';
 

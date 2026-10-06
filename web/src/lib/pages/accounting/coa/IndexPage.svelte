@@ -28,7 +28,7 @@
     createAccount,
     updateAccount,
     deleteAccount
-  } from '../../../api';
+  } from '$lib/api/accounting';
   import type {
     AccountRecord,
     AccountTreeNode,

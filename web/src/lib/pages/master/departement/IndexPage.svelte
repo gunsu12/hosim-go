@@ -20,7 +20,7 @@
     createDepartment,
     updateDepartment,
     deleteDepartment
-  } from '../../../api';
+  } from '$lib/api/organization';
   import type {
     DepartementRecord,
     DepartementType,

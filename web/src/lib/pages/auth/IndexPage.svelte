@@ -34,7 +34,7 @@
     updateRole,
     deleteRole,
     getPermissions
-  } from '../../api';
+  } from '$lib/api/auth';
   import type {
     UserRecord,
     CreateUserDTO,

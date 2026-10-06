@@ -23,7 +23,7 @@
     updateServiceUnit,
     deleteServiceUnit,
     getDepartments
-  } from '../../../api';
+  } from '$lib/api/organization';
   import type {
     ServiceUnitRecord,
     CreateServiceUnitDTO,
