@@ -140,15 +140,6 @@
                 ? "Akuntansi & Keuangan RS"
                 : activeModule.toUpperCase()}
       </span>
-
-      <button
-        type="button"
-        onclick={onNavigateToDesktop}
-        class="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium text-[#444746] hover:bg-[#e9eef6] hover:text-[#0b57d0] transition-colors cursor-pointer border border-[#e1e5ea] ml-1"
-        title="Kembali ke Beranda Modul"
-      >
-        <span>Semua Modul</span>
-      </button>
     {/if}
   </div>
 
