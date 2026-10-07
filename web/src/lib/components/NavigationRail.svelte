@@ -11,6 +11,7 @@
     LayoutGrid,
     ShieldCheck,
     BookOpen,
+    Receipt,
   } from "@lucide/svelte";
   import { auth } from "../stores/auth.svelte";
 
@@ -45,7 +46,7 @@
     onNavigateHome = () => {},
   }: Props = $props();
 
-  let openParentIds = $state<string[]>(["clinical", "master", "accounting"]);
+  let openParentIds = $state<string[]>(["clinical", "master", "accounting", "finance"]);
   let flyoutMenuId = $state<string | null>(null);
 
   const navigationStructure: MenuItem[] = [
@@ -160,6 +161,44 @@
           label: "Laporan Keuangan & Neraca",
           badge: "Tahap 4",
           permission: "accounting:read",
+        },
+      ],
+    },
+    {
+      id: "finance",
+      label: "Tarif & Keuangan RS",
+      shortLabel: "Tarif",
+      icon: Receipt,
+      children: [
+        {
+          id: "finance-price-plan",
+          label: "Buku Tarif (Price Plan)",
+          badge: "Core",
+          permission: "tariff_price_plan:read",
+        },
+        {
+          id: "finance-tariff-lookup",
+          label: "Kalkulator Lookup Tarif",
+          badge: "Engine",
+          permission: "tariff_price_plan:read",
+        },
+        {
+          id: "finance-tariff",
+          label: "Kelas & Komponen Tarif",
+          badge: "Master",
+          permission: "tariff_class:read",
+        },
+        {
+          id: "finance-tariff-class",
+          label: "Kelas Tarif (Class)",
+          badge: null,
+          permission: "tariff_class:read",
+        },
+        {
+          id: "finance-tariff-component",
+          label: "Komponen Tarif (Component)",
+          badge: null,
+          permission: "tariff_component:read",
         },
       ],
     },

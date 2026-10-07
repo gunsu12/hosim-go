@@ -20,6 +20,7 @@
     FileText,
     Users,
     BookOpen,
+    Receipt,
     X,
     LayoutGrid,
   } from "@lucide/svelte";
@@ -257,6 +258,33 @@
         "Laporan Keuangan",
       ],
       quickStats: "Standar Akuntansi RS",
+    },
+    {
+      id: "finance",
+      title: "Master Tarif & Keuangan RS",
+      shortTitle: "Tarif & Finance",
+      category: "admin_finance",
+      categoryLabel: "Administrasi, Keuangan & Tata Kelola",
+      description:
+        "Pengaturan kelas tarif akomodasi (VVIP - Kelas 3), matriks komponen pendapatan jasa medis & sarana RS, serta pemetaan bagan akun (COA).",
+      icon: Receipt,
+      color: {
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+        hoverBg: "hover:border-emerald-500 hover:shadow-emerald-100",
+        badge: "bg-emerald-100 text-emerald-800",
+      },
+      defaultNav: "finance-tariff",
+      status: "ready",
+      statusText: "Aktif & Terintegrasi",
+      permission: "tariff_class:read",
+      features: [
+        "Kelas Tarif Kamar & Layanan",
+        "Komponen Jasa Dokter & RS",
+        "Pemetaan Bagan Akun (COA)",
+      ],
+      quickStats: "Master Keuangan RS",
     },
     {
       id: "billing",

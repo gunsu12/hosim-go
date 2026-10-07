@@ -8,9 +8,11 @@ import (
 )
 
 type ListParams struct {
-	Page   int
-	Limit  int
-	Search string
+	Page          int
+	Limit         int
+	Search        string
+	IsActive      *bool
+	ComponentType string
 }
 
 type Repository interface {
@@ -85,6 +87,14 @@ func (r *repository) FindAll(ctx context.Context, params ListParams) ([]TariffCo
 			"LOWER(code) LIKE ? OR LOWER(name) LIKE ?",
 			searchTerm, searchTerm,
 		)
+	}
+
+	if params.IsActive != nil {
+		query = query.Where("is_active = ?", *params.IsActive)
+	}
+
+	if params.ComponentType != "" && params.ComponentType != "ALL" {
+		query = query.Where("component_type = ?", params.ComponentType)
 	}
 
 	if err := query.Count(&count).Error; err != nil {

@@ -22,6 +22,9 @@ type CreateTariffComponentRequest struct {
 	IsHospitalRevenue  bool    `json:"is_hospital_revenue"`
 	IsOperatorRevenue  bool    `json:"is_operator_revenue"`
 	IsParamedicRevenue bool    `json:"is_paramedic_revenue"`
+	ComponentType      *string `json:"component_type"`
+	DefaultCOACode     *string `json:"default_coa_code"`
+	IsActive           *bool   `json:"is_active"`
 }
 
 type UpdateTariffComponentRequest struct {
@@ -31,6 +34,20 @@ type UpdateTariffComponentRequest struct {
 	IsHospitalRevenue  bool    `json:"is_hospital_revenue"`
 	IsOperatorRevenue  bool    `json:"is_operator_revenue"`
 	IsParamedicRevenue bool    `json:"is_paramedic_revenue"`
+	ComponentType      *string `json:"component_type"`
+	DefaultCOACode     *string `json:"default_coa_code"`
+	IsActive           *bool   `json:"is_active"`
+}
+
+func sanitizeStringPtr(s *string) *string {
+	if s == nil {
+		return nil
+	}
+	trimmed := strings.TrimSpace(*s)
+	if trimmed == "" {
+		return nil
+	}
+	return &trimmed
 }
 
 type Service interface {
@@ -68,13 +85,26 @@ func (comp *service) CreateTariffComponent(ctx context.Context, req CreateTariff
 		return nil, err
 	}
 
+	compType := "LAINNYA"
+	if req.ComponentType != nil && strings.TrimSpace(*req.ComponentType) != "" {
+		compType = strings.TrimSpace(*req.ComponentType)
+	}
+
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
 	tc := &TariffComponent{
 		Code:               req.Code,
 		Name:               req.Name,
 		IsHospitalRevenue:  req.IsHospitalRevenue,
 		IsOperatorRevenue:  req.IsOperatorRevenue,
 		IsParamedicRevenue: req.IsParamedicRevenue,
-		Description:        req.Description,
+		ComponentType:      compType,
+		DefaultCOACode:     sanitizeStringPtr(req.DefaultCOACode),
+		IsActive:           isActive,
+		Description:        sanitizeStringPtr(req.Description),
 		CreatedBy:          operatorID,
 		UpdatedBy:          operatorID,
 	}
@@ -113,11 +143,22 @@ func (comp *service) UpdateTariffComponent(ctx context.Context, id string, req U
 
 	tc.Code = req.Code
 	tc.Name = req.Name
-	tc.Description = req.Description
+	tc.Description = sanitizeStringPtr(req.Description)
 
 	tc.IsHospitalRevenue = req.IsHospitalRevenue
 	tc.IsOperatorRevenue = req.IsOperatorRevenue
 	tc.IsParamedicRevenue = req.IsParamedicRevenue
+
+	if req.ComponentType != nil && strings.TrimSpace(*req.ComponentType) != "" {
+		tc.ComponentType = strings.TrimSpace(*req.ComponentType)
+	}
+	if req.DefaultCOACode != nil {
+		tc.DefaultCOACode = sanitizeStringPtr(req.DefaultCOACode)
+	}
+	if req.IsActive != nil {
+		tc.IsActive = *req.IsActive
+	}
+
 	tc.UpdatedBy = operatorID
 
 	return comp.repo.Update(ctx, tc)

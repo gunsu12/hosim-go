@@ -73,7 +73,15 @@ func (h *Handler) List(ctx *gin.Context) {
 	params := ListParams{
 		Page:   1,
 		Limit:  10,
-		Search: ctx.Query("search"),
+		Search:        ctx.Query("search"),
+		ComponentType: ctx.Query("component_type"),
+	}
+
+	if ctx.Query("is_active") != "" {
+		val, err := strconv.ParseBool(ctx.Query("is_active"))
+		if err == nil {
+			params.IsActive = &val
+		}
 	}
 
 	if ctx.Query("page") != "" {

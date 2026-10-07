@@ -30,6 +30,13 @@ export const ROUTE_MAP: Record<string, string> = {
   'billing-workspace': '/billing/workspace',
   'audit-workspace': '/audit/workspace',
 
+  // Finance & Tariff Management
+  'finance-tariff': '/finance/tariff',
+  'finance-price-plan': '/finance/price-plan',
+  'finance-tariff-lookup': '/finance/tariff-lookup',
+  'finance-tariff-class': '/finance/tariff-class',
+  'finance-tariff-component': '/finance/tariff-component',
+
   // Accounting & Financial Management
   'accounting-coa': '/accounting/coa',
   'accounting-journals': '/accounting/journals',
@@ -118,5 +125,6 @@ export function getModuleFromNav(navId: string): string | null {
   if (navId.startsWith('billing')) return 'billing';
   if (navId.startsWith('audit')) return 'audit';
   if (navId.startsWith('accounting')) return 'accounting';
+  if (navId.startsWith('finance-')) return 'finance';
   return null;
 }

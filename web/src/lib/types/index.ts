@@ -5,3 +5,4 @@ export * from './common';
 export * from './auth';
 export * from './clinical';
 export * from './master';
+export * from './finance';

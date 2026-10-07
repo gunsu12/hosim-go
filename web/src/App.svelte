@@ -32,6 +32,9 @@
   // Domain Accounting Pages
   import { ChartOfAccountsPage } from '$lib/pages/accounting';
 
+  // Domain Finance & Tariff Pages
+  import { FinanceTariffPage } from '$lib/pages/finance';
+
   // Domain Auth & User Management Pages
   import { AuthManagementPage } from '$lib/pages/auth';
 
@@ -176,6 +179,16 @@
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}
           <TariffClassPage />
+        {:else if activeNav === 'finance-tariff'}
+          <FinanceTariffPage initialTab="PLAN" />
+        {:else if activeNav === 'finance-price-plan'}
+          <FinanceTariffPage initialTab="PLAN" />
+        {:else if activeNav === 'finance-tariff-lookup'}
+          <FinanceTariffPage initialTab="SIMULATOR" />
+        {:else if activeNav === 'finance-tariff-class'}
+          <FinanceTariffPage initialTab="CLASS" />
+        {:else if activeNav === 'finance-tariff-component'}
+          <FinanceTariffPage initialTab="COMPONENT" />
         {:else if activeNav === 'master-item'}
           <ItemPage />
         {:else if activeNav === 'master-coa' || activeNav === 'accounting-coa'}
