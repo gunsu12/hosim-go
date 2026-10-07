@@ -227,8 +227,8 @@
       status: "ready",
       statusText: "Aktif & Terintegrasi",
       permission: "department:read",
-      features: ["Pasien & Nakes", "Organisasi & Kamar", "Payer & Tarif RS"],
-      quickStats: "9 Sub-Domain Lengkap",
+      features: ["Pasien & Nakes", "Organisasi & Kamar", "Katalog Item & Tarif"],
+      quickStats: "10 Sub-Domain Lengkap",
     },
     {
       id: "accounting",

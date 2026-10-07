@@ -25,7 +25,8 @@
     RoomPage,
     CustomerPage,
     ReferalPage,
-    TariffClassPage
+    TariffClassPage,
+    ItemPage
   } from '$lib/pages/master';
 
   // Domain Accounting Pages
@@ -175,6 +176,8 @@
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}
           <TariffClassPage />
+        {:else if activeNav === 'master-item'}
+          <ItemPage />
         {:else if activeNav === 'master-coa' || activeNav === 'accounting-coa'}
           <ChartOfAccountsPage />
 

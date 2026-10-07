@@ -9,3 +9,4 @@ export { default as RoomPage } from './room/IndexPage.svelte';
 export { default as CustomerPage } from './customer/IndexPage.svelte';
 export { default as ReferalPage } from './referal/IndexPage.svelte';
 export { default as TariffClassPage } from './tariff_class/IndexPage.svelte';
+export { default as ItemPage } from './item/IndexPage.svelte';

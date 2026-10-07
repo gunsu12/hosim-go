@@ -123,6 +123,12 @@
           badge: null,
           permission: "tariff_class:read",
         },
+        {
+          id: "master-item",
+          label: "Katalog Item & Tarif",
+          badge: "Universal",
+          permission: "item:read",
+        },
       ],
     },
     {

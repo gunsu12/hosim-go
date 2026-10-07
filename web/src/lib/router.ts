@@ -18,6 +18,7 @@ export const ROUTE_MAP: Record<string, string> = {
   'master-payer': '/master/customer',
   'master-referal': '/master/referal',
   'master-tariff-class': '/master/tariff-class',
+  'master-item': '/master/item',
   'master-coa': '/master/coa',
 
   // Workspaces Preview

@@ -119,15 +119,15 @@ func (i *Item) BeforeCreate(tx *gorm.DB) error {
 // ItemMedication menyimpan atribut spesifik obat, cairan infus, dan vaksin (1:1 ke items)
 type ItemMedication struct {
 	ItemID             string               `gorm:"primaryKey;size:36" json:"item_id"`
-	KFACode            *string              `gorm:"size:50;index:idx_item_meds_kfa" json:"kfa_code,omitempty"`
-	BPOMNIE            *string              `gorm:"size:50;index:idx_item_meds_nie" json:"bpom_nie,omitempty"`
+	KFACode            *string              `gorm:"column:kfa_code;size:50;index:idx_item_meds_kfa" json:"kfa_code,omitempty"`
+	BPOMNIE            *string              `gorm:"column:bpom_nie;size:50;index:idx_item_meds_nie" json:"bpom_nie,omitempty"`
 	DosageForm         *string              `gorm:"size:50" json:"dosage_form,omitempty"`
 	StrengthAmount     *string              `gorm:"size:50" json:"strength_amount,omitempty"`
 	StrengthUnit       *string              `gorm:"size:20" json:"strength_unit,omitempty"`
 	DefaultRoute       *string              `gorm:"size:50" json:"default_route,omitempty"`
 	MedicationType     enums.MedicationType `gorm:"size:30" json:"medication_type,omitempty"`
 	IsHighAlert        bool                 `gorm:"default:false;not null" json:"is_high_alert"`
-	IsLASA             bool                 `gorm:"default:false;not null" json:"is_lasa"`
+	IsLASA             bool                 `gorm:"column:is_lasa;default:false;not null" json:"is_lasa"`
 	IsFornas           bool                 `gorm:"default:false;not null" json:"is_fornas"`
 	IsAntibiotic       bool                 `gorm:"default:false;not null" json:"is_antibiotic"`
 	StorageTemperature *string              `gorm:"size:50" json:"storage_temperature,omitempty"`
@@ -148,7 +148,7 @@ type ItemGeneral struct {
 	GeneralType         enums.GeneralType          `gorm:"size:30;not null" json:"general_type"`
 	IsSterile           bool                       `gorm:"default:false;not null" json:"is_sterile"`
 	IsDisposable        bool                       `gorm:"default:true;not null" json:"is_disposable"`
-	IsCSSDItem          bool                       `gorm:"default:false;not null" json:"is_cssd_item"`
+	IsCSSDItem          bool                       `gorm:"column:is_cssd_item;default:false;not null" json:"is_cssd_item"`
 	SterilizationMethod *enums.SterilizationMethod `gorm:"size:30" json:"sterilization_method,omitempty"`
 
 	CreatedAt time.Time `json:"created_at"`
