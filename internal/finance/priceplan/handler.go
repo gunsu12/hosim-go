@@ -377,6 +377,9 @@ func (h *Handler) ListItems(c *gin.Context) {
 	if cid := c.Query("tariff_class_id"); cid != "" {
 		params.TariffClassID = &cid
 	}
+	if itm := c.Query("item_id"); itm != "" {
+		params.ItemID = &itm
+	}
 	if act := c.Query("is_active"); act != "" {
 		b := act == "true" || act == "1"
 		params.IsActive = &b

@@ -33,6 +33,7 @@ export const ROUTE_MAP: Record<string, string> = {
   // Finance & Tariff Management
   'finance-tariff': '/finance/tariff',
   'finance-price-plan': '/finance/price-plan',
+  'finance-tariff-matrix': '/finance/tariff-matrix',
   'finance-tariff-lookup': '/finance/tariff-lookup',
   'finance-tariff-class': '/finance/tariff-class',
   'finance-tariff-component': '/finance/tariff-component',

@@ -118,6 +118,7 @@ export async function getPricePlanItems(
   if (params?.limit) q.set('limit', String(params.limit));
   if (params?.search) q.set('search', params.search);
   if (params?.tariff_class_id) q.set('tariff_class_id', params.tariff_class_id);
+  if (params?.item_id) q.set('item_id', params.item_id);
   if (params?.is_active !== undefined) q.set('is_active', String(params.is_active));
   const queryStr = q.toString() ? `?${q.toString()}` : '';
   const res = await authFetch<any>(`/price-plans/${planId}/items${queryStr}`);
@@ -164,6 +165,16 @@ export async function updatePricePlanItem(
 export async function deletePricePlanItem(planId: string, itemId: string): Promise<void> {
   await authFetch<null>(`/price-plans/${planId}/items/${itemId}`, {
     method: 'DELETE',
+  });
+}
+
+export async function batchUpsertPricePlanItems(
+  planId: string,
+  items: AddPricePlanItemDTO[]
+): Promise<void> {
+  await authFetch<any>(`/price-plans/${planId}/items/batch-upsert`, {
+    method: 'POST',
+    body: JSON.stringify({ items }),
   });
 }
 

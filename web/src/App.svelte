@@ -183,6 +183,8 @@
           <FinanceTariffPage initialTab="PLAN" />
         {:else if activeNav === 'finance-price-plan'}
           <FinanceTariffPage initialTab="PLAN" />
+        {:else if activeNav === 'finance-tariff-matrix'}
+          <FinanceTariffPage initialTab="MATRIX" />
         {:else if activeNav === 'finance-tariff-lookup'}
           <FinanceTariffPage initialTab="SIMULATOR" />
         {:else if activeNav === 'finance-tariff-class'}

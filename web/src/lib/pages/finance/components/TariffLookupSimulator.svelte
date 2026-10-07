@@ -14,18 +14,16 @@
     Clock
   } from '@lucide/svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
+  import TariffLookupInput from '$lib/components/TariffLookupInput.svelte';
   import { lookupTariff } from '$lib/api/finance/price_plan';
   import { getTariffClasses } from '$lib/api/finance/tariff';
   import { getCustomers } from '$lib/api/finance/customer';
-  import { getItems } from '$lib/api/catalog/item';
   import type { LookupTariffResponse } from '$lib/types/finance/price_plan';
   import type { TariffClassRecord } from '$lib/types/finance/tariff';
   import type { CustomerRecord } from '$lib/types/master/customer';
-  import type { ItemSummaryRecord } from '$lib/types/master/item';
 
   let tariffClasses = $state<TariffClassRecord[]>([]);
   let customers = $state<CustomerRecord[]>([]);
-  let tariffItems = $state<ItemSummaryRecord[]>([]);
 
   // Simulator Form Inputs
   let selectedItemId = $state('');
@@ -41,14 +39,11 @@
   onMount(() => {
     Promise.all([
       getTariffClasses({ limit: 100 }),
-      getCustomers({ is_active: true, limit: 100 }),
-      getItems({ item_type: 'TARIFF', limit: 100 })
-    ]).then(([classRes, custRes, itemRes]) => {
+      getCustomers({ is_active: true, limit: 100 })
+    ]).then(([classRes, custRes]) => {
       tariffClasses = classRes.data || [];
       customers = custRes.data || [];
-      tariffItems = itemRes.data || [];
       if (tariffClasses.length > 0) selectedClassId = tariffClasses[0].id;
-      if (tariffItems.length > 0) selectedItemId = tariffItems[0].id;
     }).catch((err) => {
       console.error('Failed to load simulator data:', err);
     });
@@ -108,17 +103,13 @@
       </h4>
 
       <div>
-        <label for="sim-item" class="block font-semibold text-[#444746] mb-1">Tindakan Medis / Tarif Layanan *</label>
-        <select
-          id="sim-item"
+        <TariffLookupInput
+          id="sim-tariff-lookup"
+          label="Tindakan Medis / Tarif Layanan"
+          required={true}
           bind:value={selectedItemId}
-          class="w-full h-10 px-3 rounded-xl border border-[#e1e5ea] bg-white text-xs focus:border-[#0b57d0] focus:outline-hidden"
-        >
-          <option value="">-- Pilih Tindakan Medis --</option>
-          {#each tariffItems as item (item.id)}
-            <option value={item.id}>[{item.code}] {item.name}</option>
-          {/each}
-        </select>
+          placeholder="Cari tindakan medis (misal: Konsultasi, USG)..."
+        />
       </div>
 
       <div>

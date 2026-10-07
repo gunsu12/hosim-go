@@ -177,6 +177,12 @@
           permission: "tariff_price_plan:read",
         },
         {
+          id: "finance-tariff-matrix",
+          label: "Editor Matriks Tarif",
+          badge: "Batch",
+          permission: "tariff_price_plan:update",
+        },
+        {
           id: "finance-tariff-lookup",
           label: "Kalkulator Lookup Tarif",
           badge: "Engine",

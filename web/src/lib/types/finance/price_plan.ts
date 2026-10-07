@@ -117,8 +117,13 @@ export interface PricePlanItemListParams {
   page?: number;
   limit?: number;
   search?: string;
+  item_id?: string;
   tariff_class_id?: string;
   is_active?: boolean;
+}
+
+export interface BatchUpsertItemsDTO {
+  items: AddPricePlanItemDTO[];
 }
 
 export interface PricePlanPaginationMeta {

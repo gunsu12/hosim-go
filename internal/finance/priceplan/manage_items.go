@@ -239,8 +239,8 @@ func (uc *manageItemsUseCase) BatchUpsert(ctx context.Context, planID string, re
 		return err
 	}
 
-	if !plan.CanModify() {
-		return ErrPricePlanImmutable
+	if plan.Status == PricePlanStatusArchived {
+		return errors.New("buku tarif yang telah diarsipkan (ARCHIVED) bersifat permanen dan tidak dapat diubah")
 	}
 
 	items := make([]TariffPricePlanItem, len(req.Items))

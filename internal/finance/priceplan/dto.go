@@ -102,6 +102,7 @@ type ItemListParams struct {
 	Page          int
 	Limit         int
 	Search        string
+	ItemID        *string
 	TariffClassID *string
 	IsActive      *bool
 }

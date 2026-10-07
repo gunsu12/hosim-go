@@ -10,6 +10,7 @@
     X,
     BookOpen,
     Calculator,
+    Sliders,
     Building2,
     UserCheck,
     CheckCheck,
@@ -52,6 +53,7 @@
   import PricePlanCloneModal from './components/PricePlanCloneModal.svelte';
   import PricePlanItemsModal from './components/PricePlanItemsModal.svelte';
   import TariffLookupSimulator from './components/TariffLookupSimulator.svelte';
+  import TariffMatrixEditor from './components/TariffMatrixEditor.svelte';
 
   import TariffClassTable from './components/TariffClassTable.svelte';
   import TariffComponentTable from './components/TariffComponentTable.svelte';
@@ -60,13 +62,13 @@
   import TariffDeleteModal from './components/TariffDeleteModal.svelte';
 
   interface Props {
-    initialTab?: 'PLAN' | 'SIMULATOR' | 'CLASS' | 'COMPONENT';
+    initialTab?: 'PLAN' | 'MATRIX' | 'SIMULATOR' | 'CLASS' | 'COMPONENT';
   }
 
   let { initialTab = 'PLAN' }: Props = $props();
 
   // Active Tab State
-  let activeTab = $state<'PLAN' | 'SIMULATOR' | 'CLASS' | 'COMPONENT'>('PLAN');
+  let activeTab = $state<'PLAN' | 'MATRIX' | 'SIMULATOR' | 'CLASS' | 'COMPONENT'>('PLAN');
 
   $effect(() => {
     if (initialTab) {
@@ -614,7 +616,17 @@
         <span>Buku Tarif ({planTotalCount})</span>
       </button>
 
-      <!-- Tab 2: Lookup Simulator -->
+      <!-- Tab 2: Editor Matriks Multi-Kelas -->
+      <button
+        type="button"
+        onclick={() => (activeTab = 'MATRIX')}
+        class="px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer {activeTab === 'MATRIX' ? 'bg-[#0b57d0] text-white shadow-xs' : 'text-[#444746] hover:bg-[#f0f4f9]'}"
+      >
+        <Sliders class="w-3.5 h-3.5" />
+        <span>Editor Matriks Tarif (Multi-Kelas)</span>
+      </button>
+
+      <!-- Tab 3: Lookup Simulator -->
       <button
         type="button"
         onclick={() => (activeTab = 'SIMULATOR')}
@@ -624,17 +636,17 @@
         <span>Simulator & Lookup Tarif</span>
       </button>
 
-      <!-- Tab 3: Kelas Tarif -->
+      <!-- Tab 4: Kelas Tarif -->
       <button
         type="button"
         onclick={() => (activeTab = 'CLASS')}
-        class="px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer {activeTab === 'CLASS' ? 'bg-[#0b57d0] text-white shadow-xs' : 'text-[#444746] hover:bg-[#f0f4f9]'}"
+        class="px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer {activeTab === 'CLASS' ? 'bg-blue-600 text-white shadow-xs' : 'text-[#444746] hover:bg-[#f0f4f9]'}"
       >
         <Tag class="w-3.5 h-3.5" />
         <span>Kelas Perawatan ({classTotalCount})</span>
       </button>
 
-      <!-- Tab 4: Komponen Tarif -->
+      <!-- Tab 5: Komponen Tarif -->
       <button
         type="button"
         onclick={() => (activeTab = 'COMPONENT')}
@@ -679,6 +691,8 @@
       onActivatePlan={handleActivatePlan}
       onArchivePlan={handleArchivePlan}
     />
+  {:else if activeTab === 'MATRIX'}
+    <TariffMatrixEditor showToast={showToast} />
   {:else if activeTab === 'SIMULATOR'}
     <TariffLookupSimulator />
   {:else if activeTab === 'CLASS'}

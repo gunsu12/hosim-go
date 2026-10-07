@@ -256,6 +256,9 @@ func (r *repository) FindItemsByPlanID(ctx context.Context, planID string, param
 		s := "%" + strings.ToLower(params.Search) + "%"
 		query = query.Where("(LOWER(items.name) LIKE ? OR LOWER(items.code) LIKE ?)", s, s)
 	}
+	if params.ItemID != nil && *params.ItemID != "" {
+		query = query.Where("tariff_price_plan_items.item_id = ?", *params.ItemID)
+	}
 	if params.TariffClassID != nil && *params.TariffClassID != "" {
 		query = query.Where("tariff_price_plan_items.tariff_class_id = ?", *params.TariffClassID)
 	}
