@@ -22,14 +22,14 @@ func NewHandler(service Service) *Handler {
 }
 
 func getOperator(c *gin.Context) string {
-	if op := c.GetHeader("X-User-ID"); op != "" {
-		return op
-	}
 	if username := middleware.GetUsername(c); username != "" {
 		return username
 	}
 	if uid := middleware.GetUserID(c); uid != "" {
 		return uid
+	}
+	if op := c.GetHeader("X-User-ID"); op != "" {
+		return op
 	}
 	return "SYSTEM"
 }
@@ -248,7 +248,8 @@ func (h *Handler) handleError(ctx *gin.Context, err error) {
 		errors.Is(err, ErrAccountInactive):
 		response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
 	case errors.Is(err, ErrCannotDeleteAccountWithChildren),
-		errors.Is(err, ErrCannotDeleteAccountInUse):
+		errors.Is(err, ErrCannotDeleteAccountInUse),
+		errors.Is(err, ErrCannotDeleteLevelOneAccount):
 		response.Error(ctx, http.StatusUnprocessableEntity, err.Error(), nil)
 	default:
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)

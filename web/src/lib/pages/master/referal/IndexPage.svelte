@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Search, Plus, Share2, Phone, Mail, MapPin, Building, ShieldCheck } from '@lucide/svelte';
   import M3Button from '../../../components/m3/M3Button.svelte';
+  import { alertDialog } from '../../../stores/confirm.svelte';
   import type { ReferalRecord, ReferalType } from '../../../types/master/referal';
 
   let searchQuery = $state('');
@@ -91,7 +92,7 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <M3Button variant="filled" onclick={() => alert('Modal Tambah Faskes Rujukan Baru')}>
+      <M3Button variant="filled" onclick={() => alertDialog({ title: 'Tambah Fasilitas Rujukan', message: 'Fitur pendaftaran faskes rujukan baru sedang dalam pengembangan.', variant: 'info' })}>
         <Plus class="w-4 h-4" />
         <span>Tambah Faskes Rujukan</span>
       </M3Button>
@@ -183,7 +184,7 @@
                 <button
                   type="button"
                   class="text-[#0b57d0] hover:underline font-medium text-xs cursor-pointer"
-                  onclick={() => alert(`Edit faskes: ${ref.name}`)}
+                  onclick={() => alertDialog({ title: 'Edit Faskes', message: `Fitur pengubahan faskes "${ref.name}" sedang dalam pengembangan.`, variant: 'info' })}
                 >
                   Edit
                 </button>

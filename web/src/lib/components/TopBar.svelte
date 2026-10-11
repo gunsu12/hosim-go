@@ -17,6 +17,8 @@
   import { onMount } from "svelte";
   import { checkBackendHealth } from "$lib/api/client";
   import { auth } from "../stores/auth.svelte";
+  import { theme } from "../stores/theme.svelte";
+  import ThemeToggle from "./ThemeToggle.svelte";
   import type { UserProfile } from "../types";
 
   interface Props {
@@ -167,7 +169,10 @@
   </div>
 
   <!-- Status Backend & Profil Pengguna -->
-  <div class="flex items-center gap-3 relative">
+  <div class="flex items-center gap-2 sm:gap-3 relative">
+    <!-- Theme Switcher (Terang / Gelap / Sistem) -->
+    <ThemeToggle />
+
     <!-- Help & Settings Icons -->
     <button
       type="button"
@@ -227,6 +232,44 @@
               >
                 <UserCheck class="w-3 h-3" />
                 <span>Role: {user?.role || "DOCTOR"}</span>
+              </div>
+            </div>
+
+            <!-- Tema Tampilan Quick Switch -->
+            <div class="py-3 border-b border-[#e1e5ea] flex flex-col gap-1.5">
+              <div
+                class="text-[10px] font-bold text-[#747775] uppercase tracking-wider px-1"
+              >
+                Tema Tampilan:
+              </div>
+              <div class="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onclick={() => theme.setMode('light')}
+                  class="px-2 py-1.5 rounded-xl text-xs font-semibold border text-center transition-all cursor-pointer flex items-center justify-center gap-1 {theme.mode === 'light'
+                    ? 'bg-amber-100 text-amber-900 border-amber-300 ring-2 ring-amber-200'
+                    : 'bg-[#f0f4f9] text-[#444746] hover:bg-amber-50 hover:text-amber-800 border-[#e1e5ea]'}"
+                >
+                  <span>☀️</span> Terang
+                </button>
+                <button
+                  type="button"
+                  onclick={() => theme.setMode('dark')}
+                  class="px-2 py-1.5 rounded-xl text-xs font-semibold border text-center transition-all cursor-pointer flex items-center justify-center gap-1 {theme.mode === 'dark'
+                    ? 'bg-indigo-100 text-indigo-900 border-indigo-300 ring-2 ring-indigo-200'
+                    : 'bg-[#f0f4f9] text-[#444746] hover:bg-indigo-50 hover:text-indigo-800 border-[#e1e5ea]'}"
+                >
+                  <span>🌙</span> Gelap
+                </button>
+                <button
+                  type="button"
+                  onclick={() => theme.setMode('system')}
+                  class="px-2 py-1.5 rounded-xl text-xs font-semibold border text-center transition-all cursor-pointer flex items-center justify-center gap-1 {theme.mode === 'system'
+                    ? 'bg-blue-100 text-blue-900 border-blue-300 ring-2 ring-blue-200'
+                    : 'bg-[#f0f4f9] text-[#444746] hover:bg-blue-50 hover:text-blue-800 border-[#e1e5ea]'}"
+                >
+                  <span>💻</span> Auto
+                </button>
               </div>
             </div>
 

@@ -293,8 +293,9 @@ func TestService_DeleteAccount_HasChildren(t *testing.T) {
 	repo := &mockAccountRepo{
 		findByIDFn: func(ctx context.Context, id string) (*account.ChartOfAccount, error) {
 			return &account.ChartOfAccount{
-				ID:   accountID,
-				Code: "1100",
+				ID:           accountID,
+				Code:         "1100",
+				AccountLevel: 2,
 			}, nil
 		},
 		findChildrenCountFn: func(ctx context.Context, parentID string) (int64, error) {
@@ -317,8 +318,9 @@ func TestService_DeleteAccount_UsedInTariff(t *testing.T) {
 	repo := &mockAccountRepo{
 		findByIDFn: func(ctx context.Context, id string) (*account.ChartOfAccount, error) {
 			return &account.ChartOfAccount{
-				ID:   accountID,
-				Code: "4101",
+				ID:           accountID,
+				Code:         "4101",
+				AccountLevel: 4,
 			}, nil
 		},
 		findChildrenCountFn: func(ctx context.Context, parentID string) (int64, error) {
@@ -334,6 +336,28 @@ func TestService_DeleteAccount_UsedInTariff(t *testing.T) {
 	err := svc.DeleteAccount(ctx, accountID, "admin")
 	if !errors.Is(err, account.ErrCannotDeleteAccountInUse) {
 		t.Fatalf("expected ErrCannotDeleteAccountInUse, got: %v", err)
+	}
+}
+
+func TestService_DeleteAccount_LevelOne(t *testing.T) {
+	ctx := context.Background()
+	accountID := "uuid-root-1000"
+
+	repo := &mockAccountRepo{
+		findByIDFn: func(ctx context.Context, id string) (*account.ChartOfAccount, error) {
+			return &account.ChartOfAccount{
+				ID:           accountID,
+				Code:         "1",
+				AccountLevel: 1,
+			}, nil
+		},
+	}
+
+	svc := account.NewService(repo)
+
+	err := svc.DeleteAccount(ctx, accountID, "admin")
+	if !errors.Is(err, account.ErrCannotDeleteLevelOneAccount) {
+		t.Fatalf("expected ErrCannotDeleteLevelOneAccount, got: %v", err)
 	}
 }
 

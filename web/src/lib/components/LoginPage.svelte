@@ -12,7 +12,9 @@
     Sparkles
   } from '@lucide/svelte';
   import { auth } from '../stores/auth.svelte';
+  import { alertDialog } from '../stores/confirm.svelte';
   import { checkBackendHealth } from '$lib/api/client';
+  import ThemeToggle from './ThemeToggle.svelte';
   import { onMount } from 'svelte';
   import type { UserProfile } from '../types';
 
@@ -86,17 +88,22 @@
       <span class="text-base font-semibold text-[#1f1f1f] tracking-tight">HOSIM</span>
     </div>
 
-    <!-- Status Koneksi Backend -->
-    <div class="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium {backendStatus.connected ? 'bg-[#c4eed0]/60 text-[#072711] border border-[#146c2e]/20' : 'bg-[#f0f4f9] text-[#444746] border border-[#e1e5ea]'}">
-      {#if backendStatus.connected}
-        <span class="w-2 h-2 rounded-full bg-[#1e8e3e] animate-pulse"></span>
-        <Wifi class="w-3.5 h-3.5 text-[#146c2e]" />
-        <span>Go Gin API: Terhubung</span>
-      {:else}
-        <span class="w-2 h-2 rounded-full bg-[#bdc1c6]"></span>
-        <WifiOff class="w-3.5 h-3.5 text-[#747775]" />
-        <span>Go API Standby / Demo Mode</span>
-      {/if}
+    <div class="flex items-center gap-2">
+      <!-- Status Koneksi Backend -->
+      <div class="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium {backendStatus.connected ? 'bg-[#c4eed0]/60 text-[#072711] border border-[#146c2e]/20' : 'bg-[#f0f4f9] text-[#444746] border border-[#e1e5ea]'}">
+        {#if backendStatus.connected}
+          <span class="w-2 h-2 rounded-full bg-[#1e8e3e] animate-pulse"></span>
+          <Wifi class="w-3.5 h-3.5 text-[#146c2e]" />
+          <span>Go Gin API: Terhubung</span>
+        {:else}
+          <span class="w-2 h-2 rounded-full bg-[#bdc1c6]"></span>
+          <WifiOff class="w-3.5 h-3.5 text-[#747775]" />
+          <span>Go API Standby / Demo Mode</span>
+        {/if}
+      </div>
+
+      <!-- Theme Switcher -->
+      <ThemeToggle />
     </div>
   </div>
 
@@ -147,7 +154,19 @@
             <label for="login-password" class="text-xs font-semibold text-[#444746]">
               Kata Sandi
             </label>
-            <a href="#forgot" onclick={(e) => { e.preventDefault(); alert('Hubungi administrator IT Rumah Sakit untuk reset password.'); }} class="text-xs text-[#0b57d0] hover:underline font-medium">
+            <a
+              href="#forgot"
+              onclick={(e) => {
+                e.preventDefault();
+                alertDialog({
+                  title: 'Lupa Kata Sandi',
+                  message: 'Silakan hubungi Administrator IT Rumah Sakit untuk reset kredensial akun SIMRS Anda.',
+                  variant: 'info',
+                  confirmText: 'Mengerti'
+                });
+              }}
+              class="text-xs text-[#0b57d0] dark:text-[#a8c7fa] hover:underline font-medium"
+            >
               Lupa sandi?
             </a>
           </div>

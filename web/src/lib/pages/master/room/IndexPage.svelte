@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Search, Plus, BedDouble, MapPin } from '@lucide/svelte';
   import M3Button from '../../../components/m3/M3Button.svelte';
+  import { alertDialog } from '../../../stores/confirm.svelte';
   import type { RoomRecord } from '../../../types/master/room';
 
   let searchQuery = $state('');
@@ -65,7 +66,7 @@
       <p class="text-xs text-[#444746]">Pengelolaan kamar rawat inap, kapasitas tempat tidur, ruang bedah (OK), dan unit intensif ICU/ICCU.</p>
     </div>
 
-    <M3Button variant="filled" onclick={() => alert('Tambah Ruangan Baru')}>
+    <M3Button variant="filled" onclick={() => alertDialog({ title: 'Tambah Ruangan', message: 'Fitur registrasi kamar atau ruangan baru sedang dalam pengembangan.', variant: 'info' })}>
       <Plus class="w-4 h-4" />
       <span>Tambah Ruangan</span>
     </M3Button>
@@ -114,7 +115,7 @@
               <td class="py-3.5 px-4 text-right">
                 <button
                   type="button"
-                  onclick={() => alert(`Status Bed: ${r.name}`)}
+                  onclick={() => alertDialog({ title: 'Status Bed Ruangan', message: `Detail tempat tidur untuk ruangan "${r.name}" (${r.unitName}) sedang disiapkan.`, variant: 'info' })}
                   class="text-xs text-[#0b57d0] hover:underline font-semibold cursor-pointer"
                 >
                   Detail Bed

@@ -1,35 +1,19 @@
 <script lang="ts">
   import {
-    Stethoscope,
-    Database,
-    History,
-    Calendar,
     ChevronDown,
     ChevronRight,
     Plus,
     ArrowLeft,
     LayoutGrid,
-    ShieldCheck,
-    BookOpen,
-    Receipt,
-    Building2,
   } from "@lucide/svelte";
   import { auth } from "../stores/auth.svelte";
+  import {
+    navigationStructure,
+    type MenuItem,
+    type SubMenuItem,
+  } from "../config/navigationStructure";
 
-  export interface SubMenuItem {
-    id: string;
-    label: string;
-    badge?: string | null;
-    permission?: string;
-  }
-
-  export interface MenuItem {
-    id: string;
-    label: string;
-    shortLabel: string;
-    icon: any;
-    children: SubMenuItem[];
-  }
+  export type { MenuItem, SubMenuItem };
 
   interface Props {
     activeNav?: string;
@@ -47,235 +31,8 @@
     onNavigateHome = () => {},
   }: Props = $props();
 
-  let openParentIds = $state<string[]>([
-    "clinical",
-    "master",
-    "accounting",
-    "tariff",
-    "customer",
-  ]);
+  let openParentIds = $state<string[]>([]);
   let flyoutMenuId = $state<string | null>(null);
-
-  const navigationStructure: MenuItem[] = [
-    {
-      id: "clinical",
-      label: "Pelayanan Medis",
-      shortLabel: "Klinis",
-      icon: Stethoscope,
-      children: [
-        {
-          id: "physical",
-          label: "Status Lokalis & Anatomi",
-          badge: "Body",
-          permission: "patient:read",
-        },
-        {
-          id: "anamnesis",
-          label: "Anamnesis & SOAP",
-          badge: null,
-          permission: "patient:read",
-        },
-      ],
-    },
-    {
-      id: "master",
-      label: "Master Data RS",
-      shortLabel: "Master",
-      icon: Database,
-      children: [
-        {
-          id: "master-patient",
-          label: "Pasien (Patient)",
-          badge: null,
-          permission: "patient:read",
-        },
-        {
-          id: "master-practitioner",
-          label: "Tenaga Medis (Practitioner)",
-          badge: null,
-          permission: "practitioner:read",
-        },
-        {
-          id: "master-departement",
-          label: "Departemen & Instalasi",
-          badge: null,
-          permission: "department:read",
-        },
-        {
-          id: "master-service-unit",
-          label: "Unit Layanan & Poli",
-          badge: null,
-          permission: "service_unit:read",
-        },
-        {
-          id: "master-room",
-          label: "Ruangan & Bed (Room)",
-          badge: null,
-          permission: "room:read",
-        },
-        {
-          id: "master-customer",
-          label: "Debitur & Penjamin (Customer)",
-          badge: null,
-          permission: "customer:read",
-        },
-        {
-          id: "master-referal",
-          label: "Faskes Rujukan (Referal)",
-          badge: null,
-          permission: "referal:read",
-        },
-        {
-          id: "master-tariff-class",
-          label: "Kelas Tarif (Tariff Class)",
-          badge: null,
-          permission: "tariff_class:read",
-        },
-        {
-          id: "master-item",
-          label: "Katalog Item & Tarif",
-          badge: "Universal",
-          permission: "item:read",
-        },
-      ],
-    },
-    {
-      id: "accounting",
-      label: "Chart of Account",
-      shortLabel: "Coa",
-      icon: BookOpen,
-      children: [
-        {
-          id: "accounting-coa",
-          label: "Bagan Akun (COA)",
-          badge: "Aktif",
-          permission: "accounting:read",
-        },
-        {
-          id: "accounting-journals",
-          label: "Jurnal Umum Transaksi",
-          badge: "Tahap 2",
-          permission: "accounting:read",
-        },
-        {
-          id: "accounting-ledger",
-          label: "Buku Besar & Kas/Bank",
-          badge: "Tahap 3",
-          permission: "accounting:read",
-        },
-        {
-          id: "accounting-reports",
-          label: "Laporan Keuangan & Neraca",
-          badge: "Tahap 4",
-          permission: "accounting:read",
-        },
-      ],
-    },
-    {
-      id: "tariff",
-      label: "Buku & Manajemen Tarif",
-      shortLabel: "Tarif",
-      icon: Receipt,
-      children: [
-        {
-          id: "finance-tariff",
-          label: "Tarif & Price Plan (Tariff)",
-          badge: "Tariff",
-          permission: "tariff_class:read",
-        },
-        {
-          id: "finance-price-plan",
-          label: "Buku Tarif (Price Plan)",
-          badge: "Core",
-          permission: "tariff_price_plan:read",
-        },
-        {
-          id: "finance-tariff-matrix",
-          label: "Editor Matriks Tarif",
-          badge: "Batch",
-          permission: "tariff_price_plan:update",
-        },
-        {
-          id: "finance-tariff-lookup",
-          label: "Kalkulator Lookup Tarif",
-          badge: "Engine",
-          permission: "tariff_price_plan:read",
-        },
-        {
-          id: "finance-tariff-class",
-          label: "Kelas Tarif (Class)",
-          badge: null,
-          permission: "tariff_class:read",
-        },
-        {
-          id: "finance-tariff-component",
-          label: "Komponen Tarif (Component)",
-          badge: null,
-          permission: "tariff_component:read",
-        },
-      ],
-    },
-    {
-      id: "customer",
-      label: "Debitur & Penjamin (Customer)",
-      shortLabel: "Penjamin",
-      icon: Building2,
-      children: [
-        {
-          id: "finance-customer",
-          label: "Master Debitur & Penjamin",
-          badge: "Customer",
-          permission: "customer:read",
-        },
-      ],
-    },
-    {
-      id: "auth",
-      label: "Pengguna & Akses",
-      shortLabel: "Akses",
-      icon: ShieldCheck,
-      children: [
-        {
-          id: "auth-users",
-          label: "Kelola Pengguna",
-          badge: null,
-          permission: "user:read",
-        },
-        {
-          id: "auth-roles",
-          label: "Peran & Hak Akses",
-          badge: null,
-          permission: "role:read",
-        },
-        {
-          id: "auth-permissions",
-          label: "Katalog Izin",
-          badge: null,
-          permission: "role:read",
-        },
-      ],
-    },
-    {
-      id: "activity",
-      label: "Aktivitas Pasien",
-      shortLabel: "Aktivitas",
-      icon: History,
-      children: [
-        {
-          id: "history",
-          label: "Riwayat Kunjungan RME",
-          badge: null,
-          permission: "patient:read",
-        },
-        {
-          id: "schedule",
-          label: "Jadwal Kontrol Poliklinik",
-          badge: null,
-          permission: "appointment:view",
-        },
-      ],
-    },
-  ];
 
   // Filter navigasi berdasarkan konteks modul aktif (Focused Contextual Sidebar)
   const visibleNavigation = $derived(
@@ -304,7 +61,32 @@
     if (openParentIds.includes(parentId)) {
       openParentIds = openParentIds.filter((id) => id !== parentId);
     } else {
-      openParentIds = [...openParentIds, parentId];
+      // Ketika klik menu yang lain, collapse accordion sebelumnya
+      openParentIds = [parentId];
+    }
+  }
+
+  function handleRailItemClick(itemId: string): void {
+    flyoutMenuId = flyoutMenuId === itemId ? null : itemId;
+  }
+
+  function handleDocumentClick(e: MouseEvent): void {
+    if (!flyoutMenuId) return;
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+
+    // Cek apakah klik berada di dalam container item rail yang sedang aktif flyout-nya
+    const activeItemContainer = document.querySelector(`[data-rail-item="${flyoutMenuId}"]`);
+    if (activeItemContainer && activeItemContainer.contains(target)) {
+      return;
+    }
+
+    flyoutMenuId = null;
+  }
+
+  function handleKeydown(e: KeyboardEvent): void {
+    if (e.key === "Escape" && flyoutMenuId) {
+      flyoutMenuId = null;
     }
   }
 
@@ -323,10 +105,19 @@
       p.children?.some((c) => c.id === activeNav),
     );
     if (parent && !openParentIds.includes(parent.id)) {
-      openParentIds = [...openParentIds, parent.id];
+      openParentIds = [parent.id];
+    }
+  });
+
+  // Otomatis tutup flyout saat sidebar diperluas
+  $effect(() => {
+    if (isExpanded) {
+      flyoutMenuId = null;
     }
   });
 </script>
+
+<svelte:window onclick={handleDocumentClick} onkeydown={handleKeydown} />
 
 <aside
   class="py-3 flex flex-col gap-2 select-none shrink-0 transition-all duration-200 relative {isExpanded
@@ -338,7 +129,7 @@
     <button
       type="button"
       onclick={onNavigateHome}
-      class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#e8f0fe] text-[#0b57d0] hover:bg-[#d3e3fd] text-xs font-semibold transition-all cursor-pointer w-full border border-[#d3e3fd]/60 mb-1"
+      class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#e8f0fe] text-[#0b57d0] hover:bg-[#d3e3fd] dark:bg-[#0842a0]/40 dark:text-[#a8c7fa] dark:hover:bg-[#0842a0]/70 text-xs font-semibold transition-all cursor-pointer w-full border border-[#d3e3fd]/60 dark:border-[#0842a0]/60 mb-1"
       title="Kembali ke Beranda Modul (Desktop Launcher)"
     >
       <ArrowLeft class="w-4 h-4" />
@@ -348,10 +139,10 @@
     <button
       type="button"
       onclick={onNavigateHome}
-      class="flex items-center justify-center w-12 h-10 rounded-2xl bg-[#e8f0fe] text-[#0b57d0] hover:bg-[#d3e3fd] transition-all cursor-pointer mb-1"
+      class="flex items-center justify-center w-11 h-9 rounded-full bg-[#e8f0fe] text-[#0b57d0] hover:bg-[#d3e3fd] dark:bg-[#0842a0]/40 dark:text-[#a8c7fa] dark:hover:bg-[#0842a0]/70 border border-[#d3e3fd]/60 dark:border-[#0842a0]/60 transition-all cursor-pointer mb-2 shadow-xs"
       title="Kembali ke Beranda Modul (Desktop Launcher)"
     >
-      <ArrowLeft class="w-5 h-5" />
+      <ArrowLeft class="w-4.5 h-4.5" />
     </button>
   {/if}
 
@@ -361,16 +152,16 @@
       <button
         type="button"
         onclick={onNewEncounter}
-        class="flex items-center gap-3 h-11 px-4 rounded-2xl bg-white text-[#1f1f1f] shadow-xs hover:shadow-md hover:bg-[#f8fafd] active:bg-[#e9eef6] border border-[#e1e5ea] transition-all duration-150 cursor-pointer w-full font-medium text-xs tracking-wide mb-2"
+        class="flex items-center gap-3 h-11 px-4 rounded-2xl bg-white text-[#1f1f1f] dark:bg-[#1e1f20] dark:text-[#e3e3e3] shadow-xs hover:shadow-md hover:bg-[#f8fafd] dark:hover:bg-[#28292a] active:bg-[#e9eef6] border border-[#e1e5ea] dark:border-[#353738] transition-all duration-150 cursor-pointer w-full font-medium text-xs tracking-wide mb-2"
       >
-        <Plus class="w-5 h-5 text-[#0b57d0]" />
+        <Plus class="w-5 h-5 text-[#0b57d0] dark:text-[#a8c7fa]" />
         <span>Simpan RME</span>
       </button>
     {:else}
       <button
         type="button"
         onclick={onNewEncounter}
-        class="flex items-center justify-center w-12 h-11 rounded-2xl bg-white text-[#0b57d0] shadow-xs hover:shadow-md hover:bg-[#f8fafd] active:bg-[#e9eef6] border border-[#e1e5ea] transition-all duration-150 cursor-pointer group mb-2"
+        class="flex items-center justify-center w-11 h-11 rounded-2xl bg-white text-[#0b57d0] dark:bg-[#1e1f20] dark:text-[#a8c7fa] shadow-xs hover:shadow-md hover:bg-[#f8fafd] dark:hover:bg-[#28292a] active:bg-[#e9eef6] border border-[#e1e5ea] dark:border-[#353738] transition-all duration-150 cursor-pointer group mb-2"
         title="Simpan RME Pasien"
       >
         <Plus class="w-5 h-5" />
@@ -379,7 +170,7 @@
   {/if}
 
   <!-- List Menu Item dengan Sub-Menu Terfokus -->
-  <nav class="flex flex-col gap-1 w-full">
+  <nav class="flex flex-col gap-1.5 w-full">
     {#each visibleNavigation as item}
       {@const parentActive = isParentActive(item)}
       {@const isOpen = openParentIds.includes(item.id)}
@@ -391,28 +182,28 @@
           <button
             type="button"
             onclick={() => toggleAccordion(item.id)}
-            class="flex items-center justify-between px-3 py-2 rounded-full transition-colors cursor-pointer {parentActive
-              ? 'bg-[#c2e7ff]/60 text-[#001d35] font-semibold'
-              : 'text-[#444746] hover:bg-[#e9eef6] hover:text-[#1f1f1f]'}"
+            class="flex items-center justify-between px-3 py-2.5 rounded-full transition-colors cursor-pointer {parentActive
+              ? 'bg-[#d3e3fd]/80 text-[#041e49] dark:bg-[#0842a0]/60 dark:text-[#d3e3fd] font-semibold'
+              : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#e9eef6] dark:hover:bg-[#28292a] hover:text-[#1f1f1f] dark:hover:text-white'}"
           >
             <div class="flex items-center gap-3">
               <item.icon
                 class="w-4.5 h-4.5 {parentActive
-                  ? 'text-[#0b57d0]'
-                  : 'text-[#444746]'}"
+                  ? 'text-[#0b57d0] dark:text-[#a8c7fa]'
+                  : 'text-[#444746] dark:text-[#c4c7c5]'}"
               />
               <span class="text-xs">{item.label}</span>
             </div>
             {#if isOpen}
-              <ChevronDown class="w-4 h-4 text-[#747775]" />
+              <ChevronDown class="w-4 h-4 text-[#747775] dark:text-[#8e918f]" />
             {:else}
-              <ChevronRight class="w-4 h-4 text-[#747775]" />
+              <ChevronRight class="w-4 h-4 text-[#747775] dark:text-[#8e918f]" />
             {/if}
           </button>
 
           {#if isOpen}
             <div
-              class="flex flex-col gap-0.5 pl-6 pr-1 mt-1 border-l-2 border-[#e1e5ea] ml-5 py-1 animate-in fade-in duration-150"
+              class="flex flex-col gap-0.5 pl-6 pr-1 mt-1 border-l-2 border-[#e1e5ea] dark:border-[#353738] ml-5 py-1 animate-in fade-in duration-150"
             >
               {#each item.children as sub}
                 {@const isSubActive = activeNav === sub.id}
@@ -421,14 +212,14 @@
                   onclick={() => handleSubmenuClick(sub.id)}
                   class="flex items-center justify-between px-3 py-2 text-xs rounded-full transition-colors cursor-pointer text-left {isSubActive
                     ? 'bg-[#0b57d0] text-white font-semibold shadow-xs'
-                    : 'text-[#444746] hover:bg-[#e9eef6] hover:text-[#1f1f1f]'}"
+                    : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#e9eef6] dark:hover:bg-[#28292a] hover:text-[#1f1f1f] dark:hover:text-white'}"
                 >
                   <span class="truncate">{sub.label}</span>
                   {#if sub.badge}
                     <span
                       class="text-[10px] px-1.5 py-0.2 rounded-md font-semibold {isSubActive
                         ? 'bg-white/20 text-white'
-                        : 'bg-[#e9eef6] text-[#444746]'}"
+                        : 'bg-[#e9eef6] dark:bg-[#28292a] text-[#444746] dark:text-[#c4c7c5]'}"
                     >
                       {sub.badge}
                     </span>
@@ -439,23 +230,30 @@
           {/if}
         </div>
       {:else}
-        <!-- MODE MINIMAL: COMPACT ICON RAIL DENGAN FLYOUT POPOVER -->
-        <div class="relative w-full flex justify-center">
+        <!-- MODE MINIMAL: COMPACT ICON RAIL DENGAN FLYOUT POPOVER (GOOGLE M3 PILL) -->
+        <div class="relative w-full flex flex-col items-center" data-rail-item={item.id}>
           <button
             type="button"
-            onclick={() => (flyoutMenuId = isFlyoutOpen ? null : item.id)}
-            class="flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all cursor-pointer group {parentActive
-              ? 'bg-[#c2e7ff] text-[#001d35]'
-              : 'text-[#444746] hover:bg-[#e9eef6] hover:text-[#1f1f1f]'}"
+            onclick={() => handleRailItemClick(item.id)}
+            class="flex flex-col items-center justify-center w-full py-1 group cursor-pointer"
             title={item.label}
           >
-            <item.icon
-              class="w-5 h-5 group-hover:scale-110 transition-transform {parentActive
-                ? 'text-[#0b57d0]'
-                : 'text-[#444746]'}"
-            />
+            <!-- M3 Active Pill Indicator -->
+            <div
+              class="flex items-center justify-center w-12 h-8 rounded-full transition-all duration-200 {parentActive
+                ? 'bg-[#d3e3fd] text-[#041e49] dark:bg-[#0842a0] dark:text-[#d3e3fd] shadow-xs'
+                : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#e9eef6] dark:hover:bg-[#28292a] hover:text-[#1f1f1f] dark:hover:text-white'}"
+            >
+              <item.icon
+                class="w-5 h-5 transition-transform group-hover:scale-105 {parentActive
+                  ? 'text-[#0b57d0] dark:text-[#d3e3fd]'
+                  : 'text-[#444746] dark:text-[#c4c7c5]'}"
+              />
+            </div>
             <span
-              class="text-[10px] font-medium tracking-tighter mt-1 truncate max-w-[56px] text-center"
+              class="text-[10px] tracking-tight mt-1 truncate max-w-[56px] text-center transition-colors {parentActive
+                ? 'font-bold text-[#0b57d0] dark:text-[#a8c7fa]'
+                : 'font-medium text-[#444746] dark:text-[#c4c7c5] group-hover:text-[#1f1f1f] dark:group-hover:text-white'}"
             >
               {item.shortLabel}
             </span>
@@ -464,13 +262,13 @@
           <!-- Flyout Menu Popover saat hover/klik icon rail -->
           {#if isFlyoutOpen}
             <div
-              class="absolute left-14 top-0 w-56 bg-white rounded-2xl border border-[#e1e5ea] shadow-lg p-2 z-50 flex flex-col gap-1 animate-in fade-in duration-150"
+              class="absolute left-14 top-0 w-56 bg-white dark:bg-[#1e1f20] rounded-2xl border border-[#e1e5ea] dark:border-[#353738] shadow-2xl p-2 z-50 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-150"
             >
               <div
-                class="px-3 py-1.5 text-xs font-bold text-[#1f1f1f] border-b border-[#e1e5ea] mb-1 flex items-center justify-between"
+                class="px-3 py-1.5 text-xs font-bold text-[#1f1f1f] dark:text-[#e3e3e3] border-b border-[#e1e5ea] dark:border-[#353738] mb-1 flex items-center justify-between"
               >
                 <span>{item.label}</span>
-                <span class="text-[10px] text-[#747775] font-normal"
+                <span class="text-[10px] text-[#747775] dark:text-[#8e918f] font-normal"
                   >{item.children.length} Menu</span
                 >
               </div>
@@ -480,15 +278,15 @@
                   type="button"
                   onclick={() => handleSubmenuClick(sub.id)}
                   class="flex items-center justify-between px-3 py-2 text-xs rounded-xl transition-colors cursor-pointer text-left {isSubActive
-                    ? 'bg-[#0b57d0] text-white font-medium shadow-xs'
-                    : 'text-[#444746] hover:bg-[#e9eef6] hover:text-[#1f1f1f]'}"
+                    ? 'bg-[#0b57d0] text-white font-semibold shadow-xs'
+                    : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#e9eef6] dark:hover:bg-[#28292a] hover:text-[#1f1f1f] dark:hover:text-white'}"
                 >
                   <span class="truncate">{sub.label}</span>
                   {#if sub.badge}
                     <span
                       class="text-[10px] px-1.5 py-0.2 rounded-md font-semibold {isSubActive
                         ? 'bg-white/20 text-white'
-                        : 'bg-[#e9eef6] text-[#444746]'}"
+                        : 'bg-[#e9eef6] dark:bg-[#28292a] text-[#444746] dark:text-[#c4c7c5]'}"
                     >
                       {sub.badge}
                     </span>

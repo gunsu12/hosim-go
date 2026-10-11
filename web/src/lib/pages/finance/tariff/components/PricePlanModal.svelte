@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { X, BookOpen, Building2, Calendar, Percent } from '@lucide/svelte';
+  import { BookOpen, CheckCircle2 } from '@lucide/svelte';
+  import M3Modal from '$lib/components/m3/M3Modal.svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
+  import M3ToggleCard from '$lib/components/m3/M3ToggleCard.svelte';
+  import M3DatePicker from '$lib/components/m3/M3DatePicker.svelte';
   import { getCustomers } from '$lib/api/finance/customer';
   import type { CustomerRecord } from '$lib/types/master/customer';
   import type {
@@ -115,158 +118,143 @@
   }
 </script>
 
-{#if isOpen}
-  <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-    <div class="bg-white rounded-3xl border border-[#e1e5ea] shadow-2xl w-full max-w-lg p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between border-b border-[#e1e5ea] pb-3">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-[#0b57d0]/10 text-[#0b57d0] flex items-center justify-center font-bold">
-            <BookOpen class="w-4 h-4" />
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-[#1f1f1f]">
-              {mode === 'CREATE' ? 'Buat Buku Tarif Rumah Sakit Baru' : 'Edit Metadata Buku Tarif'}
-            </h3>
-            <p class="text-[11px] text-[#747775]">Header SK Direksi & aturan tarif layanan kesehatan</p>
-          </div>
-        </div>
-        <button
-          onclick={onClose}
-          type="button"
-          class="text-[#747775] hover:text-[#1f1f1f] p-1 rounded-full hover:bg-[#f0f4f9] transition-colors"
-        >
-          <X class="w-4 h-4" />
-        </button>
+<M3Modal
+  {isOpen}
+  title={mode === 'CREATE' ? 'Buat Buku Tarif Rumah Sakit Baru' : 'Edit Metadata Buku Tarif'}
+  subtitle="Header SK Direksi & aturan tarif layanan kesehatan"
+  icon={BookOpen}
+  size="xl"
+  onsubmit={handleSubmit}
+  {onClose}
+>
+  {#if formError}
+    <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 flex items-start gap-2.5 text-xs">
+      <span class="font-bold">Gagal:</span>
+      <span>{formError}</span>
+    </div>
+  {/if}
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label for="pp-code" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
+        Kode Dokumen / SK <span class="text-rose-500">*</span>
+      </label>
+      <input
+        id="pp-code"
+        type="text"
+        bind:value={code}
+        disabled={mode === 'EDIT'}
+        placeholder="Misal: TPP-2026-REGULER"
+        required
+        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-mono font-bold uppercase text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all disabled:opacity-60"
+      />
+    </div>
+
+    <div>
+      <label for="pp-cito" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
+        Standar CITO (% Tambahan) <span class="text-rose-500">*</span>
+      </label>
+      <div class="relative">
+        <input
+          id="pp-cito"
+          type="number"
+          step="any"
+          min="0"
+          max="100"
+          bind:value={defaultCitoPercent}
+          required
+          class="w-full h-10 px-3.5 pr-8 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-mono font-bold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+        />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#747775] dark:text-[#8e918f] font-bold">%</span>
       </div>
-
-      <!-- Modal Body Form -->
-      <form onsubmit={handleSubmit} class="flex flex-col gap-3 text-xs">
-        {#if formError}
-          <div class="p-2.5 rounded-xl bg-[#fce8e6] text-[#c5221f] text-xs font-semibold">
-            {formError}
-          </div>
-        {/if}
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label for="pp-code" class="block font-semibold text-[#444746] mb-1">Kode Dokumen / SK *</label>
-            <input
-              id="pp-code"
-              type="text"
-              bind:value={code}
-              disabled={mode === 'EDIT'}
-              placeholder="Misal: TPP-2026-REGULER"
-              required
-              class="w-full h-9 px-3 rounded-xl bg-white border border-[#e1e5ea] font-mono text-xs focus:border-[#0b57d0] focus:outline-hidden disabled:bg-slate-100 disabled:opacity-70"
-            />
-          </div>
-
-          <div>
-            <label for="pp-cito" class="block font-semibold text-[#444746] mb-1">Standar CITO (% Tambahan) *</label>
-            <div class="relative">
-              <input
-                id="pp-cito"
-                type="number"
-                step="any"
-                min="0"
-                max="100"
-                bind:value={defaultCitoPercent}
-                required
-                class="w-full h-9 px-3 pr-8 rounded-xl bg-white border border-[#e1e5ea] font-mono text-xs focus:border-[#0b57d0] focus:outline-hidden"
-              />
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#747775] font-bold">%</span>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label for="pp-name" class="block font-semibold text-[#444746] mb-1">Nama Buku Tarif *</label>
-          <input
-            id="pp-name"
-            type="text"
-            bind:value={name}
-            placeholder="Contoh: Buku Tarif Pelayanan RS Tahun 2026 (Revisi SK 102)"
-            required
-            class="w-full h-9 px-3 rounded-xl bg-white border border-[#e1e5ea] text-xs focus:border-[#0b57d0] focus:outline-hidden"
-          />
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label for="pp-eff-from" class="block font-semibold text-[#444746] mb-1">Berlaku Mulai *</label>
-            <input
-              id="pp-eff-from"
-              type="date"
-              bind:value={effectiveFrom}
-              required
-              class="w-full h-9 px-3 rounded-xl bg-white border border-[#e1e5ea] text-xs focus:border-[#0b57d0] focus:outline-hidden"
-            />
-          </div>
-
-          <div>
-            <label for="pp-eff-to" class="block font-semibold text-[#444746] mb-1">Berlaku Sampai (Opsional)</label>
-            <input
-              id="pp-eff-to"
-              type="date"
-              bind:value={effectiveTo}
-              class="w-full h-9 px-3 rounded-xl bg-white border border-[#e1e5ea] text-xs focus:border-[#0b57d0] focus:outline-hidden"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label for="pp-customer" class="block font-semibold text-[#444746] mb-1">Penjamin / Rekanan Khusus</label>
-          <select
-            id="pp-customer"
-            bind:value={customerId}
-            class="w-full h-9 px-3 rounded-xl bg-white border border-[#e1e5ea] text-xs focus:border-[#0b57d0] focus:outline-hidden"
-          >
-            <option value="">-- Standar Umum (Berlaku untuk Pasien Reguler / Semua Penjamin) --</option>
-            {#each customers as cust (cust.id)}
-              <option value={cust.id}>[{cust.code}] {cust.name}</option>
-            {/each}
-          </select>
-          <p class="text-[11px] text-[#747775] mt-1">
-            Kosongkan jika buku tarif ini adalah tarif umum RS. Pilih penjamin jika buku tarif ini adalah tarif PKS khusus rekanan.
-          </p>
-        </div>
-
-        <div>
-          <label for="pp-desc" class="block font-semibold text-[#444746] mb-1">Keterangan / Dasar Regulasi SK</label>
-          <textarea
-            id="pp-desc"
-            bind:value={description}
-            rows="2"
-            placeholder="Nomor SK Direksi, catatan klausul kenaikan tarif, dsb..."
-            class="w-full p-2.5 rounded-xl bg-white border border-[#e1e5ea] text-xs focus:border-[#0b57d0] focus:outline-hidden resize-none"
-          ></textarea>
-        </div>
-
-        <div class="pt-1">
-          <label class="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl bg-[#f8fafd] border border-[#e1e5ea]">
-            <input type="checkbox" bind:checked={isDefault} class="rounded text-[#0b57d0]" />
-            <div>
-              <span class="font-bold text-[#1f1f1f] block text-xs">Jadikan Buku Tarif Standar Rumah Sakit (Default)</span>
-              <span class="text-[11px] text-[#747775]">Buku tarif ini akan menjadi fallback utama jika pasien tidak memiliki PKS khusus penjamin.</span>
-            </div>
-          </label>
-        </div>
-
-        <!-- Footer Actions -->
-        <div class="flex justify-end gap-2 pt-3 border-t border-[#e1e5ea] mt-1">
-          <button
-            type="button"
-            onclick={onClose}
-            class="px-3.5 py-1.5 rounded-xl border border-[#e1e5ea] bg-white text-xs font-semibold text-[#444746] hover:bg-[#f0f4f9] transition-colors"
-          >
-            Batal
-          </button>
-          <M3Button variant="filled" type="submit" disabled={isSaving}>
-            <span>{mode === 'CREATE' ? 'Simpan Buku Tarif' : 'Perbarui Metadata'}</span>
-          </M3Button>
-        </div>
-      </form>
     </div>
   </div>
-{/if}
+
+  <div>
+    <label for="pp-name" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
+      Nama Buku Tarif <span class="text-rose-500">*</span>
+    </label>
+    <input
+      id="pp-name"
+      type="text"
+      bind:value={name}
+      placeholder="Contoh: Buku Tarif Pelayanan RS Tahun 2026 (Revisi SK 102)"
+      required
+      class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+    />
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <M3DatePicker
+      id="pp-eff-from"
+      label="Berlaku Mulai *"
+      bind:value={effectiveFrom}
+      required
+      placeholder="Pilih tanggal mulai"
+    />
+
+    <M3DatePicker
+      id="pp-eff-to"
+      label="Berlaku Sampai (Opsional)"
+      bind:value={effectiveTo}
+      min={effectiveFrom || ''}
+      placeholder="Pilih tanggal selesai"
+    />
+  </div>
+
+  <div>
+    <label for="pp-customer" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
+      Penjamin / Rekanan Khusus
+    </label>
+    <select
+      id="pp-customer"
+      bind:value={customerId}
+      class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+    >
+      <option value="">-- Standar Umum (Berlaku untuk Pasien Reguler / Semua Penjamin) --</option>
+      {#each customers as cust (cust.id)}
+        <option value={cust.id}>[{cust.code}] {cust.name}</option>
+      {/each}
+    </select>
+    <p class="text-[11px] text-[#747775] dark:text-[#8e918f] mt-1">
+      Kosongkan jika buku tarif ini adalah tarif umum RS. Pilih penjamin jika buku tarif ini adalah tarif PKS khusus rekanan.
+    </p>
+  </div>
+
+  <div>
+    <label for="pp-desc" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
+      Keterangan / Dasar Regulasi SK
+    </label>
+    <textarea
+      id="pp-desc"
+      bind:value={description}
+      rows="2"
+      placeholder="Nomor SK Direksi, catatan klausul kenaikan tarif, dsb..."
+      class="w-full p-3 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all resize-none"
+    ></textarea>
+  </div>
+
+  <div class="pt-2 border-t border-[#e1e5ea] dark:border-[#353738]">
+    <M3ToggleCard
+      title="Jadikan Buku Tarif Standar Rumah Sakit (Default)"
+      description="Buku tarif ini akan menjadi fallback utama jika pasien tidak memiliki PKS khusus penjamin."
+      bind:checked={isDefault}
+      colorVariant="primary"
+    />
+  </div>
+
+  {#snippet footer()}
+    <M3Button variant="text" onclick={onClose} disabled={isSaving}>
+      Batal
+    </M3Button>
+    <M3Button variant="filled" type="submit" disabled={isSaving}>
+      {#if isSaving}
+        <span class="inline-block animate-spin mr-1">⏳</span>
+        <span>Menyimpan...</span>
+      {:else}
+        <CheckCircle2 class="w-4 h-4 mr-1" />
+        <span>{mode === 'CREATE' ? 'Simpan Buku Tarif' : 'Perbarui Metadata'}</span>
+      {/if}
+    </M3Button>
+  {/snippet}
+</M3Modal>

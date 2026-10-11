@@ -7,6 +7,5 @@ export * from './service_unit';
 export * from './room';
 export * from './customer';
 export * from './referal';
-export * from './tariff_class';
 export * from './coa';
 export * from './item';

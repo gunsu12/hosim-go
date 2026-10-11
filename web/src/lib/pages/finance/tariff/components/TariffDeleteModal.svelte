@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { AlertTriangle, X } from '@lucide/svelte';
+  import { AlertTriangle, Trash2 } from '@lucide/svelte';
+  import M3Modal from '$lib/components/m3/M3Modal.svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
 
   interface Props {
@@ -23,40 +24,49 @@
   }: Props = $props();
 </script>
 
-{#if isOpen}
-  <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-    <div class="bg-white rounded-3xl border border-[#e1e5ea] shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4">
-      <div class="flex items-center justify-between border-b border-[#e1e5ea] pb-3">
-        <div class="flex items-center gap-2 text-[#c5221f]">
-          <AlertTriangle class="w-5 h-5" />
-          <h3 class="text-sm font-bold text-[#1f1f1f]">{title}</h3>
-        </div>
-        <button onclick={onClose} type="button" class="text-[#747775] hover:text-[#1f1f1f]">
-          <X class="w-4 h-4" />
-        </button>
-      </div>
-
-      <div class="text-xs text-[#444746] flex flex-col gap-2">
-        <p>Apakah Anda yakin ingin menghapus data berikut?</p>
-        <div class="p-3 rounded-xl bg-[#fce8e6]/50 border border-[#fad2cf] flex flex-col gap-1">
-          <span class="font-mono font-bold text-[#c5221f] text-xs">[{itemCode}]</span>
-          <span class="font-semibold text-[#1f1f1f]">{itemName}</span>
-        </div>
-        <p class="text-[11px] text-[#747775]">Data yang dihapus akan ditandai soft delete di database dan dinonaktifkan dari referensi pelayanan.</p>
-      </div>
-
-      <div class="flex justify-end gap-2 pt-2 border-t border-[#e1e5ea]">
-        <button
-          type="button"
-          onclick={onClose}
-          class="px-3.5 py-1.5 rounded-xl border border-[#e1e5ea] bg-white text-xs font-semibold text-[#444746] hover:bg-[#f0f4f9] transition-colors"
-        >
-          Batal
-        </button>
-        <M3Button variant="filled" onclick={onConfirm} disabled={isDeleting}>
-          <span class="text-white">{isDeleting ? 'Menghapus...' : 'Ya, Hapus'}</span>
-        </M3Button>
-      </div>
+<M3Modal
+  {isOpen}
+  {title}
+  subtitle="Tindakan ini memerlukan konfirmasi otorisasi"
+  icon={AlertTriangle}
+  iconClass="bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400"
+  size="sm"
+  {onClose}
+>
+  <div class="text-xs text-[#444746] dark:text-[#c4c7c5] flex flex-col gap-3">
+    <p>Apakah Anda yakin ingin menghapus data tarif berikut?</p>
+    
+    <div class="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/60 flex flex-col gap-1">
+      <span class="font-mono font-bold text-rose-700 dark:text-rose-400 text-xs">
+        [{itemCode}]
+      </span>
+      <span class="font-bold text-[#1f1f1f] dark:text-[#e3e3e3] text-sm">
+        {itemName}
+      </span>
     </div>
+
+    <p class="text-[11px] text-[#747775] dark:text-[#8e918f] leading-relaxed">
+      Data yang dihapus akan ditandai soft delete di database dan dinonaktifkan dari referensi pelayanan transaksi aktif.
+    </p>
   </div>
-{/if}
+
+  {#snippet footer()}
+    <M3Button variant="text" onclick={onClose} disabled={isDeleting}>
+      Batal
+    </M3Button>
+    <M3Button
+      variant="filled"
+      class="bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
+      onclick={onConfirm}
+      disabled={isDeleting}
+    >
+      {#if isDeleting}
+        <span class="inline-block animate-spin mr-1">⏳</span>
+        <span>Menghapus...</span>
+      {:else}
+        <Trash2 class="w-4 h-4 mr-1" />
+        <span>Ya, Hapus Data</span>
+      {/if}
+    </M3Button>
+  {/snippet}
+</M3Modal>

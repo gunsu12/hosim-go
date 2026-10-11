@@ -212,6 +212,11 @@ func (s *service) DeleteAccount(ctx context.Context, id string, operator string)
 		return err
 	}
 
+	// 0. Akun Level 1 (klasifikasi pokok/root: Aset, Kewajiban, Ekuitas, Pendapatan, Beban) dilindungi secara permanen
+	if acc.AccountLevel <= 1 {
+		return ErrCannotDeleteLevelOneAccount
+	}
+
 	// 1. Cek apakah akun memiliki anak aktif
 	childrenCount, err := s.repo.FindChildrenCount(ctx, id)
 	if err != nil {

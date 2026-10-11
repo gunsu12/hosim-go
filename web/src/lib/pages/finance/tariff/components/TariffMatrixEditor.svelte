@@ -2,26 +2,17 @@
   import { onMount } from 'svelte';
   import {
     BookOpen,
-    Layers,
-    Tag,
-    Calculator,
     Save,
-    RefreshCw,
-    Plus,
-    Trash2,
-    Copy,
     CheckCircle2,
-    AlertTriangle,
-    Coins,
-    Sliders,
-    Building2,
-    UserCheck,
-    CheckCheck,
-    ArrowRight,
-    HelpCircle
+    Sliders
   } from '@lucide/svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
   import TariffLookupInput from '$lib/components/TariffLookupInput.svelte';
+  import TariffMatrixClassCard, {
+    type ClassMatrixRowState,
+    type ComponentRowState
+  } from './TariffMatrixClassCard.svelte';
+  import { confirmDialog } from '$lib/stores/confirm.svelte';
   import {
     getPricePlans,
     getPricePlanItems,
@@ -61,28 +52,6 @@
   // Selected Plan Object
   let selectedPlan = $derived(pricePlans.find((p) => p.id === selectedPlanId) || null);
   let selectedItemTitle = $derived(selectedItemObj?.name || 'Tindakan Medis');
-
-  // ==========================================
-  // MATRIX ROW DATA STRUCTURE
-  // ==========================================
-  interface ComponentRowState {
-    component_id: string;
-    base_amount: number;
-    cito_amount: number | null;
-    coa_code: string | null;
-  }
-
-  interface ClassMatrixRowState {
-    tariff_class_id: string;
-    tariff_class_code: string;
-    tariff_class_name: string;
-    existing_item_id: string | null; // null jika belum ada di database
-    total_base_price: number;
-    total_cito_price: number | null;
-    is_active: boolean;
-    is_enabled: boolean; // apakah kelas ini akan disimpan/disertakan
-    components: ComponentRowState[];
-  }
 
   let matrixRows = $state<ClassMatrixRowState[]>([]);
 
@@ -254,10 +223,14 @@
   }
 
   // Copy this class row configuration to all other classes below it
-  function handleCopyToAllClasses(sourceRow: ClassMatrixRowState) {
-    if (!confirm(`Terapkan susunan tarif dan komponen kelas "${sourceRow.tariff_class_name}" ke seluruh kelas lainnya?`)) {
-      return;
-    }
+  async function handleCopyToAllClasses(sourceRow: ClassMatrixRowState) {
+    const ok = await confirmDialog({
+      title: 'Salin Pengaturan Kelas',
+      message: `Terapkan susunan tarif dan komponen kelas "${sourceRow.tariff_class_name}" ke seluruh kelas lainnya?`,
+      confirmText: 'Terapkan',
+      variant: 'primary'
+    });
+    if (!ok) return;
 
     for (const row of matrixRows) {
       if (row.tariff_class_id === sourceRow.tariff_class_id) continue;
@@ -346,38 +319,30 @@
       isSavingMatrix = false;
     }
   }
-
-  function formatIDR(val: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      maximumFractionDigits: 0
-    }).format(val || 0);
-  }
 </script>
 
 <div class="flex flex-col gap-5">
   <!-- Header Card & Intro -->
-  <div class="bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-purple-50/40 p-4.5 rounded-3xl border border-blue-200/80 shadow-xs">
+  <div class="bg-gradient-to-r from-blue-50/80 via-indigo-50/60 to-purple-50/50 dark:from-[#1b2234] dark:via-[#1e1f2b] dark:to-[#1a1f2c] p-5 rounded-3xl border border-blue-200/80 dark:border-indigo-900/50 shadow-xs">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+          <div class="w-10 h-10 rounded-2xl bg-blue-600 dark:bg-[#0b57d0] text-white flex items-center justify-center font-bold shadow-xs shrink-0">
             <Sliders class="w-5 h-5" />
           </div>
           <div>
-            <h3 class="text-base font-bold text-[#1f1f1f] tracking-tight">
+            <h3 class="text-base font-bold text-[#1f1f1f] dark:text-[#e3e3e3] tracking-tight">
               Editor Matriks Tarif & Komponen Multi-Kelas
             </h3>
             <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300">
+              <span class="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800/60">
                 Service-Centric Batch Matrix
               </span>
-              <span class="text-xs text-[#5f6368]">• Penetapan tarif serentak untuk seluruh kelas rawat</span>
+              <span class="text-xs text-[#5f6368] dark:text-[#8e918f]">• Penetapan tarif serentak untuk seluruh kelas rawat</span>
             </div>
           </div>
         </div>
-        <p class="text-xs text-[#444746] mt-2 max-w-3xl leading-relaxed">
+        <p class="text-xs text-[#444746] dark:text-[#c4c7c5] mt-2.5 max-w-3xl leading-relaxed">
           Pilih buku tarif dan tindakan medis untuk memuat seluruh kelas rawat inap/jalan (VVIP s/d Kelas 3). Tentukan nominal dasar, override CITO darurat, dan pecahan pendapatan (jasa dokter & sarana RS) secara dinamis dalam satu layar kerja.
         </p>
       </div>
@@ -403,18 +368,18 @@
     </div>
 
     <!-- Parameter Selector Bar -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-blue-200/60">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-blue-200/60 dark:border-[#353738]">
       <!-- 1. Select Buku Tarif -->
       <div class="flex flex-col gap-1.5">
-        <label for="matrix-plan-select" class="text-xs font-semibold text-[#1f1f1f] flex items-center gap-1.5">
-          <BookOpen class="w-3.5 h-3.5 text-indigo-600" />
+        <label for="matrix-plan-select" class="text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] flex items-center gap-1.5">
+          <BookOpen class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
           <span>1. Pilih Buku Tarif Target <span class="text-red-500">*</span></span>
         </label>
         <div class="relative">
           <select
             id="matrix-plan-select"
             bind:value={selectedPlanId}
-            class="w-full h-10 px-3 pr-8 rounded-xl border border-[#c4c7c5] bg-white text-xs text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0] focus:ring-1 focus:ring-[#0b57d0]"
+            class="w-full h-10 px-3 pr-8 rounded-xl border border-[#c4c7c5] dark:border-[#353738] bg-white dark:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-none focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:ring-1 focus:ring-[#0b57d0]"
           >
             <option value="" disabled>-- Pilih Buku Tarif --</option>
             {#each pricePlans as plan (plan.id)}
@@ -425,11 +390,11 @@
           </select>
         </div>
         {#if selectedPlan}
-          <div class="flex items-center gap-2 text-[11px] text-[#5f6368] mt-0.5">
-            <span class="font-medium text-indigo-700">Berlaku: {selectedPlan.effective_from} {selectedPlan.effective_to ? `s/d ${selectedPlan.effective_to}` : '(Aktif)'}</span>
+          <div class="flex items-center gap-2 text-[11px] text-[#5f6368] dark:text-[#8e918f] mt-0.5">
+            <span class="font-medium text-indigo-700 dark:text-indigo-300">Berlaku: {selectedPlan.effective_from} {selectedPlan.effective_to ? `s/d ${selectedPlan.effective_to}` : '(Aktif)'}</span>
             <span>• Default CITO: +{selectedPlan.default_cito_percent}%</span>
             {#if selectedPlan.status === 'ACTIVE'}
-              <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-semibold text-[10px]">AKTIF DI PELAYANAN</span>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border dark:border-emerald-800/60 font-semibold text-[10px]">AKTIF DI PELAYANAN</span>
             {/if}
           </div>
         {/if}
@@ -453,20 +418,20 @@
 
   <!-- Loading State -->
   {#if isLoadingMatrix}
-    <div class="py-16 flex flex-col items-center justify-center gap-3 bg-white rounded-3xl border border-[#e1e5ea]">
+    <div class="py-16 flex flex-col items-center justify-center gap-3 bg-white dark:bg-[#1e1f20] rounded-3xl border border-[#e1e5ea] dark:border-[#353738]">
       <div class="w-8 h-8 border-3 border-[#0b57d0] border-t-transparent rounded-full animate-spin"></div>
-      <span class="text-xs font-medium text-[#444746]">Memuat konfigurasi kelas tindakan...</span>
+      <span class="text-xs font-medium text-[#444746] dark:text-[#c4c7c5]">Memuat konfigurasi kelas tindakan...</span>
     </div>
 
   <!-- Empty State (Belum memilih tindakan) -->
   {:else if !selectedPlanId || !selectedItemId}
-    <div class="py-16 px-4 flex flex-col items-center justify-center text-center gap-3 bg-white rounded-3xl border border-[#e1e5ea]">
-      <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+    <div class="py-16 px-4 flex flex-col items-center justify-center text-center gap-3 bg-white dark:bg-[#1e1f20] rounded-3xl border border-[#e1e5ea] dark:border-[#353738]">
+      <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300 flex items-center justify-center">
         <Sliders class="w-6 h-6" />
       </div>
       <div>
-        <h4 class="text-sm font-bold text-[#1f1f1f]">Pilih Buku Tarif dan Tindakan Medis</h4>
-        <p class="text-xs text-[#747775] mt-1 max-w-md">
+        <h4 class="text-sm font-bold text-[#1f1f1f] dark:text-[#e3e3e3]">Pilih Buku Tarif dan Tindakan Medis</h4>
+        <p class="text-xs text-[#747775] dark:text-[#8e918f] mt-1 max-w-md">
           Pilih buku tarif target dan nama tindakan medis di atas untuk memunculkan tabel konfigurasi matriks seluruh kelas perawatan.
         </p>
       </div>
@@ -475,265 +440,36 @@
   <!-- Matrix Loaded: Daftar Kelas Perawatan -->
   {:else}
     <div class="flex flex-col gap-4">
-      <div class="flex items-center justify-between text-xs text-[#444746] px-1">
-        <span class="font-semibold text-[#1f1f1f]">
-          Konfigurasi Tarif: <span class="text-blue-700">{selectedItemTitle}</span> ({matrixRows.length} Kelas Tersedia)
+      <div class="flex items-center justify-between text-xs text-[#444746] dark:text-[#c4c7c5] px-1">
+        <span class="font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">
+          Konfigurasi Tarif: <span class="text-blue-700 dark:text-blue-400">{selectedItemTitle}</span> ({matrixRows.length} Kelas Tersedia)
         </span>
-        <span class="text-[11px] text-[#747775]">
+        <span class="text-[11px] text-[#747775] dark:text-[#8e918f]">
           * Pastikan jumlah pecahan komponen biaya sama dengan total tarif dasar kelas.
         </span>
       </div>
 
       <!-- Iterasi Seluruh Kelas Perawatan -->
       {#each matrixRows as row, rIdx (row.tariff_class_id)}
-        {@const sumComponents = row.components.reduce((acc, c) => acc + (Number(c.base_amount) || 0), 0)}
-        {@const isBalanced = Math.abs(sumComponents - (Number(row.total_base_price) || 0)) <= 0.01}
-        {@const diff = Math.abs(sumComponents - (Number(row.total_base_price) || 0))}
-
-        <div class="bg-white rounded-3xl border transition-all duration-200 shadow-2xs overflow-hidden {row.is_enabled ? 'border-blue-300 ring-1 ring-blue-100' : 'border-[#e1e5ea] opacity-95'}">
-          <!-- Class Header Bar -->
-          <div class="p-3.5 bg-[#f8fafd] border-b border-[#e1e5ea] flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <!-- Checkbox Enable / Sertakan Kelas Ini -->
-              <input
-                type="checkbox"
-                bind:checked={row.is_enabled}
-                class="w-4 h-4 rounded text-blue-600 border-[#c4c7c5] focus:ring-blue-500 cursor-pointer"
-                title="Sertakan kelas ini dalam penetapan tarif"
-              />
-
-              <div class="flex items-center gap-2">
-                <span class="font-mono font-bold text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">
-                  {row.tariff_class_code}
-                </span>
-                <span class="text-xs font-bold text-[#1f1f1f]">{row.tariff_class_name}</span>
-                {#if row.existing_item_id}
-                  <span class="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    SUDAH TERKONFIGURASI
-                  </span>
-                {:else}
-                  <span class="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                    BELUM DISET
-                  </span>
-                {/if}
-              </div>
-            </div>
-
-            <!-- Action Buttons on Header -->
-            <div class="flex items-center gap-2">
-              {#if row.is_enabled}
-                <!-- Live Balancing Badge -->
-                {#if isBalanced && row.total_base_price > 0}
-                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                    <CheckCircle2 class="w-3 h-3 text-emerald-600" />
-                    <span>Komponen Seimbang ({formatIDR(row.total_base_price)})</span>
-                  </span>
-                {:else if row.total_base_price > 0}
-                  <button
-                    type="button"
-                    onclick={() => handleAutoBalance(row)}
-                    class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 flex items-center gap-1.5 hover:bg-red-100 cursor-pointer transition-colors"
-                    title="Klik untuk seimbangkan otomatis"
-                  >
-                    <AlertTriangle class="w-3 h-3 text-red-600" />
-                    <span>Selisih {formatIDR(diff)} • Klik Seimbangkan</span>
-                  </button>
-                {/if}
-
-                <!-- Copy To Other Classes Button -->
-                <button
-                  type="button"
-                  onclick={() => handleCopyToAllClasses(row)}
-                  class="h-7 px-2.5 rounded-lg border border-[#c4c7c5] bg-white text-[#444746] hover:bg-[#f0f4f9] text-[11px] font-medium flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
-                  title="Salin nominal dan struktur komponen kelas ini ke semua kelas lain"
-                >
-                  <Copy class="w-3 h-3 text-blue-600" />
-                  <span>Salin ke Kelas Lain</span>
-                </button>
-              {/if}
-            </div>
-          </div>
-
-          <!-- Class Body Form -->
-          <div class="p-4 flex flex-col gap-4">
-            <!-- Row Pricing Inputs -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <!-- Total Base Price -->
-              <div class="flex flex-col gap-1">
-                <label class="text-[11px] font-semibold text-[#444746]">
-                  Total Tarif Dasar (Reguler) <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                  <span class="absolute left-3 top-2.5 text-xs font-semibold text-[#747775]">Rp</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="500"
-                    bind:value={row.total_base_price}
-                    oninput={() => {
-                      row.is_enabled = true;
-                    }}
-                    placeholder="0"
-                    class="w-full h-9 pl-9 pr-3 rounded-xl border border-[#c4c7c5] bg-white text-xs font-semibold text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0] focus:ring-1 focus:ring-[#0b57d0]"
-                  />
-                </div>
-              </div>
-
-              <!-- Total Cito Price (Override) -->
-              <div class="flex flex-col gap-1">
-                <div class="flex items-center justify-between">
-                  <label class="text-[11px] font-semibold text-[#444746]">
-                    Tarif CITO (Override Nominal)
-                  </label>
-                  <button
-                    type="button"
-                    onclick={() => handleCalculateCito(row)}
-                    class="text-[10px] text-blue-600 hover:underline font-semibold flex items-center gap-0.5 cursor-pointer"
-                  >
-                    <Calculator class="w-2.5 h-2.5" />
-                    <span>Auto +{selectedPlan?.default_cito_percent || 25}%</span>
-                  </button>
-                </div>
-                <div class="relative">
-                  <span class="absolute left-3 top-2.5 text-xs font-semibold text-[#747775]">Rp</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="500"
-                    bind:value={row.total_cito_price}
-                    placeholder="Kosongkan jika formula"
-                    class="w-full h-9 pl-9 pr-3 rounded-xl border border-[#c4c7c5] bg-white text-xs text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0] focus:ring-1 focus:ring-[#0b57d0]"
-                  />
-                </div>
-              </div>
-
-              <!-- Is Active Checkbox -->
-              <div class="flex flex-col justify-end">
-                <label class="h-9 px-3 rounded-xl border border-[#e1e5ea] bg-[#f8fafd] flex items-center gap-2 cursor-pointer hover:bg-[#f0f4f9] transition-colors">
-                  <input
-                    type="checkbox"
-                    bind:checked={row.is_active}
-                    class="w-3.5 h-3.5 rounded text-blue-600 border-[#c4c7c5] focus:ring-blue-500"
-                  />
-                  <span class="text-xs font-medium text-[#1f1f1f]">Aktif Digunakan di Kasir</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Pecahan Komponen Biaya Matrix Section -->
-            <div class="bg-[#f8fafd] p-3 rounded-2xl border border-[#e1e5ea] flex flex-col gap-2.5">
-              <div class="flex items-center justify-between text-xs">
-                <div class="flex items-center gap-1.5 font-semibold text-[#1f1f1f]">
-                  <Layers class="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Pecahan Komponen Biaya (Jasa Dokter, Sarana RS, dll.)</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onclick={() => handleAddComponent(row)}
-                    class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-                  >
-                    <Plus class="w-3 h-3" />
-                    <span>Tambah Komponen</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Table Komponen Biaya -->
-              <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr class="text-[11px] font-semibold text-[#747775] border-b border-[#e1e5ea]">
-                      <th class="py-1.5 px-2">Komponen Biaya</th>
-                      <th class="py-1.5 px-2 w-36">Nominal Reguler (Rp)</th>
-                      <th class="py-1.5 px-2 w-36">Nominal CITO (Rp)</th>
-                      <th class="py-1.5 px-2 w-32">Akun COA</th>
-                      <th class="py-1.5 px-2 w-10 text-center">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-[#e1e5ea]">
-                    {#each row.components as comp, cIdx}
-                      {@const compDef = tariffComponents.find((tc) => tc.id === comp.component_id)}
-                      <tr>
-                        <!-- Select Component -->
-                        <td class="py-1.5 px-2">
-                          <select
-                            bind:value={comp.component_id}
-                            onchange={(e: any) => {
-                              const found = tariffComponents.find((tc) => tc.id === e.target.value);
-                              if (found) comp.coa_code = found.default_coa_code || null;
-                            }}
-                            class="w-full h-8 px-2 rounded-lg border border-[#c4c7c5] bg-white text-xs text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0]"
-                          >
-                            {#each tariffComponents as tc (tc.id)}
-                              <option value={tc.id}>
-                                [{tc.component_type}] {tc.name} ({tc.code})
-                              </option>
-                            {/each}
-                          </select>
-                        </td>
-
-                        <!-- Base Amount -->
-                        <td class="py-1.5 px-2">
-                          <input
-                            type="number"
-                            min="0"
-                            step="500"
-                            bind:value={comp.base_amount}
-                            placeholder="0"
-                            class="w-full h-8 px-2 rounded-lg border border-[#c4c7c5] bg-white text-xs font-medium text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0]"
-                          />
-                        </td>
-
-                        <!-- Cito Amount -->
-                        <td class="py-1.5 px-2">
-                          <input
-                            type="number"
-                            min="0"
-                            step="500"
-                            bind:value={comp.cito_amount}
-                            placeholder="Opsional"
-                            class="w-full h-8 px-2 rounded-lg border border-[#c4c7c5] bg-white text-xs text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0]"
-                          />
-                        </td>
-
-                        <!-- COA Code Override -->
-                        <td class="py-1.5 px-2">
-                          <input
-                            type="text"
-                            bind:value={comp.coa_code}
-                            placeholder={compDef?.default_coa_code || 'Akun COA'}
-                            class="w-full h-8 px-2 rounded-lg border border-[#c4c7c5] bg-white text-xs font-mono text-[#444746] focus:outline-none focus:border-[#0b57d0]"
-                          />
-                        </td>
-
-                        <!-- Delete Button -->
-                        <td class="py-1.5 px-2 text-center">
-                          <button
-                            type="button"
-                            onclick={() => handleRemoveComponent(row, cIdx)}
-                            class="p-1 rounded text-red-600 hover:bg-red-50 cursor-pointer transition-colors"
-                            title="Hapus baris komponen ini"
-                          >
-                            <Trash2 class="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    {/each}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TariffMatrixClassCard
+          {row}
+          {rIdx}
+          {selectedPlan}
+          {tariffComponents}
+          onAutoBalance={handleAutoBalance}
+          onCopyToAllClasses={handleCopyToAllClasses}
+          onCalculateCito={handleCalculateCito}
+          onAddComponent={handleAddComponent}
+          onRemoveComponent={handleRemoveComponent}
+        />
       {/each}
 
       <!-- Bottom Save Action Bar -->
-      <div class="sticky bottom-4 p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-[#c4c7c5] shadow-lg flex items-center justify-between gap-4 z-10">
-        <div class="flex items-center gap-2 text-xs text-[#444746]">
-          <CheckCircle2 class="w-4 h-4 text-emerald-600 shrink-0" />
+      <div class="sticky bottom-4 p-4 rounded-2xl bg-white/95 dark:bg-[#1e1f20]/95 backdrop-blur-md border border-[#c4c7c5] dark:border-[#353738] shadow-lg flex items-center justify-between gap-4 z-10">
+        <div class="flex items-center gap-2 text-xs text-[#444746] dark:text-[#c4c7c5]">
+          <CheckCircle2 class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>
-            Siap menyimpan seluruh pengaturan tarif kelas untuk <b>{selectedItemTitle}</b> ke buku tarif <b>{selectedPlan?.name}</b>.
+            Siap menyimpan seluruh pengaturan tarif kelas untuk <b class="text-[#1f1f1f] dark:text-[#e3e3e3]">{selectedItemTitle}</b> ke buku tarif <b class="text-[#1f1f1f] dark:text-[#e3e3e3]">{selectedPlan?.name}</b>.
           </span>
         </div>
 

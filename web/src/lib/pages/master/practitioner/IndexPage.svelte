@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Search, Plus, Stethoscope, Shield, CheckCircle, Award } from '@lucide/svelte';
   import M3Button from '../../../components/m3/M3Button.svelte';
+  import { alertDialog } from '../../../stores/confirm.svelte';
   import type { PractitionerRecord } from '../../../types/master/practitioner';
 
   let searchQuery = $state('');
@@ -73,7 +74,7 @@
       <p class="text-xs text-[#444746]">Registrasi dokter spesialis, dokter umum, perawat, nomor izin praktek (SIP/STR), dan SATUSEHAT IHS ID.</p>
     </div>
 
-    <M3Button variant="filled" onclick={() => alert('Fitur Tambah Tenaga Medis')}>
+    <M3Button variant="filled" onclick={() => alertDialog({ title: 'Tambah Tenaga Medis', message: 'Fitur registrasi tenaga medis baru (dokter/perawat) sedang dalam pengembangan.', variant: 'info' })}>
       <Plus class="w-4 h-4" />
       <span>Tambah Tenaga Medis</span>
     </M3Button>
@@ -132,7 +133,7 @@
               <td class="py-3.5 px-4 text-right">
                 <button
                   type="button"
-                  onclick={() => alert(`Jadwal Praktek: ${p.name}`)}
+                  onclick={() => alertDialog({ title: 'Jadwal Praktek', message: `Jadwal praktek dokter "${p.name}" (${p.specialty}) sedang disiapkan.`, variant: 'info' })}
                   class="text-xs text-[#0b57d0] hover:underline font-semibold cursor-pointer"
                 >
                   Jadwal Praktek

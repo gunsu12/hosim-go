@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-sans: 'Plus Jakarta Sans', 'Roboto', system-ui, -apple-system, sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, monospace;
@@ -34,7 +36,9 @@
 }
 
 :root {
-  /* Google Drive Authentic Material Design 3 Palette */
+  color-scheme: light dark;
+
+  /* Google Drive Authentic Material Design 3 Palette (Light) */
   --md-primary: #0b57d0;             /* Iconic Google Drive Blue */
   --md-primary-hover: #0842a0;
   --md-primary-container: #d3e3fd;   /* Google Drive active pill container */
@@ -66,6 +70,166 @@
   --md-on-error-container: #410e0b;
 }
 
+/* Material Design 3 Dark Theme Palette */
+html.dark, [data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Google Drive / Workspace M3 Dark Palette */
+  --md-primary: #a8c7fa;             /* Crisp M3 Dark Primary Blue */
+  --md-primary-hover: #c2e7ff;
+  --md-primary-container: #0842a0;   /* M3 Deep Blue Container */
+  --md-on-primary: #041e49;
+  --md-on-primary-container: #d3e3fd;
+
+  --md-secondary: #c4c7c5;
+  --md-secondary-container: #333537;
+  --md-on-secondary: #282a2c;
+  --md-on-secondary-container: #e3e3e3;
+
+  /* Google Drive Dark Surfaces */
+  --md-surface: #131314;             /* Main root background (Deep Google Dark Canvas) */
+  --md-surface-container-lowest: #1e1f20;  /* Card island / main content container */
+  --md-surface-container-low: #18191a;     /* Sidebar / navigation rail */
+  --md-surface-container: #28292a;         /* Search bar, chips, input backgrounds */
+  --md-surface-container-high: #2e2f30;    /* Hover states, modal header */
+  --md-surface-container-highest: #353738; /* Elevated surfaces */
+
+  --md-on-surface: #e3e3e3;          /* High contrast off-white text */
+  --md-on-surface-variant: #c4c7c5;  /* Secondary text / icons */
+  --md-outline: #8e918f;             /* Subtle borders / dividers */
+  --md-outline-variant: #353738;     /* Very subtle card / table border */
+
+  /* Semantic Accents */
+  --md-error: #f2b8b5;
+  --md-error-container: #601410;
+  --md-on-error: #601410;
+  --md-on-error-container: #f9dedc;
+}
+
+/* Dark mode overrides for hardcoded M3 hex classes used across the app */
+html.dark {
+  /* Surfaces */
+  .bg-\[\#f8fafd\] {
+    background-color: var(--md-surface) !important;
+  }
+  .bg-\[\#f0f4f9\] {
+    background-color: var(--md-surface-container-low) !important;
+  }
+  .bg-\[\#e9eef6\] {
+    background-color: var(--md-surface-container) !important;
+  }
+  .bg-\[\#e1e5ea\] {
+    background-color: var(--md-surface-container-high) !important;
+  }
+  .bg-\[\#d8dde3\] {
+    background-color: var(--md-surface-container-highest) !important;
+  }
+  .bg-white {
+    background-color: var(--md-surface-container-lowest) !important;
+  }
+  .bg-\[\#e8f0fe\],
+  .bg-\[\#d3e3fd\],
+  .bg-\[\#c2e7ff\],
+  .bg-\[\#c2e7ff\]\/60 {
+    background-color: var(--md-primary-container) !important;
+    color: var(--md-on-primary-container) !important;
+  }
+
+  /* Texts */
+  .text-\[\#1f1f1f\] {
+    color: var(--md-on-surface) !important;
+  }
+  .text-\[\#444746\] {
+    color: var(--md-on-surface-variant) !important;
+  }
+  .text-\[\#747775\] {
+    color: var(--md-outline) !important;
+  }
+  .text-\[\#0b57d0\] {
+    color: var(--md-primary) !important;
+  }
+  .text-\[\#041e49\],
+  .text-\[\#001d35\] {
+    color: var(--md-on-primary-container) !important;
+  }
+
+  /* Borders */
+  .border-\[\#e1e5ea\],
+  .border-\[\#d8dde3\] {
+    border-color: var(--md-outline-variant) !important;
+  }
+  .border-\[\#c4c7c5\] {
+    border-color: var(--md-outline) !important;
+  }
+  .border-\[\#d3e3fd\] {
+    border-color: var(--md-primary-container) !important;
+  }
+
+  /* Hover states */
+  .hover\:bg-\[\#e9eef6\]:hover,
+  .hover\:bg-\[\#f0f4f9\]:hover {
+    background-color: var(--md-surface-container) !important;
+  }
+  .hover\:bg-\[\#e1e5ea\]:hover {
+    background-color: var(--md-surface-container-high) !important;
+  }
+  .hover\:bg-\[\#f8fafd\]:hover {
+    background-color: var(--md-surface-container-low) !important;
+  }
+  .hover\:text-\[\#1f1f1f\]:hover {
+    color: var(--md-on-surface) !important;
+  }
+
+  /* Form inputs & controls in dark mode */
+  input, select, textarea {
+    color-scheme: dark;
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--md-outline) !important;
+  }
+
+  /* Category pills & quick filters */
+  .bg-\[\#f1f3f4\] {
+    background-color: var(--md-surface-container) !important;
+  }
+
+  /* Success & Error alerts in dark mode */
+  .bg-\[\#e6f4ea\] {
+    background-color: rgba(19, 115, 51, 0.22) !important;
+  }
+  .border-\[\#ceead6\] {
+    border-color: rgba(129, 201, 149, 0.35) !important;
+  }
+  .text-\[\#137333\] {
+    color: #81c995 !important;
+  }
+
+  .bg-\[\#fce8e6\] {
+    background-color: rgba(179, 38, 30, 0.25) !important;
+  }
+  .border-\[\#fad2cf\] {
+    border-color: rgba(242, 184, 181, 0.35) !important;
+  }
+  .text-\[\#c5221f\], .text-\[\#b3261e\] {
+    color: #f2b8b5 !important;
+  }
+
+  /* Focused inputs & search bar */
+  .focus\:bg-white:focus,
+  .focus-within\:bg-white:focus-within {
+    background-color: var(--md-surface-container-high) !important;
+  }
+
+  /* Tables in dark mode */
+  table th {
+    background-color: var(--md-surface-container) !important;
+    color: var(--md-on-surface) !important;
+  }
+  table tr:hover {
+    background-color: var(--md-surface-container-high) !important;
+  }
+}
+
 /* Google Drive style scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -83,4 +247,12 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #bdc1c6;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #3c4043;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #5f6368;
 }

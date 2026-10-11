@@ -4,6 +4,7 @@
   import PatientBanner from '$lib/components/PatientBanner.svelte';
   import LoginPage from '$lib/components/LoginPage.svelte';
   import NavigationRail from '$lib/components/NavigationRail.svelte';
+  import M3ConfirmDialog from '$lib/components/m3/M3ConfirmDialog.svelte';
   import DesktopLauncher from '$lib/pages/launcher/DesktopLauncher.svelte';
   import ModulePlaceholder from '$lib/pages/launcher/ModulePlaceholder.svelte';
   import { auth } from '$lib/stores/auth.svelte';
@@ -105,7 +106,7 @@
   <!-- Halaman Login Resmi Google Material You -->
   <LoginPage />
 {:else}
-  <div class="min-h-screen bg-[#f8fafd] flex flex-col font-sans">
+  <div class="min-h-screen bg-surface text-on-surface flex flex-col font-sans">
     <!-- Top Bar (Header dengan Logo, Modul Switcher, & Profil Pengguna) -->
     <TopBar
       onToggleSidebar={() => isSidebarExpanded = !isSidebarExpanded}
@@ -128,7 +129,7 @@
       {/if}
 
       <!-- Main Content Canvas (Google Drive Spacious Content Island) -->
-      <main class="flex-1 bg-white md:rounded-3xl border border-[#e1e5ea] shadow-xs md:mr-3 md:mb-3 overflow-y-auto p-4 sm:p-6 flex flex-col gap-5">
+      <main class="flex-1 bg-surface-container-lowest md:rounded-3xl border border-outline-variant shadow-xs md:mr-3 md:mb-3 overflow-y-auto p-4 sm:p-6 flex flex-col gap-5">
         <!-- Patient Summary Banner (Hanya ditampilkan pada konteks pelayanan klinis pasien aktif) -->
         {#if activeModule === 'clinical' && activeNav !== 'desktop'}
           <PatientBanner />
@@ -360,3 +361,5 @@
     </div>
   </div>
 {/if}
+
+<M3ConfirmDialog />

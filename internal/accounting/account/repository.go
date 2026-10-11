@@ -76,6 +76,17 @@ func (r *repository) Delete(ctx context.Context, id, deletedBy string) error {
 
 func (r *repository) DeleteWithParentCheck(ctx context.Context, id string, parentID *string, deletedBy string) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Validasi atomik di dalam transaksi: pastikan tidak ada anak aktif yang baru ditambahkan
+		var activeChildren int64
+		if err := tx.Table("chart_of_accounts").
+			Where("parent_id = ? AND deleted_at IS NULL", id).
+			Count(&activeChildren).Error; err != nil {
+			return err
+		}
+		if activeChildren > 0 {
+			return ErrCannotDeleteAccountWithChildren
+		}
+
 		// 1. Soft delete akun terkait
 		if err := tx.Table("chart_of_accounts").
 			Where("id = ? AND deleted_at IS NULL", id).

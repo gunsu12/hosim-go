@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Search, Plus, Filter, UserCheck, Shield, Phone, MapPin, Calendar, FileText } from '@lucide/svelte';
   import M3Button from '../../../components/m3/M3Button.svelte';
+  import { alertDialog } from '../../../stores/confirm.svelte';
   import type { PatientRecord } from '../../../types/master/patient';
 
   let searchQuery = $state('');
@@ -80,7 +81,7 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <M3Button variant="filled" onclick={() => alert('Fitur Tambah Pasien Baru (Modal / Form)')}>
+      <M3Button variant="filled" onclick={() => alertDialog({ title: 'Tambah Pasien', message: 'Formulir pendaftaran pasien baru sedang dalam pengembangan.', variant: 'info' })}>
         <Plus class="w-4 h-4" />
         <span>Tambah Pasien</span>
       </M3Button>
@@ -147,7 +148,7 @@
               <td class="py-3.5 px-4 text-right">
                 <button
                   type="button"
-                  onclick={() => alert(`Buka Rekam Medis: ${p.name} (${p.mrn})`)}
+                  onclick={() => alertDialog({ title: 'Rekam Medis Elektronik', message: `Membuka Rekam Medis Pasien: ${p.name} (No. RM: ${p.mrn}). Fitur integrasi berkas RME sedang disiapkan.`, variant: 'info' })}
                   class="text-xs text-[#0b57d0] hover:underline font-semibold cursor-pointer"
                 >
                   Detail RME

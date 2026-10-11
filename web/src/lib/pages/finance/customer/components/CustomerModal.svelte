@@ -1,16 +1,11 @@
 <script lang="ts">
   import {
-    X,
     ShieldCheck,
-    Building2,
-    Phone,
-    Mail,
-    Globe,
-    MapPin,
-    FileText,
     CheckCircle2,
   } from "@lucide/svelte";
   import M3Button from "$lib/components/m3/M3Button.svelte";
+  import M3Modal from "$lib/components/m3/M3Modal.svelte";
+  import M3ToggleCard from "$lib/components/m3/M3ToggleCard.svelte";
   import { createCustomer, updateCustomer } from "$lib/api/finance";
   import type {
     CustomerRecord,
@@ -142,322 +137,238 @@
   }
 </script>
 
-{#if isOpen}
-  <!-- Backdrop -->
-  <div
-    class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
-    role="dialog"
-    aria-modal="true"
-  >
+<M3Modal
+  {isOpen}
+  title={mode === "CREATE"
+    ? "Tambah Debitur / Penjamin Baru"
+    : "Ubah Data Debitur / Penjamin"}
+  subtitle={mode === "CREATE"
+    ? "Konfigurasi penjamin pembiayaan (BPJS, Asuransi Swasta, Korporat)"
+    : `Kode: ${customer?.code || "-"}`}
+  icon={ShieldCheck}
+  size="2xl"
+  onsubmit={handleSubmit}
+  {onClose}
+>
+  {#if errorMessage}
     <div
-      class="bg-white rounded-3xl border border-[#e1e5ea] shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+      class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 flex items-start gap-2.5"
     >
-      <!-- Header -->
-      <div
-        class="px-6 py-4 border-b border-[#e1e5ea] flex items-center justify-between bg-[#f8fafd]"
+      <span class="font-bold">Gagal:</span>
+      <span>{errorMessage}</span>
+    </div>
+  {/if}
+
+  <!-- Section: Identitas Utama -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label
+        for="cust-code"
+        class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
       >
-        <div class="flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-2xl bg-[#0b57d0]/10 text-[#0b57d0] flex items-center justify-center font-bold"
-          >
-            <ShieldCheck class="w-5 h-5" />
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-[#1f1f1f]">
-              {mode === "CREATE"
-                ? "Tambah Debitur / Penjamin Baru"
-                : "Ubah Data Debitur / Penjamin"}
-            </h3>
-            <p class="text-xs text-[#444746]">
-              {mode === "CREATE"
-                ? "Konfigurasi penjamin pembiayaan (BPJS, Asuransi Swasta, Korporat)"
-                : `Kode: ${customer?.code || "-"}`}
-            </p>
-          </div>
-        </div>
-        <button
-          onclick={onClose}
-          type="button"
-          class="text-[#747775] hover:text-[#1f1f1f] p-1.5 rounded-full hover:bg-[#e1e5ea] transition-colors cursor-pointer"
-        >
-          <X class="w-5 h-5" />
-        </button>
-      </div>
+        Kode Penjamin <span class="text-rose-500">*</span>
+      </label>
+      <input
+        id="cust-code"
+        type="text"
+        bind:value={code}
+        placeholder="Contoh: BPJS-JKN, ASR-PRUD"
+        required
+        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-mono font-bold uppercase text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+      />
+      <p class="text-[11px] text-[#747775] dark:text-[#8e918f] mt-1">
+        Harus unik di database sistem RS.
+      </p>
+    </div>
 
-      <!-- Scrollable Form Body -->
-      <form
-        onsubmit={handleSubmit}
-        class="flex-1 overflow-y-auto p-6 space-y-4 text-xs"
+    <div>
+      <label
+        for="cust-type"
+        class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
       >
-        {#if errorMessage}
-          <div
-            class="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 flex items-start gap-2.5"
-          >
-            <span class="font-bold">Gagal:</span>
-            <span>{errorMessage}</span>
-          </div>
-        {/if}
-
-        <!-- Section: Identitas Utama -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label
-              for="cust-code"
-              class="block font-semibold text-[#1f1f1f] mb-1"
-            >
-              Kode Penjamin <span class="text-rose-500">*</span>
-            </label>
-            <input
-              id="cust-code"
-              type="text"
-              bind:value={code}
-              placeholder="Contoh: BPJS-JKN, ASR-PRUD"
-              required
-              class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs font-mono font-bold uppercase text-[#1f1f1f] focus:outline-hidden transition-all"
-            />
-            <p class="text-[11px] text-[#747775] mt-1">
-              Harus unik di database sistem RS.
-            </p>
-          </div>
-
-          <div>
-            <label
-              for="cust-type"
-              class="block font-semibold text-[#1f1f1f] mb-1"
-            >
-              Kategori Penjamin
-            </label>
-            <select
-              id="cust-type"
-              bind:value={customerTypeId}
-              class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden transition-all"
-            >
-              <option value="">-- Pilih Kategori / Tipe --</option>
-              {#each customerTypes as ct (ct.id)}
-                <option value={ct.id}>{ct.name}</option>
-              {/each}
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label
-            for="cust-name"
-            class="block font-semibold text-[#1f1f1f] mb-1"
-          >
-            Nama Instansi / Perusahaan Penjamin <span class="text-rose-500"
-              >*</span
-            >
-          </label>
-          <input
-            id="cust-name"
-            type="text"
-            bind:value={name}
-            placeholder="Contoh: BPJS Kesehatan KC Jakarta, PT Prudential Life Assurance"
-            required
-            class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs font-semibold text-[#1f1f1f] focus:outline-hidden transition-all"
-          />
-        </div>
-
-        <!-- Section: Kontak & PIC -->
-        <div class="pt-2 border-t border-[#e1e5ea]">
-          <h4
-            class="text-xs font-bold text-[#444746] uppercase tracking-wider mb-3"
-          >
-            Kontak & Perwakilan (PIC)
-          </h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label
-                for="cust-contact-person"
-                class="block font-semibold text-[#1f1f1f] mb-1"
-              >
-                Nama PIC / Koordinator Klaim
-              </label>
-              <input
-                id="cust-contact-person"
-                type="text"
-                bind:value={contactPerson}
-                placeholder="Contoh: Budi Santoso (Head of Claims)"
-                class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden transition-all"
-              />
-            </div>
-
-            <div>
-              <label
-                for="cust-phone"
-                class="block font-semibold text-[#1f1f1f] mb-1"
-              >
-                Telepon / Hotline Call Center
-              </label>
-              <input
-                id="cust-phone"
-                type="text"
-                bind:value={phone}
-                placeholder="Contoh: 1500085 atau 021-29958888"
-                class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden transition-all font-mono"
-              />
-            </div>
-
-            <div>
-              <label
-                for="cust-email"
-                class="block font-semibold text-[#1f1f1f] mb-1"
-              >
-                Email Korespondensi / Klaim
-              </label>
-              <input
-                id="cust-email"
-                type="email"
-                bind:value={email}
-                placeholder="Contoh: claim.hospital@insurance.co.id"
-                class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden transition-all"
-              />
-            </div>
-
-            <div>
-              <label
-                for="cust-website"
-                class="block font-semibold text-[#1f1f1f] mb-1"
-              >
-                Situs Resmi / Portal Klaim
-              </label>
-              <input
-                id="cust-website"
-                type="text"
-                bind:value={website}
-                placeholder="Contoh: https://portal.asuransi.co.id"
-                class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden transition-all"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Alamat & Deskripsi -->
-        <div class="pt-2 border-t border-[#e1e5ea]">
-          <h4
-            class="text-xs font-bold text-[#444746] uppercase tracking-wider mb-3"
-          >
-            Alamat & Catatan Kontrak
-          </h4>
-          <div class="space-y-3">
-            <div>
-              <label
-                for="cust-address"
-                class="block font-semibold text-[#1f1f1f] mb-1"
-              >
-                Alamat Kantor Penjamin
-              </label>
-              <input
-                id="cust-address"
-                type="text"
-                bind:value={address}
-                placeholder="Gedung / Jalan / Kota penjamin..."
-                class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden transition-all"
-              />
-            </div>
-
-            <div>
-              <label
-                for="cust-desc"
-                class="block font-semibold text-[#1f1f1f] mb-1"
-              >
-                Keterangan Tambahan / Ketentuan PKS
-              </label>
-              <textarea
-                id="cust-desc"
-                bind:value={description}
-                rows="2"
-                placeholder="Ketentuan tarif khusus, plafon, atau nomor PKS kerja sama..."
-                class="w-full p-3 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden transition-all"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Kebijakan & Aturan Sistem -->
-        <div class="pt-2 border-t border-[#e1e5ea] space-y-3">
-          <h4
-            class="text-xs font-bold text-[#444746] uppercase tracking-wider mb-2"
-          >
-            Konfigurasi Aturan Transaksi
-          </h4>
-
-          <div
-            class="flex items-center justify-between p-3 rounded-2xl bg-[#f8fafd] border border-[#e1e5ea]"
-          >
-            <div>
-              <span class="font-bold text-[#1f1f1f] block"
-                >Wajib Kartu Fisik / Surat Eligibilitas Peserta (SEP)</span
-              >
-              <span class="text-[11px] text-[#444746]">
-                Petugas pendaftaran wajib memverifikasi kartu peserta atau nomor
-                SEP sebelum pelayanan.
-              </span>
-            </div>
-            <label
-              class="relative inline-flex items-center cursor-pointer ml-4"
-            >
-              <input
-                type="checkbox"
-                bind:checked={requireCard}
-                class="sr-only peer"
-              />
-              <div
-                class="w-11 h-6 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0b57d0]"
-              ></div>
-            </label>
-          </div>
-
-          <div
-            class="flex items-center justify-between p-3 rounded-2xl bg-[#f8fafd] border border-[#e1e5ea]"
-          >
-            <div>
-              <span class="font-bold text-[#1f1f1f] block"
-                >Status Operasional Penjamin</span
-              >
-              <span class="text-[11px] text-[#444746]">
-                Nonaktifkan jika kerja sama PKS telah berakhir atau ditangguhkan
-                sementara.
-              </span>
-            </div>
-            <label
-              class="relative inline-flex items-center cursor-pointer ml-4"
-            >
-              <input
-                type="checkbox"
-                bind:checked={isActive}
-                class="sr-only peer"
-              />
-              <div
-                class="w-11 h-6 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"
-              ></div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div
-          class="pt-4 border-t border-[#e1e5ea] flex items-center justify-end gap-3"
-        >
-          <M3Button variant="text" onclick={onClose} disabled={isSubmitting}>
-            Batal
-          </M3Button>
-          <M3Button variant="filled" type="submit" disabled={isSubmitting}>
-            {#if isSubmitting}
-              <span class="inline-block animate-spin mr-1">⏳</span>
-              <span>Menyimpan...</span>
-            {:else}
-              <CheckCircle2 class="w-4 h-4 mr-1" />
-              <span
-                >{mode === "CREATE"
-                  ? "Simpan Penjamin"
-                  : "Perbarui Penjamin"}</span
-              >
-            {/if}
-          </M3Button>
-        </div>
-      </form>
+        Kategori Penjamin
+      </label>
+      <select
+        id="cust-type"
+        bind:value={customerTypeId}
+        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+      >
+        <option value="">-- Pilih Kategori / Tipe --</option>
+        {#each customerTypes as ct (ct.id)}
+          <option value={ct.id}>{ct.name}</option>
+        {/each}
+      </select>
     </div>
   </div>
-{/if}
+
+  <div>
+    <label
+      for="cust-name"
+      class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
+    >
+      Nama Instansi / Perusahaan Penjamin <span class="text-rose-500">*</span>
+    </label>
+    <input
+      id="cust-name"
+      type="text"
+      bind:value={name}
+      placeholder="Contoh: BPJS Kesehatan KC Jakarta, PT Prudential Life Assurance"
+      required
+      class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+    />
+  </div>
+
+  <!-- Section: Kontak & PIC -->
+  <div class="pt-2 border-t border-[#e1e5ea] dark:border-[#353738]">
+    <h4
+      class="text-xs font-bold text-[#444746] dark:text-[#c4c7c5] uppercase tracking-wider mb-3"
+    >
+      Kontak & Perwakilan (PIC)
+    </h4>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label
+          for="cust-contact-person"
+          class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
+        >
+          Nama PIC / Koordinator Klaim
+        </label>
+        <input
+          id="cust-contact-person"
+          type="text"
+          bind:value={contactPerson}
+          placeholder="Contoh: Budi Santoso (Head of Claims)"
+          class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+        />
+      </div>
+
+      <div>
+        <label
+          for="cust-phone"
+          class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
+        >
+          Telepon / Hotline Call Center
+        </label>
+        <input
+          id="cust-phone"
+          type="text"
+          bind:value={phone}
+          placeholder="Contoh: 1500085 atau 021-29958888"
+          class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all font-mono"
+        />
+      </div>
+
+      <div>
+        <label
+          for="cust-email"
+          class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
+        >
+          Email Korespondensi / Klaim
+        </label>
+        <input
+          id="cust-email"
+          type="email"
+          bind:value={email}
+          placeholder="Contoh: claim.hospital@insurance.co.id"
+          class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+        />
+      </div>
+
+      <div>
+        <label
+          for="cust-website"
+          class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
+        >
+          Situs Resmi / Portal Klaim
+        </label>
+        <input
+          id="cust-website"
+          type="text"
+          bind:value={website}
+          placeholder="Contoh: https://portal.asuransi.co.id"
+          class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Alamat & Deskripsi -->
+  <div class="pt-2 border-t border-[#e1e5ea] dark:border-[#353738]">
+    <h4
+      class="text-xs font-bold text-[#444746] dark:text-[#c4c7c5] uppercase tracking-wider mb-3"
+    >
+      Alamat & Catatan Kontrak
+    </h4>
+    <div class="space-y-3">
+      <div>
+        <label
+          for="cust-address"
+          class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
+        >
+          Alamat Kantor Penjamin
+        </label>
+        <input
+          id="cust-address"
+          type="text"
+          bind:value={address}
+          placeholder="Gedung / Jalan / Kota penjamin..."
+          class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+        />
+      </div>
+
+      <div>
+        <label
+          for="cust-desc"
+          class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
+        >
+          Keterangan Tambahan / Ketentuan PKS
+        </label>
+        <textarea
+          id="cust-desc"
+          bind:value={description}
+          rows="2"
+          placeholder="Ketentuan tarif khusus, plafon, atau nomor PKS kerja sama..."
+          class="w-full p-3 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Kebijakan & Aturan Sistem -->
+  <div class="pt-2 border-t border-[#e1e5ea] dark:border-[#353738] space-y-3">
+    <h4
+      class="text-xs font-bold text-[#444746] dark:text-[#c4c7c5] uppercase tracking-wider mb-2"
+    >
+      Konfigurasi Aturan Transaksi
+    </h4>
+
+    <M3ToggleCard
+      title="Wajib Kartu Fisik / Surat Eligibilitas Peserta (SEP)"
+      description="Petugas pendaftaran wajib memverifikasi kartu peserta atau nomor SEP sebelum pelayanan."
+      bind:checked={requireCard}
+      colorVariant="primary"
+    />
+
+    <M3ToggleCard
+      title="Status Operasional Penjamin"
+      description="Nonaktifkan jika kerja sama PKS telah berakhir atau ditangguhkan sementara."
+      bind:checked={isActive}
+      colorVariant="emerald"
+    />
+  </div>
+
+  {#snippet footer()}
+    <M3Button variant="text" onclick={onClose} disabled={isSubmitting}>
+      Batal
+    </M3Button>
+    <M3Button variant="filled" type="submit" disabled={isSubmitting}>
+      {#if isSubmitting}
+        <span class="inline-block animate-spin mr-1">⏳</span>
+        <span>Menyimpan...</span>
+      {:else}
+        <CheckCircle2 class="w-4 h-4 mr-1" />
+        <span>{mode === "CREATE" ? "Simpan Penjamin" : "Perbarui Penjamin"}</span>
+      {/if}
+    </M3Button>
+  {/snippet}
+</M3Modal>

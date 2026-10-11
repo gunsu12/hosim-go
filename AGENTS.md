@@ -206,6 +206,7 @@ func (uc *AdmitPatient) Execute(ctx context.Context, cmd AdmitPatientCommand) (A
 - Untuk resource yang diperebutkan—bed, stock, nomor dokumen, payment state—tangani race dengan database constraint, atomic conditional update, optimistic version, atau row lock (`FOR UPDATE`) yang disengaja. Check-then-write tanpa proteksi concurrency DILARANG.
 - Gunakan isolation/locking yang sesuai kasus; jangan menaikkan isolation global tanpa bukti.
 - Jika request dapat diulang, definisikan idempotency key dan simpan hasil/status secara atomik. Retry tidak boleh menggandakan admission, dispensing, billing, audit utama, atau outbox event.
+- **Soft-delete pada hierarki self-referencing** (misal: chart of accounts, struktur department/unit, kategori pohon): Karena soft-delete (`UPDATE deleted_at`) tidak memicu database foreign key `ON DELETE RESTRICT` PostgreSQL, pengecekan ketiadaan anak/sub-record aktif WAJIB dilakukan secara atomik di dalam database transaction yang sama dengan penulisan soft-delete guna mencegah balapan konkuren (TOCTOU) dan terciptanya orphan records.
 
 ## 7. Domain invariants
 
@@ -216,6 +217,7 @@ Aturan yang harus selalu benar ditempatkan pada entity/value object atau domain 
 - Transfer hanya boleh dari admission aktif dan tujuan harus tersedia.
 - Dispensing tidak boleh melebihi kuantitas yang diizinkan tanpa aturan override yang eksplisit.
 - State transition harus berasal dari status yang diizinkan.
+- Entitas klasifikasi pokok/akar sistem (misalnya Chart of Accounts Level 1, role sistem bawaan) dilindungi secara permanen dari penghapusan (*system immutable invariant*).
 
 Gunakan entity method seperti `admission.TransferTo(...)` atau domain service bila aturan melibatkan beberapa entity dan tidak alami dimiliki satu entity. Jangan membuat domain service menjadi kumpulan helper stateless tanpa business meaning.
 
@@ -369,6 +371,7 @@ Aturan:
 
 - Middleware melakukan authentication dan parsing credential, tetapi use case adalah enforcement point untuk business authorization.
 - Jangan mempercayai `actor_id`, role, organization, service unit, atau patient scope dari request body. Ambil dari authenticated context dan data server-side.
+- **DILARANG** mengutamakan header HTTP mentah (seperti `X-User-ID`, `X-Actor`, dsb.) di atas identitas terverifikasi dari context middleware (`middleware.GetUsername`, `middleware.GetUserID`). Identitas operator audit (`created_by`, `updated_by`, `deleted_by`) WAJIB dibaca dari authenticated context (JWT claims). Header hanya boleh menjadi fallback opsional untuk testing di lingkungan yang secara eksplisit unauthenticated.
 - Otorisasi harus mempertimbangkan action + resource + context, bukan role saja: organisasi/fasilitas aktif, unit layanan, assignment/relationship ke encounter, status encounter, dan purpose of use bila relevan.
 - Default adalah deny. Endpoint baru tidak boleh aktif tanpa permission mapping yang jelas.
 - Repository/query untuk data tenant/organisasi WAJIB menerima scope atau predicate yang membuat query tanpa scope sulit dilakukan. Hindari `FindByID(id)` global untuk resource sensitif bila ownership scope diperlukan.

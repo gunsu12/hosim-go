@@ -43,6 +43,7 @@ var (
 	ErrParentCannotBeSelf              = errors.New("akun tidak dapat menjadi induk bagi dirinya sendiri")
 	ErrCannotDeleteAccountWithChildren = errors.New("akun tidak dapat dihapus karena masih memiliki akun turunan")
 	ErrCannotDeleteAccountInUse        = errors.New("akun tidak dapat dihapus karena sudah digunakan dalam transaksi atau konfigurasi tarif")
+	ErrCannotDeleteLevelOneAccount     = errors.New("akun klasifikasi utama level 1 tidak dapat dihapus")
 	ErrTreasuryMustBeAsset             = errors.New("akun perbendaharaan/kas-bank harus bertipe ASSET")
 	ErrTreasuryMustBePostable          = errors.New("akun perbendaharaan/kas-bank harus berstatus postable (bukan header)")
 	ErrNonPostableAccount              = errors.New("akun header/kategori tidak dapat menerima transaksi langsung (is_postable = false)")
