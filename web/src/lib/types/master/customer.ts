@@ -1,11 +1,2 @@
-// Master Customer / Penjamin Domain Types (internal/finance/customer)
-
-export interface CustomerRecord {
-  id: string;
-  code: string;
-  name: string;
-  typeName: string;
-  phone: string;
-  requireCard: boolean;
-  isActive: boolean;
-}
+// Re-export Customer domain types from finance domain (internal/finance/customer)
+export * from '../finance/customer';

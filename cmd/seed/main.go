@@ -18,10 +18,11 @@ Penggunaan:
 
 Opsi Flag:
   -type string   Kategori seeder yang ingin dijalankan (default: "all")
-                 Pilihan: all, rbac, satusehat, practitioner, catalog, accounting, coa-head
+                 Pilihan: all, rbac, customer, satusehat, practitioner, catalog, accounting, coa-head
 
 Contoh:
   go run cmd/seed/main.go
+  go run cmd/seed/main.go -type=customer
   go run cmd/seed/main.go -type=accounting
   go run cmd/seed/main.go -type=coa-head
   go run cmd/seed/main.go -type=catalog
@@ -29,7 +30,7 @@ Contoh:
 `
 
 func main() {
-	seedType := flag.String("type", "all", "Kategori seeder: all | rbac | satusehat | practitioner | catalog | accounting | coa-head")
+	seedType := flag.String("type", "all", "Kategori seeder: all | rbac | customer | satusehat | practitioner | catalog | accounting | coa-head")
 	flag.Usage = func() {
 		fmt.Print(usage)
 	}
@@ -53,6 +54,8 @@ func main() {
 		seedErr = seeder.RunAll(db)
 	case "rbac":
 		seedErr = seeder.RunRBAC(db)
+	case "customer", "finance-customer":
+		seedErr = seeder.RunCustomer(db)
 	case "satusehat":
 		seedErr = seeder.RunSatuSehatReferences(db)
 	case "practitioner":
@@ -64,7 +67,7 @@ func main() {
 	case "accounting-head", "coa-head":
 		seedErr = seeder.RunAccountingHeadAccounts(db)
 	default:
-		log.Printf("[ERROR] Tipe seeder '%s' tidak valid. Gunakan: all, rbac, satusehat, practitioner, catalog, accounting, coa-head\n", *seedType)
+		log.Printf("[ERROR] Tipe seeder '%s' tidak valid. Gunakan: all, rbac, customer, satusehat, practitioner, catalog, accounting, coa-head\n", *seedType)
 		flag.Usage()
 		os.Exit(1)
 	}

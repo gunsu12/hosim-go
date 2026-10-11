@@ -12,6 +12,7 @@
     ShieldCheck,
     BookOpen,
     Receipt,
+    Building2,
   } from "@lucide/svelte";
   import { auth } from "../stores/auth.svelte";
 
@@ -46,7 +47,13 @@
     onNavigateHome = () => {},
   }: Props = $props();
 
-  let openParentIds = $state<string[]>(["clinical", "master", "accounting", "finance"]);
+  let openParentIds = $state<string[]>([
+    "clinical",
+    "master",
+    "accounting",
+    "tariff",
+    "customer",
+  ]);
   let flyoutMenuId = $state<string | null>(null);
 
   const navigationStructure: MenuItem[] = [
@@ -165,11 +172,17 @@
       ],
     },
     {
-      id: "finance",
-      label: "Tarif & Keuangan RS",
+      id: "tariff",
+      label: "Buku & Manajemen Tarif",
       shortLabel: "Tarif",
       icon: Receipt,
       children: [
+        {
+          id: "finance-tariff",
+          label: "Tarif & Price Plan (Tariff)",
+          badge: "Tariff",
+          permission: "tariff_class:read",
+        },
         {
           id: "finance-price-plan",
           label: "Buku Tarif (Price Plan)",
@@ -189,12 +202,6 @@
           permission: "tariff_price_plan:read",
         },
         {
-          id: "finance-tariff",
-          label: "Kelas & Komponen Tarif",
-          badge: "Master",
-          permission: "tariff_class:read",
-        },
-        {
           id: "finance-tariff-class",
           label: "Kelas Tarif (Class)",
           badge: null,
@@ -205,6 +212,20 @@
           label: "Komponen Tarif (Component)",
           badge: null,
           permission: "tariff_component:read",
+        },
+      ],
+    },
+    {
+      id: "customer",
+      label: "Debitur & Penjamin (Customer)",
+      shortLabel: "Penjamin",
+      icon: Building2,
+      children: [
+        {
+          id: "finance-customer",
+          label: "Master Debitur & Penjamin",
+          badge: "Customer",
+          permission: "customer:read",
         },
       ],
     },
@@ -266,6 +287,8 @@
           return item.id === "clinical" || item.id === "activity";
         if (activeModule === "auth") return item.id === "auth";
         if (activeModule === "accounting") return item.id === "accounting";
+        if (activeModule === "finance")
+          return item.id === "tariff" || item.id === "customer";
         return item.id === activeModule;
       })
       .map((item) => ({

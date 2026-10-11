@@ -7,17 +7,22 @@ import (
 	"hosim-go/internal/accounting/account"
 	"hosim-go/internal/auth"
 	"hosim-go/internal/catalog/item"
+	"hosim-go/internal/finance/customer"
 	"hosim-go/internal/practitioner"
 
 	"gorm.io/gorm"
 )
 
-// RunAll menjalankan seluruh seeder esensial (RBAC, Referensi SatuSehat, Tenaga Medis Default, Master Katalog)
+// RunAll menjalankan seluruh seeder esensial (RBAC, Referensi SatuSehat, Tenaga Medis Default, Master Katalog, Master Customer, COA)
 func RunAll(db *gorm.DB) error {
 	log.Println("[SEEDER] Memulai proses seeding database...")
 
 	if err := RunRBAC(db); err != nil {
 		return fmt.Errorf("seeder RBAC gagal: %w", err)
+	}
+
+	if err := RunCustomer(db); err != nil {
+		return fmt.Errorf("seeder customer gagal: %w", err)
 	}
 
 	if err := RunSatuSehatReferences(db); err != nil {
@@ -68,6 +73,12 @@ func RunCatalog(db *gorm.DB) error {
 func RunAccountingCOA(db *gorm.DB) error {
 	log.Println("[SEEDER] Menjalankan seeder Bagan Akun Lengkap (Chart of Accounts)...")
 	return account.SeedChartOfAccounts(db)
+}
+
+// RunCustomer menginisialisasi master kategori penjamin dan penjamin sistem immutable (Personal, KITAS, Pasport/Asing)
+func RunCustomer(db *gorm.DB) error {
+	log.Println("[SEEDER] Menjalankan seeder Debitur & Penjamin (Customer & Customer Types)...")
+	return customer.SeedDefaultImmutableCustomers(db)
 }
 
 // RunAccountingHeadAccounts menginisialisasi khusus akun kepala / induk (Header Accounts)

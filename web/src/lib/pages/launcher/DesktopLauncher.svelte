@@ -280,9 +280,9 @@
       statusText: "Aktif & Terintegrasi",
       permission: "tariff_class:read",
       features: [
-        "Kelas Tarif Kamar & Layanan",
-        "Komponen Jasa Dokter & RS",
-        "Pemetaan Bagan Akun (COA)",
+        "Debitur & Penjamin (Customer)",
+        "Buku Tarif (Price Plan)",
+        "Kelas & Komponen Tarif",
       ],
       quickStats: "Master Keuangan RS",
     },

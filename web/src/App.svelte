@@ -33,7 +33,7 @@
   import { ChartOfAccountsPage } from '$lib/pages/accounting';
 
   // Domain Finance & Tariff Pages
-  import { FinanceTariffPage } from '$lib/pages/finance';
+  import { FinanceTariffPage, FinanceCustomerPage } from '$lib/pages/finance';
 
   // Domain Auth & User Management Pages
   import { AuthManagementPage } from '$lib/pages/auth';
@@ -173,8 +173,8 @@
           <ServiceUnitPage />
         {:else if activeNav === 'master-room'}
           <RoomPage />
-        {:else if activeNav === 'master-customer' || activeNav === 'master-payer'}
-          <CustomerPage />
+        {:else if activeNav === 'finance-customer' || activeNav === 'master-customer' || activeNav === 'master-payer'}
+          <FinanceCustomerPage />
         {:else if activeNav === 'master-referal'}
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}

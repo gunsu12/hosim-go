@@ -110,6 +110,17 @@ func TestCreateCustomer_Validation(t *testing.T) {
 	if !errors.Is(err, customer.ErrInvalidEmail) {
 		t.Fatalf("expected ErrInvalidEmail, got %v", err)
 	}
+
+	// Website tidak valid (XSS / invalid scheme)
+	badWebsite := "javascript:alert(1)"
+	_, err = svc.CreateCustomer(context.Background(), customer.CreateCustomerRequest{
+		Code:    "BPJS",
+		Name:    "BPJS Kesehatan",
+		Website: &badWebsite,
+	}, "user-1")
+	if !errors.Is(err, customer.ErrInvalidWebsite) {
+		t.Fatalf("expected ErrInvalidWebsite, got %v", err)
+	}
 }
 
 func TestCreateCustomer_DuplicateCode(t *testing.T) {

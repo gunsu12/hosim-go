@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/mail"
+	"net/url"
 	"strings"
 
 	"gorm.io/gorm"
@@ -15,6 +16,7 @@ var (
 	ErrCustomerImmutable         = errors.New("customer/penjamin ini bersifat sistem/immutable dan tidak boleh dihapus")
 	ErrCustomerTypeNotFound      = errors.New("tipe customer/penjamin tidak valid / tidak ditemukan")
 	ErrInvalidEmail              = errors.New("format email tidak valid")
+	ErrInvalidWebsite            = errors.New("format website tidak valid (harus diawali http:// atau https://)")
 	ErrNameRequired              = errors.New("nama customer/penjamin wajib diisi")
 	ErrCodeRequired              = errors.New("kode customer/penjamin wajib diisi")
 )
@@ -31,7 +33,6 @@ type CreateCustomerRequest struct {
 	Description    *string `json:"description"`
 	CustomerTypeID *string `json:"customer_type_id"`
 	IsActive       *bool   `json:"is_active"`
-	IsImmutable    *bool   `json:"is_immutable"`
 }
 
 type UpdateCustomerRequest struct {
@@ -57,6 +58,18 @@ func sanitizeStringPtr(s *string) *string {
 		return nil
 	}
 	return &trimmed
+}
+
+func validateWebsite(raw *string) (*string, error) {
+	sanitized := sanitizeStringPtr(raw)
+	if sanitized == nil {
+		return nil, nil
+	}
+	u, err := url.ParseRequestURI(*sanitized)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return nil, ErrInvalidWebsite
+	}
+	return sanitized, nil
 }
 
 type Service interface {
@@ -93,6 +106,11 @@ func (s *service) CreateCustomer(ctx context.Context, req CreateCustomerRequest,
 		}
 	}
 
+	website, err := validateWebsite(req.Website)
+	if err != nil {
+		return nil, err
+	}
+
 	req.CustomerTypeID = sanitizeStringPtr(req.CustomerTypeID)
 	if req.CustomerTypeID != nil {
 		if _, err := s.repo.FindCustomerTypeByID(ctx, *req.CustomerTypeID); err != nil {
@@ -113,11 +131,6 @@ func (s *service) CreateCustomer(ctx context.Context, req CreateCustomerRequest,
 		isActive = *req.IsActive
 	}
 
-	isImmutable := false
-	if req.IsImmutable != nil {
-		isImmutable = *req.IsImmutable
-	}
-
 	requireCard := true
 	if req.RequireCard != nil {
 		requireCard = *req.RequireCard
@@ -129,18 +142,25 @@ func (s *service) CreateCustomer(ctx context.Context, req CreateCustomerRequest,
 		Address:        sanitizeStringPtr(req.Address),
 		Phone:          sanitizeStringPtr(req.Phone),
 		Email:          req.Email,
-		Website:        sanitizeStringPtr(req.Website),
+		Website:        website,
 		ContactPerson:  sanitizeStringPtr(req.ContactPerson),
 		RequireCard:    &requireCard,
 		Description:    sanitizeStringPtr(req.Description),
 		CustomerTypeID: req.CustomerTypeID,
 		IsActive:       isActive,
-		IsImmutable:    isImmutable,
+		IsImmutable:    false, // Data immutable sistem hanya dibuat melalui migration/seeder
 		CreatedBy:      operatorID,
 		UpdatedBy:      operatorID,
 	}
 
-	return s.repo.Create(ctx, customer)
+	created, err := s.repo.Create(ctx, customer)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) || strings.Contains(err.Error(), "idx_customers_code") || strings.Contains(err.Error(), "23505") {
+			return nil, ErrCustomerCodeAlreadyExists
+		}
+		return nil, err
+	}
+	return created, nil
 }
 
 func (s *service) UpdateCustomer(ctx context.Context, id string, req UpdateCustomerRequest, operatorID string) (*Customer, error) {
@@ -168,6 +188,11 @@ func (s *service) UpdateCustomer(ctx context.Context, id string, req UpdateCusto
 		}
 	}
 
+	website, err := validateWebsite(req.Website)
+	if err != nil {
+		return nil, err
+	}
+
 	req.CustomerTypeID = sanitizeStringPtr(req.CustomerTypeID)
 	if req.CustomerTypeID != nil {
 		if _, err := s.repo.FindCustomerTypeByID(ctx, *req.CustomerTypeID); err != nil {
@@ -190,7 +215,7 @@ func (s *service) UpdateCustomer(ctx context.Context, id string, req UpdateCusto
 	customer.Address = sanitizeStringPtr(req.Address)
 	customer.Phone = sanitizeStringPtr(req.Phone)
 	customer.Email = req.Email
-	customer.Website = sanitizeStringPtr(req.Website)
+	customer.Website = website
 	customer.ContactPerson = sanitizeStringPtr(req.ContactPerson)
 	if req.RequireCard != nil {
 		customer.RequireCard = req.RequireCard
@@ -202,7 +227,14 @@ func (s *service) UpdateCustomer(ctx context.Context, id string, req UpdateCusto
 	}
 	customer.UpdatedBy = operatorID
 
-	return s.repo.Update(ctx, customer)
+	updated, err := s.repo.Update(ctx, customer)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) || strings.Contains(err.Error(), "idx_customers_code") || strings.Contains(err.Error(), "23505") {
+			return nil, ErrCustomerCodeAlreadyExists
+		}
+		return nil, err
+	}
+	return updated, nil
 }
 
 func (s *service) DeleteCustomer(ctx context.Context, id string, operatorID string) error {

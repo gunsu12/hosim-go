@@ -20,9 +20,6 @@ func NewHandler(service Service) *Handler {
 }
 
 func getOperator(c *gin.Context) string {
-	if op := c.GetHeader("X-User-ID"); op != "" {
-		return op
-	}
 	if username := middleware.GetUsername(c); username != "" {
 		return username
 	}
@@ -61,6 +58,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 			return
 		}
 		if errors.Is(err, ErrCustomerTypeNotFound) || errors.Is(err, ErrInvalidEmail) ||
+			errors.Is(err, ErrInvalidWebsite) ||
 			errors.Is(err, ErrNameRequired) || errors.Is(err, ErrCodeRequired) {
 			response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
 			return
@@ -80,6 +78,12 @@ func (h *Handler) List(ctx *gin.Context) {
 		CustomerTypeID: ctx.Query("customer_type_id"),
 	}
 
+	if isActiveStr := ctx.Query("is_active"); isActiveStr != "" {
+		if isActive, err := strconv.ParseBool(isActiveStr); err == nil {
+			params.IsActive = &isActive
+		}
+	}
+
 	if ctx.Query("page") != "" {
 		page, err := strconv.Atoi(ctx.Query("page"))
 		if err != nil {
@@ -94,6 +98,12 @@ func (h *Handler) List(ctx *gin.Context) {
 		if err != nil {
 			response.Error(ctx, http.StatusBadRequest, "Parameter limit tidak valid", nil)
 			return
+		}
+		if limit > 100 {
+			limit = 100
+		}
+		if limit <= 0 {
+			limit = 10
 		}
 		params.Limit = limit
 	}
@@ -146,6 +156,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 			return
 		}
 		if errors.Is(err, ErrCustomerTypeNotFound) || errors.Is(err, ErrInvalidEmail) ||
+			errors.Is(err, ErrInvalidWebsite) ||
 			errors.Is(err, ErrNameRequired) || errors.Is(err, ErrCodeRequired) {
 			response.Error(ctx, http.StatusBadRequest, err.Error(), nil)
 			return

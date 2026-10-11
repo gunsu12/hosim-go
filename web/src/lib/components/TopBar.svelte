@@ -138,7 +138,9 @@
               ? "Pengguna & Akses"
               : activeModule === "accounting"
                 ? "Akuntansi & Keuangan RS"
-                : activeModule.toUpperCase()}
+                : activeModule === "finance"
+                  ? "Tarif & Keuangan RS"
+                  : activeModule.toUpperCase()}
       </span>
     {/if}
   </div>

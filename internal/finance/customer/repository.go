@@ -12,6 +12,7 @@ type ListParams struct {
 	Limit          int
 	Search         string
 	CustomerTypeID string
+	IsActive       *bool
 }
 
 type Repository interface {
@@ -85,6 +86,10 @@ func (r *repository) FindAll(ctx context.Context, params ListParams) ([]Customer
 
 	if params.CustomerTypeID != "" {
 		query = query.Where("customer_type_id = ?", params.CustomerTypeID)
+	}
+
+	if params.IsActive != nil {
+		query = query.Where("is_active = ?", *params.IsActive)
 	}
 
 	if params.Search != "" {
