@@ -1,11 +1,20 @@
 <script lang="ts">
-  import { Search, Plus, Share2, Phone, Mail, MapPin, Building, ShieldCheck } from '@lucide/svelte';
+  import { Search, Plus, Share2, Phone, MapPin } from '@lucide/svelte';
   import M3Button from '../../../components/m3/M3Button.svelte';
+  import M3Select from '../../../components/m3/M3Select.svelte';
   import { alertDialog } from '../../../stores/confirm.svelte';
-  import type { ReferalRecord, ReferalType } from '../../../types/master/referal';
+  import type { ReferalRecord } from '../../../types/master/referal';
 
   let searchQuery = $state('');
   let selectedType = $state('ALL');
+
+  const typeOptions = [
+    { value: 'ALL', label: 'Semua Jenis Faskes' },
+    { value: 'PUSKESMAS', label: 'Puskesmas / Faskes 1' },
+    { value: 'KLINIK_PRATAMA', label: 'Klinik Pratama' },
+    { value: 'RS_TIPE_C', label: 'RS Tipe C' },
+    { value: 'DOKTER_PRAKTEK', label: 'Dokter Praktek' }
+  ];
 
   let referals = $state<ReferalRecord[]>([
     {
@@ -83,12 +92,12 @@
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
       <div class="flex items-center gap-2">
-        <h2 class="text-lg font-semibold text-[#1f1f1f] tracking-tight">Master Asal & Tujuan Rujukan (Referral)</h2>
-        <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-[#e8f0fe] text-[#0b57d0]">
+        <h2 class="text-lg font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] tracking-tight">Master Asal & Tujuan Rujukan (Referral)</h2>
+        <span class="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-[#e8f0fe] dark:bg-[#0b57d0]/20 text-[#0b57d0] dark:text-[#a8c7fa]">
           domain: internal/master/referal
         </span>
       </div>
-      <p class="text-xs text-[#444746]">Registrasi fasilitas kesehatan pengirim rujukan BPJS (Faskes 1/2), RS Jejaring, dan Dokter Praktek Perorangan.</p>
+      <p class="text-xs text-[#444746] dark:text-[#8e918f] mt-0.5">Registrasi fasilitas kesehatan pengirim rujukan BPJS (Faskes 1/2), RS Jejaring, dan Dokter Praktek Perorangan.</p>
     </div>
 
     <div class="flex items-center gap-2">
@@ -100,37 +109,32 @@
   </div>
 
   <!-- Search & Filter Controls -->
-  <div class="flex flex-wrap items-center gap-3 bg-[#f8fafd] p-3 rounded-2xl border border-[#e1e5ea]">
+  <div class="flex flex-wrap items-center gap-3 bg-[#f8fafd] dark:bg-[#28292a] p-3 rounded-2xl border border-[#e1e5ea] dark:border-[#353738]">
     <div class="flex-1 min-w-[240px] relative">
-      <Search class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#747775]" />
+      <Search class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#747775] dark:text-[#8e918f]" />
       <input
         type="text"
         bind:value={searchQuery}
         placeholder="Cari nama faskes, kode rujukan, alamat, atau nomor telepon..."
-        class="w-full h-10 pl-9 pr-4 text-xs rounded-xl bg-white border border-[#e1e5ea] text-[#1f1f1f] focus:outline-none focus:ring-2 focus:ring-[#0b57d0]"
+        class="w-full h-10 pl-9 pr-4 text-xs rounded-xl bg-white dark:bg-[#1e1f20] border border-[#e1e5ea] dark:border-[#353738] text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden focus:ring-2 focus:ring-[#0b57d0] dark:focus:ring-[#a8c7fa]"
       />
     </div>
 
-    <div class="flex items-center gap-2">
-      <select
-        bind:value={selectedType}
-        class="h-10 px-3 text-xs rounded-xl bg-white border border-[#e1e5ea] text-[#1f1f1f] focus:outline-none focus:ring-2 focus:ring-[#0b57d0]"
-      >
-        <option value="ALL">Semua Jenis Faskes</option>
-        <option value="PUSKESMAS">Puskesmas / Faskes 1</option>
-        <option value="KLINIK_PRATAMA">Klinik Pratama</option>
-        <option value="RS_TIPE_C">RS Tipe C</option>
-        <option value="DOKTER_PRAKTEK">Dokter Praktek</option>
-      </select>
+    <div class="w-56">
+      <M3Select
+        value={selectedType}
+        onchange={(val) => selectedType = val}
+        options={typeOptions}
+      />
     </div>
   </div>
 
   <!-- Data Table -->
-  <div class="bg-white rounded-2xl border border-[#e1e5ea] overflow-hidden shadow-xs">
+  <div class="bg-white dark:bg-[#1e1f20] rounded-2xl border border-[#e1e5ea] dark:border-[#353738] overflow-hidden shadow-xs">
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
-          <tr class="bg-[#f0f4f9] border-b border-[#e1e5ea] text-[#444746] font-semibold">
+          <tr class="bg-[#f0f4f9] dark:bg-[#28292a] border-b border-[#e1e5ea] dark:border-[#353738] text-[#444746] dark:text-[#c4c7c5] font-semibold">
             <th class="py-3 px-4">Kode Faskes</th>
             <th class="py-3 px-4">Nama Faskes / Mitra Rujukan</th>
             <th class="py-3 px-4">Kategori Faskes</th>
@@ -140,50 +144,50 @@
             <th class="py-3 px-4 text-right">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-[#e1e5ea] text-[#1f1f1f]">
+        <tbody class="divide-y divide-[#e1e5ea] dark:divide-[#353738] text-[#1f1f1f] dark:text-[#e3e3e3]">
           {#each filteredReferals as ref (ref.id)}
-            <tr class="hover:bg-[#f8fafd] transition-colors">
-              <td class="py-3.5 px-4 font-mono font-semibold text-[#0b57d0]">
+            <tr class="hover:bg-[#f8fafd] dark:hover:bg-[#28292a] transition-colors">
+              <td class="py-3.5 px-4 font-mono font-semibold text-[#0b57d0] dark:text-[#a8c7fa]">
                 {ref.code}
               </td>
               <td class="py-3.5 px-4 font-medium">
                 <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-full bg-[#e8f0fe] text-[#0b57d0] flex items-center justify-center font-bold text-xs shrink-0">
+                  <div class="w-8 h-8 rounded-full bg-[#e8f0fe] dark:bg-[#0b57d0]/20 text-[#0b57d0] dark:text-[#a8c7fa] flex items-center justify-center font-bold text-xs shrink-0">
                     <Share2 class="w-4 h-4" />
                   </div>
                   <div>
-                    <div class="font-semibold text-[#1f1f1f]">{ref.name}</div>
-                    <div class="text-[11px] text-[#747775] font-mono">ID: {ref.id}</div>
+                    <div class="font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">{ref.name}</div>
+                    <div class="text-[11px] text-[#747775] dark:text-[#8e918f] font-mono">ID: {ref.id}</div>
                   </div>
                 </div>
               </td>
               <td class="py-3.5 px-4">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#e9eef6] text-[#041e49]">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#e9eef6] dark:bg-[#28292a] text-[#041e49] dark:text-[#c4c7c5] border border-transparent dark:border-[#353738]">
                   {ref.typeLabel}
                 </span>
               </td>
-              <td class="py-3.5 px-4 text-[#444746] max-w-[200px] truncate">
+              <td class="py-3.5 px-4 text-[#444746] dark:text-[#8e918f] max-w-[200px] truncate">
                 <div class="flex items-center gap-1.5">
-                  <MapPin class="w-3.5 h-3.5 text-[#747775] shrink-0" />
+                  <MapPin class="w-3.5 h-3.5 text-[#747775] dark:text-[#8e918f] shrink-0" />
                   <span class="truncate">{ref.address}</span>
                 </div>
               </td>
-              <td class="py-3.5 px-4 text-[#444746]">
+              <td class="py-3.5 px-4 text-[#444746] dark:text-[#8e918f]">
                 <div class="flex items-center gap-1.5">
-                  <Phone class="w-3.5 h-3.5 text-[#747775]" />
+                  <Phone class="w-3.5 h-3.5 text-[#747775] dark:text-[#8e918f]" />
                   <span>{ref.phone}</span>
                 </div>
-                <div class="text-[11px] text-[#747775] mt-0.5">{ref.email}</div>
+                <div class="text-[11px] text-[#747775] dark:text-[#8e918f] mt-0.5">{ref.email}</div>
               </td>
               <td class="py-3.5 px-4">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#e6f4ea] text-[#137333]">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#e6f4ea] dark:bg-emerald-950/40 text-[#137333] dark:text-emerald-300 border border-[#ceead6] dark:border-emerald-800">
                   Aktif
                 </span>
               </td>
               <td class="py-3.5 px-4 text-right">
                 <button
                   type="button"
-                  class="text-[#0b57d0] hover:underline font-medium text-xs cursor-pointer"
+                  class="text-[#0b57d0] dark:text-[#a8c7fa] hover:underline font-medium text-xs cursor-pointer"
                   onclick={() => alertDialog({ title: 'Edit Faskes', message: `Fitur pengubahan faskes "${ref.name}" sedang dalam pengembangan.`, variant: 'info' })}
                 >
                   Edit
@@ -193,7 +197,7 @@
           {/each}
           {#if filteredReferals.length === 0}
             <tr>
-              <td colspan="7" class="py-8 text-center text-xs text-[#747775]">
+              <td colspan="7" class="py-8 text-center text-xs text-[#747775] dark:text-[#8e918f]">
                 Tidak ada data faskes rujukan yang sesuai dengan pencarian.
               </td>
             </tr>

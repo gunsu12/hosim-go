@@ -1,308 +1,103 @@
 # AGENTS.md — HOSIM-GO Web Frontend Engineering Rules
 
-Dokumen ini berlaku untuk seluruh folder `web/` di repositori HOSIM-GO. Dokumen ini melengkapi `AGENTS.md` di root repositori dengan aturan spesifik untuk arsitektur frontend, UI/UX, Svelte 5, TypeScript, dan Google Material Design 3 (M3).
-
-Semua coding agent **WAJIB** membaca dan mematuhi aturan ini sebelum membuat, mengubah, atau me-refactor komponen dan halaman di `web/`.
+Dokumen ini berlaku untuk seluruh folder `web/` di repositori HOSIM-GO. Semua coding agent **WAJIB** membaca dan mematuhi ringkasan aturan ini sebelum membuat, mengubah, atau me-refactor kode frontend.
 
 Kata **WAJIB**, **DILARANG**, dan **BOLEH** bersifat normatif.
 
 ---
 
-## 1. Filosofi & Design System (Google Material Design 3)
+## 1. Quick Reference: Aturan Emas Frontend
 
-Antarmuka HOSIM-GO mengadopsi **Google Workspace / Drive Authentic Material Design 3 (M3)**:
-- **Clean, Spacious, Soft-curved**: Menggunakan border-radius M3 yang konsisten (`rounded-3xl` untuk dialog/modal permukaan, `rounded-2xl` untuk cards & avatar squircle, `rounded-xl` untuk form inputs, `rounded-full` untuk pills & buttons).
-- **Surface Elevation & Tokens**: Mengikuti token permukaan M3 di `src/app.css` (`--md-surface`, `--md-surface-container`, `--md-primary`, dll.).
-- **Dukungan Dark Mode Penuh**: Semua komponen, form field, teks, border, dan modal **WAJIB** memiliki class Dark Mode (`dark:...`) yang adaptif. DILARANG menggunakan warna hardcoded tanpa padanan dark mode.
+| Kebutuhan UI / Logic | WAJIB Gunakan | DILARANG Keras |
+|---|---|---|
+| **Dialog / Form Modal** | [`M3Modal.svelte`](./src/lib/components/m3/M3Modal.svelte) | Backdrop manual `fixed inset-0 bg-black/40`, frame card custom |
+| **Dropdown / Pilihan Opsi** | [`M3Select.svelte`](./src/lib/components/m3/M3Select.svelte) | Tag native HTML `<select>` & `<option>` (merusak radius & dark mode) |
+| **Toggle / Status Boolean** | [`M3ToggleCard.svelte`](./src/lib/components/m3/M3ToggleCard.svelte) | Tag native `<input type="checkbox">` |
+| **Dokter / Paramedis** | [`PractitionerLookupInput.svelte`](./src/lib/components/PractitionerLookupInput.svelte) | Native `<select>` atau load array statis tanpa server search |
+| **Bagan Akun (COA)** | [`CoaLookupInput.svelte`](./src/lib/components/CoaLookupInput.svelte) | Input teks biasa atau dropdown statis |
+| **Katalog Tarif & Tindakan** | [`TariffLookupInput.svelte`](./src/lib/components/TariffLookupInput.svelte) | Input teks biasa atau dropdown statis |
+| **Tombol Aksi** | [`M3Button.svelte`](./src/lib/components/m3/M3Button.svelte) | Tag `<button>` tanpa styling standar M3 |
+| **Reaktivitas Komponen** | Svelte 5 Runes (`$state`, `$derived`, `$props`, `$effect`) | Sintaks Svelte 3/4 (`export let`, `$:` reactive declaration, `<slot />`) |
+| **Event Dispatcher** | Callback props (`onclick`, `onClose`, `onSuccess`) | `createEventDispatcher` |
+| **Batas Ukuran File** | **Maksimal ~500 baris kode per file** | Menumpuk semua tab/modal dalam 1 file monolitik > 500 baris |
+| **Tema & Tampilan** | Full Dark Mode adaptif (`dark:...`) di setiap elemen | Warna hardcoded tanpa padanan kelas dark mode |
 
 ---
 
-## 2. Standar Form & Modal (M3 Dialog Standards)
+## 2. Standar Dialog & Modal (Google M3)
 
-Pola desain pada `CustomerModal.svelte` (`$lib/pages/finance/customer/components/CustomerModal.svelte`) adalah **benchmark resmi (Gold Standard)** untuk semua form dan dialog modal di HOSIM-GO.
+Pola desain pada [`CustomerModal.svelte`](./src/lib/pages/finance/customer/components/CustomerModal.svelte) adalah **benchmark resmi (Gold Standard)** untuk form dialog.
 
-### 2.1. Aturan Penggunaan Komponen Modal
-
-- **WAJIB** menggunakan [`M3Modal.svelte`](file:///c:/laragon/www/hosim-go/web/src/lib/components/m3/M3Modal.svelte) sebagai container dialog (baik form mutasi data maupun detail viewer).
-- **DILARANG** menduplikasi markup backdrop (`fixed inset-0 bg-black/40...`), frame dialog card, close button `X`, dan ESC event listener secara manual di halaman/komponen baru.
-- **WAJIB** menyertakan:
-  - `title`: Judul modal yang ringkas dan jelas.
-  - `subtitle`: Keterangan konteks atau kode referensi.
-  - `icon`: Icon komponen Lucide yang representatif (squircle avatar 40x40px).
-  - `onClose`: Callback fungsi untuk menutup modal.
-  - `onsubmit`: Handler submit form (bila modal bertipe form).
-- **Pilihan Ukuran Modal (`size`)**:
-  - `'sm'` / `'md'`: Konfirmasi aksi singkat atau input 1–2 field sederhana.
+### 2.1. Aturan Penggunaan M3Modal
+- **WAJIB** memakai `M3Modal.svelte` sebagai container dialog.
+- **DILARANG** menduplikasi markup backdrop (`fixed inset-0 bg-black/40...`), tombol close `X`, atau listener tombol ESC secara manual.
+- **Wajib properti**: `isOpen`, `title`, `subtitle`, `icon`, `onClose`, dan `onsubmit` (bila bertipe form).
+- **Pilihan ukuran (`size`)**:
+  - `'sm'` / `'md'`: Konfirmasi aksi singkat / delete confirmation dialog.
   - `'lg'` / `'xl'`: Form ringkas (3–5 field).
-  - `'2xl'` (**Default**): Form master data standar, konfigurasi entitas, atau form transaksi standar.
-  - `'3xl'` / `'4xl'`: Form kompleks dengan multi-tab atau embedded data table / order items.
+  - `'2xl'` (**Default**): Form master data & entitas konfigurasi standar.
+  - `'3xl'` / `'4xl'`: Form multi-tab kompleks atau embedded data table.
+- **Tombol Aksi Footer**: Letakkan di dalam `{#snippet footer()}` pada `M3Modal`:
+  - Batal: `<M3Button variant="text" onclick={onClose} disabled={isSubmitting}>Batal</M3Button>`
+  - Submit: `<M3Button variant="filled" type="submit" disabled={isSubmitting}>` dengan ikon Lucide atau spinner saat submit.
 
-### 2.2. Aturan Form Inputs & Grid Layout
+### 2.2. Modal Konfirmasi Destruktif (Delete Modal)
+- Benchmark resmi: [`CoaDeleteModal.svelte`](./src/lib/pages/accounting/components/CoaDeleteModal.svelte).
+- Gunakan `size="md"`, `icon={Trash2}`, dan `iconClass="bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"`.
+- **Proteksi Double Submit**: Tombol hapus dan batal wajib `disabled={isDeleting}` dengan indikator spinner.
+- **Inline Error Feedback**: Jika server menolak penghapusan (e.g. HTTP 422 karena masih memiliki dependensi), dialog **DILARANG ditutup mendadak**, tampilkan error secara inline di dalam modal.
+- **Proteksi Entitas Pokok**: Jika data adalah entitas bawaan sistem (e.g. Akun Level 1, Role ADMIN), tombol hapus **WAJIB dinonaktifkan** (`disabled={isDeleting || isProtected}`) dan disertai kartu peringatan edukatif (`ShieldAlert`).
 
-- **Field Layout**:
-  - Gunakan grid responsif `grid grid-cols-1 sm:grid-cols-2 gap-4` untuk penataan field 2 kolom.
-  - Field tunggal lebar penuh (nama instansi, alamat, deskripsi) ditaruh di luar grid atau span 2 kolom.
-- **Label**:
-  - Class: `block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1`.
-  - Tanda wajib diisi: `<span class="text-rose-500">*</span>`.
-- **Input, Select & Textarea**:
-  - Text Input / Select:  
-    `w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all`
-  - Kode / Nomor Referensi / NIK / ID:  
-    Wajib tambahkan `font-mono uppercase font-bold`.
-  - Textarea:  
-    `w-full p-3 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all`
-  - Helper / Deskripsi di bawah field:  
-    `<p class="text-[11px] text-[#747775] dark:text-[#8e918f] mt-1">`
-- **Section Grouping (Pembatas Kelompok)**:
-  - Pisahkan kelompok logis form dengan divider:  
-    `<div class="pt-2 border-t border-[#e1e5ea] dark:border-[#353738]">`
-  - Heading section:  
-    `<h4 class="text-xs font-bold text-[#444746] dark:text-[#c4c7c5] uppercase tracking-wider mb-3">`
+---
 
-### 2.3. Aturan Konfigurasi Opsi & Switch Boolean
+## 3. Standar Form, Input & Selection
 
-- **WAJIB** menggunakan [`M3ToggleCard.svelte`](file:///c:/laragon/www/hosim-go/web/src/lib/components/m3/M3ToggleCard.svelte) untuk konfigurasi aturan sistem, status aktif/nonaktif, atau opsi boolean lainnya.
-- **DILARANG** membuat checkbox input raw HTML atau styling toggle manual berulang kali.
-- Gunakan `colorVariant`:
-  - `'primary'`: Konfigurasi aturan fungsional (e.g. Wajib Kartu Fisik, Wajib Verifikasi).
-  - `'emerald'`: Status operasional aktif/nonaktif.
-  - `'amber'`: Opsi bersyarat / peringatan.
-  - `'rose'`: Flag bahaya / high alert / isolasi.
+### 3.1. Dropdown & Selection
+- **Opsi Biasa**: **WAJIB** menggunakan `M3Select.svelte`. DILARANG menggunakan `<select>` dan `<option>` native karena elemen option OS tidak mendukung `border-radius` dan merusak estetika rounded-2xl M3.
+- **Toggle Boolean**: **WAJIB** menggunakan `M3ToggleCard.svelte`. Gunakan `colorVariant="emerald"` untuk status aktif operasional, dan `colorVariant="primary"` untuk aturan fungsional.
+- **Master Data Skala Besar**: Entitas yang berpotensi berjumlah ratusan/ribuan wajib memakai lookup component:
+  - Dokter / Nakes: `PractitionerLookupInput.svelte`
+  - Akun Buku Besar: `CoaLookupInput.svelte`
+  - Tarif Layanan: `TariffLookupInput.svelte`
+  *DILARANG* memuat ratusan data ke dalam memori client atau array statis; wajib menggunakan server-side search (debounce 300ms) dan on-demand pagination.
 
-### 2.4. Aturan Tombol Aksi (Footer Actions)
-
-- Letakkan tombol aksi di dalam `{#snippet footer()}` pada `M3Modal`.
-- **Tombol Batal**: `<M3Button variant="text" onclick={onClose} disabled={isSubmitting}>Batal</M3Button>`.
-- **Tombol Submit**: `<M3Button variant="filled" type="submit" disabled={isSubmitting}>` dengan spinner indicator saat `isSubmitting === true` dan icon Lucide (`CheckCircle2`, `Save`, dsb.) saat normal.
-
-### 2.5. Error Handling & Validation Feedback
-
-- Validasi format dasar dilakukan di sisi client sebelum pemanggilan API.
-- Tampilkan error banner di bagian atas isi form:
+### 3.2. Form Layout & Styling
+- **Grid Layout**: Gunakan `grid grid-cols-1 sm:grid-cols-2 gap-4` untuk form 2 kolom.
+- **Label**: `block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] text-xs mb-1`. Beri tanda wajib: `<span class="text-rose-500">*</span>`.
+- **Text Input & Textarea**:
+  `w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all`
+- **Kode / Referensi / ID**: Wajib tambahkan `font-mono uppercase font-bold`.
+- **Error Banner**:
   ```svelte
   {#if errorMessage}
-    <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 flex items-start gap-2.5 text-xs">
+    <div class="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 flex items-start gap-2.5 text-xs">
       <span class="font-bold">Gagal:</span>
       <span>{errorMessage}</span>
     </div>
   {/if}
   ```
-- Reset `errorMessage = null` setiap kali modal dibuka (`isOpen`).
-
-### 2.4. Standar Dialog Konfirmasi Destruktif (Delete Confirmation Modal)
-
-Untuk dialog konfirmasi penghapusan data (seperti `CoaDeleteModal.svelte`):
-- **Ukuran & Ikon**: Gunakan `size="md"` dengan `icon={Trash2}` dan `iconClass="bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400"`.
-- **Proteksi Double-Submission**: Tombol hapus dan batal **WAJIB** memiliki `disabled={isDeleting}` serta menampilkan ikon loading spinner (`RefreshCw class="animate-spin"`) saat penghapusan sedang berlangsung.
-- **Inline Error Feedback**: Jika server menolak penghapusan (misal: HTTP 422 karena masih memiliki turunan anak atau keterikatan tarif/transaksi), modal **DILARANG ditutup mendadak**. Dialog harus tetap terbuka dan menampilkan `errorMessage` secara inline di dalam modal agar pengguna langsung mengetahui alasan penolakan tanpa harus mencari banner error di posisi scroll lain.
-- **Proteksi Entitas Pokok Sistem**: Jika data yang hendak dihapus merupakan entitas klasifikasi sistem pokok yang dilindungi (misal: Akun Buku Besar Level 1 atau Role sistem bawaan), tombol hapus **WAJIB dinonaktifkan** (`disabled={isDeleting || isLevelOne}`) dan disertai kartu peringatan edukatif (`ShieldAlert`).
 
 ---
 
-## 3. Standar Svelte 5 & TypeScript
+## 4. Batasan Ukuran File & Dekomposisi Komponen
 
-Proyek frontend HOSIM-GO menggunakan **Svelte 5 Runes**:
-
-### 3.1. Gunakan Svelte 5 Runes Eksklusif
-- **State**: Gunakan `let foo = $state(val);`.
-- **Derived**: Gunakan `let bar = $derived(expr);` atau `$derived.by(() => { ... })`.
-- **Props**: Gunakan `let { propA, propB = defaultVal }: Props = $props();`.
-- **Side Effect**: Gunakan `$effect(() => { ... });`.
-- **DILARANG** menggunakan sintaks Svelte 3/4 lama:
-  - ❌ `export let foo;`
-  - ❌ `$: bar = foo * 2;`
-  - ❌ `<slot />` atau `$$slots` (Gunakan Svelte 5 Snippets: `Snippet`, `{#snippet ...}`, `{@render ...}`).
-  - ❌ `createEventDispatcher` (Gunakan callback props: `onclick`, `onClose`, `onSuccess`).
-
-### 3.2. TypeScript & Data Contracts
-- Buat interface eksplisit untuk `Props` setiap komponen.
-- Model dan DTO **WAJIB** diimpor dari `$lib/types/...` (misalnya `$lib/types/finance`, `$lib/types/master/...`).
-- Hindari penggunaan tipe `any` kecuali untuk payload eksternal yang belum terdefinisi.
+- **Batas Ukuran File**: Satu file komponen Svelte atau TypeScript **WAJIB ditargetkan tidak melebihi ~500 baris kode**.
+- **Strategi Pemecahan**:
+  1. **Tab Views**: Pisahkan konten per tab menjadi komponen mandiri (e.g. `UsersTab.svelte`, `RolesTab.svelte`, `PermissionsTab.svelte`).
+  2. **Sub-Modals**: Ekstrak form add/edit dan dialog delete ke file terpisah (e.g. `UserFormModal.svelte`, `UserDeleteModal.svelte`).
+  3. **Complex Rows/Cards**: Ekstrak card iterasi tabel/matriks yang rumit ke komponen card mandiri.
+  4. **Konstanta & Struktur**: Pindahkan array menu/definisi statis ke file `.ts` pendukung.
 
 ---
 
-## 4. Template Baku Komponen Modal Baru
+## 5. Standar Svelte 5 & TypeScript
 
-Gunakan template di bawah ini saat membuat modal baru:
-
-```svelte
-<script lang="ts">
-  import { ShieldCheck, CheckCircle2 } from "@lucide/svelte";
-  import M3Modal from "$lib/components/m3/M3Modal.svelte";
-  import M3Button from "$lib/components/m3/M3Button.svelte";
-  import M3ToggleCard from "$lib/components/m3/M3ToggleCard.svelte";
-  import type { ExampleRecord, CreateExampleDTO, UpdateExampleDTO } from "$lib/types/...";
-
-  interface Props {
-    isOpen: boolean;
-    mode: "CREATE" | "EDIT";
-    item?: ExampleRecord | null;
-    onClose: () => void;
-    onSuccess: (saved: ExampleRecord) => void;
-  }
-
-  let {
-    isOpen = false,
-    mode = "CREATE",
-    item = null,
-    onClose = () => {},
-    onSuccess = () => {},
-  }: Props = $props();
-
-  let code = $state("");
-  let name = $state("");
-  let isActive = $state(true);
-  let isSubmitting = $state(false);
-  let errorMessage = $state<string | null>(null);
-
-  $effect(() => {
-    if (isOpen) {
-      errorMessage = null;
-      if (mode === "EDIT" && item) {
-        code = item.code || "";
-        name = item.name || "";
-        isActive = item.is_active;
-      } else {
-        code = "";
-        name = "";
-        isActive = true;
-      }
-    }
-  });
-
-  async function handleSubmit(e: SubmitEvent) {
-    e.preventDefault();
-    errorMessage = null;
-
-    if (!code.trim()) {
-      errorMessage = "Kode wajib diisi";
-      return;
-    }
-    if (!name.trim()) {
-      errorMessage = "Nama wajib diisi";
-      return;
-    }
-
-    isSubmitting = true;
-    try {
-      if (mode === "CREATE") {
-        // Panggil create API...
-      } else {
-        // Panggil update API...
-      }
-      onSuccess(...);
-    } catch (err: any) {
-      errorMessage = err?.message || "Terjadi kesalahan saat menyimpan data";
-    } finally {
-      isSubmitting = false;
-    }
-  }
-</script>
-
-<M3Modal
-  {isOpen}
-  title={mode === "CREATE" ? "Tambah Data Baru" : "Ubah Data"}
-  subtitle={mode === "CREATE" ? "Konfigurasi master data baru" : `Kode: ${item?.code || "-"}`}
-  icon={ShieldCheck}
-  size="2xl"
-  onsubmit={handleSubmit}
-  {onClose}
->
-  {#if errorMessage}
-    <div
-      class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 flex items-start gap-2.5"
-    >
-      <span class="font-bold">Gagal:</span>
-      <span>{errorMessage}</span>
-    </div>
-  {/if}
-
-  <!-- Section: Identitas Utama (2 Kolom) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div>
-      <label for="modal-code" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-        Kode <span class="text-rose-500">*</span>
-      </label>
-      <input
-        id="modal-code"
-        type="text"
-        bind:value={code}
-        placeholder="Contoh: KODE-01"
-        required
-        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-mono font-bold uppercase text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
-      />
-      <p class="text-[11px] text-[#747775] dark:text-[#8e918f] mt-1">
-        Harus unik di dalam sistem.
-      </p>
-    </div>
-
-    <div>
-      <label for="modal-name" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-        Nama <span class="text-rose-500">*</span>
-      </label>
-      <input
-        id="modal-name"
-        type="text"
-        bind:value={name}
-        placeholder="Contoh: Nama Entitas"
-        required
-        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
-      />
-    </div>
-  </div>
-
-  <!-- Section: Kebijakan & Status -->
-  <div class="pt-2 border-t border-[#e1e5ea] dark:border-[#353738] space-y-3">
-    <h4 class="text-xs font-bold text-[#444746] dark:text-[#c4c7c5] uppercase tracking-wider mb-2">
-      Status Operasional
-    </h4>
-
-    <M3ToggleCard
-      title="Status Aktif"
-      description="Nonaktifkan bila data tidak boleh dipilih pada transaksi pelayanan baru."
-      bind:checked={isActive}
-      colorVariant="emerald"
-    />
-  </div>
-
-  <!-- Sticky Footer Action Buttons -->
-  {#snippet footer()}
-    <M3Button variant="text" onclick={onClose} disabled={isSubmitting}>
-      Batal
-    </M3Button>
-    <M3Button variant="filled" type="submit" disabled={isSubmitting}>
-      {#if isSubmitting}
-        <span class="inline-block animate-spin mr-1">⏳</span>
-        <span>Menyimpan...</span>
-      {:else}
-        <CheckCircle2 class="w-4 h-4 mr-1" />
-        <span>{mode === "CREATE" ? "Simpan Data" : "Perbarui Data"}</span>
-      {/if}
-    </M3Button>
-  {/snippet}
-</M3Modal>
-```
-
----
-
-## 4. Batasan Ukuran File & Dekomposisi Komponen (Maksimal 500 Baris)
-
-Sesuai standar pemeliharaan kode (maintainability) HOSIM-GO:
-
-- **Target Ukuran File**: Satu file komponen Svelte atau TypeScript **WAJIB ditargetkan tidak melebihi ~500 baris kode**.
-- **Strategi Dekomposisi**: Jika sebuah file mulai mendekati atau melampaui batas ini, agent **WAJIB** memecahnya ke arsitektur komponen modular:
-  1. **Tab & View Pages**: Pisahkan konten per tab menjadi komponen tersendiri (misal: `PricePlanTab.svelte`, `TariffClassTab.svelte`, `TariffComponentTab.svelte` pada `IndexPage.svelte`).
-  2. **Sub-Modal & Nested Forms**: Ekstrak sub-modal atau form anak ke file komponen terpisah (misal: `PricePlanItemFormModal.svelte` diekstrak dari `PricePlanItemsModal.svelte`).
-  3. **Complex Repeater Rows/Cards**: Ekstrak kartu iterasi tabel/matriks yang rumit menjadi card component tersendiri (misal: `TariffMatrixClassCard.svelte`).
-  4. **Data Struktur & Menu Statis**: Pindahkan array navigasi, definisi modul, atau konstanta jenis akun ke file TypeScript murni (misal: `navigationStructure.ts`, `launcherModules.ts`, `constants.ts`).
-  5. **Helper & Filter Logic**: Pindahkan algoritma rekursif atau penyaringan tree ke utilitas pendukung (misal: `coaUtils.ts`).
-
----
-
-## 5. TypeScript Types, Domain Barrel, & Export Hygiene
-
-- **Ambiguitas Re-export Barrel**: Pada barrel pusat (`$lib/types/index.ts`), **DILARANG** mengekspor ganda interface dengan nama identik dari domain berbeda tanpa alias yang jelas.
-- **Kepemilikan Domain Tipe**: Tipe domain yang sudah memiliki modul pemilik resmi (misalnya `TariffClassRecord` yang merupakan domain `finance`) **DILARANG** dideklarasikan atau diekspor ulang dari modul lain (seperti `master`). Seluruh komponen dan consumer wajib mengimpor dari modul pemilik definitifnya.
-
-
+- **Gunakan Svelte 5 Runes Eksklusif**:
+  - State: `let val = $state(initial);`
+  - Derived: `let computed = $derived(expr);` atau `$derived.by(() => { ... })`
+  - Props: `let { propA, propB = defaultVal }: Props = $props();`
+  - Side effect: `$effect(() => { ... });`
+- **DILARANG** sintaks lama: `export let foo;`, `$: bar = ...`, `<slot />`, `createEventDispatcher`.
+- **TypeScript Hygiene**:
+  - Selalu definisikan interface `Props` eksplisit untuk setiap komponen.
+  - Impor tipe dari modul pemilik resminya di `$lib/types/...`. DILARANG mendeklarasikan ulang tipe domain di modul lain.

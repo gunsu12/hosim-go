@@ -2,6 +2,7 @@
   import { Layers, Building2, UserCheck, HeartHandshake, CheckCircle2 } from '@lucide/svelte';
   import M3Modal from '$lib/components/m3/M3Modal.svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
+  import M3Select from '$lib/components/m3/M3Select.svelte';
   import M3ToggleCard from '$lib/components/m3/M3ToggleCard.svelte';
   import CoaLookupInput from '$lib/components/CoaLookupInput.svelte';
   import type {
@@ -38,6 +39,15 @@
   let description = $state('');
   let isActive = $state(true);
   let formError = $state<string | null>(null);
+
+  const componentTypeOptions = [
+    { value: 'JASA_MEDIS', label: 'Jasa Medis (Dokter / Nakes)' },
+    { value: 'JASA_RS', label: 'Jasa Sarana Rumah Sakit' },
+    { value: 'SEWA_ALAT', label: 'Sewa Alat & Aset Medis' },
+    { value: 'BAHAN_ALKES', label: 'Bahan Habis Pakai & Alkes' },
+    { value: 'ADMINISTRASI', label: 'Administrasi & Rekam Medis' },
+    { value: 'LAINNYA', label: 'Lain-lain' },
+  ];
 
   $effect(() => {
     if (isOpen) {
@@ -124,22 +134,13 @@
       />
     </div>
 
-    <div>
-      <label for="tc-type" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-        Tipe Komponen <span class="text-rose-500">*</span>
-      </label>
-      <select
-        id="tc-type"
+    <div class="flex flex-col justify-end">
+      <M3Select
+        label="Tipe Komponen *"
         bind:value={componentType}
-        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
-      >
-        <option value="JASA_MEDIS">Jasa Medis (Dokter / Nakes)</option>
-        <option value="JASA_RS">Jasa Sarana Rumah Sakit</option>
-        <option value="SEWA_ALAT">Sewa Alat & Aset Medis</option>
-        <option value="BAHAN_ALKES">Bahan Habis Pakai & Alkes</option>
-        <option value="ADMINISTRASI">Administrasi & Rekam Medis</option>
-        <option value="LAINNYA">Lain-lain</option>
-      </select>
+        options={componentTypeOptions}
+        placeholder="Pilih Tipe Komponen"
+      />
     </div>
   </div>
 
@@ -158,34 +159,26 @@
   </div>
 
   <!-- Revenue Distribution Checklist -->
-  <div class="p-3.5 rounded-2xl bg-[#f8fafd] dark:bg-[#28292a] border border-[#e1e5ea] dark:border-[#353738] flex flex-col gap-2">
+  <div class="p-3.5 rounded-2xl bg-[#f8fafd] dark:bg-[#28292a] border border-[#e1e5ea] dark:border-[#353738] flex flex-col gap-2.5">
     <span class="font-bold text-[#1f1f1f] dark:text-[#e3e3e3] text-xs block">
       Alokasi Distribusi Penerima Pendapatan:
     </span>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-      <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white dark:bg-[#1e1f20] border border-[#e1e5ea] dark:border-[#353738] cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
-        <input type="checkbox" bind:checked={isHospitalRevenue} class="rounded text-[#0b57d0]" />
-        <div class="flex items-center gap-1.5 text-xs text-[#1f1f1f] dark:text-[#e3e3e3] font-semibold">
-          <Building2 class="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <span>Rumah Sakit</span>
-        </div>
-      </label>
-
-      <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white dark:bg-[#1e1f20] border border-[#e1e5ea] dark:border-[#353738] cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-500 transition-colors">
-        <input type="checkbox" bind:checked={isOperatorRevenue} class="rounded text-[#0b57d0]" />
-        <div class="flex items-center gap-1.5 text-xs text-[#1f1f1f] dark:text-[#e3e3e3] font-semibold">
-          <UserCheck class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span>Dokter</span>
-        </div>
-      </label>
-
-      <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white dark:bg-[#1e1f20] border border-[#e1e5ea] dark:border-[#353738] cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 transition-colors">
-        <input type="checkbox" bind:checked={isParamedicRevenue} class="rounded text-[#0b57d0]" />
-        <div class="flex items-center gap-1.5 text-xs text-[#1f1f1f] dark:text-[#e3e3e3] font-semibold">
-          <HeartHandshake class="w-4 h-4 text-amber-600 dark:text-amber-400" />
-          <span>Paramedis</span>
-        </div>
-      </label>
+      <M3ToggleCard
+        title="Rumah Sakit"
+        description="Bagian sarana RS"
+        bind:checked={isHospitalRevenue}
+      />
+      <M3ToggleCard
+        title="Dokter"
+        description="Jasa operator / DPJP"
+        bind:checked={isOperatorRevenue}
+      />
+      <M3ToggleCard
+        title="Paramedis"
+        description="Jasa tim perawat"
+        bind:checked={isParamedicRevenue}
+      />
     </div>
   </div>
 

@@ -45,3 +45,19 @@ export async function deleteUser(id: string): Promise<void> {
     method: 'DELETE',
   });
 }
+
+export async function linkPractitioner(id: string, practitioner_id: string): Promise<UserRecord> {
+  const res = await authFetch<UserRecord>(`/auth/users/${id}/link-practitioner`, {
+    method: 'POST',
+    body: JSON.stringify({ practitioner_id }),
+  });
+  return res.data;
+}
+
+export async function unlinkPractitioner(id: string): Promise<UserRecord> {
+  const res = await authFetch<UserRecord>(`/auth/users/${id}/unlink-practitioner`, {
+    method: 'POST',
+  });
+  return res.data;
+}
+

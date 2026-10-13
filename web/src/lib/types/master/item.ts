@@ -135,8 +135,11 @@ export interface ItemSummaryRecord {
   generic_name?: string;
   item_type: ItemType;
   is_active: boolean;
+  category_id?: string;
   category?: CategorySummary;
+  product_line_id?: string;
   product_line?: ProductLineSummary;
+  base_unit_name?: string;
   base_unit?: ItemUnitRecord;
   created_at: string;
 }

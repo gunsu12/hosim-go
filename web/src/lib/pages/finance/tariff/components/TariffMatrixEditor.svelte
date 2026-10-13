@@ -7,6 +7,7 @@
     Sliders
   } from '@lucide/svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
+  import M3Select from '$lib/components/m3/M3Select.svelte';
   import TariffLookupInput from '$lib/components/TariffLookupInput.svelte';
   import TariffMatrixClassCard, {
     type ClassMatrixRowState,
@@ -52,6 +53,14 @@
   // Selected Plan Object
   let selectedPlan = $derived(pricePlans.find((p) => p.id === selectedPlanId) || null);
   let selectedItemTitle = $derived(selectedItemObj?.name || 'Tindakan Medis');
+
+  let planOptions = $derived([
+    { value: '', label: '-- Pilih Buku Tarif --' },
+    ...pricePlans.map((plan) => ({
+      value: plan.id,
+      label: `[${plan.status}] ${plan.code} — ${plan.name} ${plan.is_default ? '(DEFAULT RS)' : ''}`
+    }))
+  ]);
 
   let matrixRows = $state<ClassMatrixRowState[]>([]);
 
@@ -371,24 +380,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-blue-200/60 dark:border-[#353738]">
       <!-- 1. Select Buku Tarif -->
       <div class="flex flex-col gap-1.5">
-        <label for="matrix-plan-select" class="text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] flex items-center gap-1.5">
-          <BookOpen class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-          <span>1. Pilih Buku Tarif Target <span class="text-red-500">*</span></span>
-        </label>
-        <div class="relative">
-          <select
-            id="matrix-plan-select"
-            bind:value={selectedPlanId}
-            class="w-full h-10 px-3 pr-8 rounded-xl border border-[#c4c7c5] dark:border-[#353738] bg-white dark:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-none focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:ring-1 focus:ring-[#0b57d0]"
-          >
-            <option value="" disabled>-- Pilih Buku Tarif --</option>
-            {#each pricePlans as plan (plan.id)}
-              <option value={plan.id}>
-                [{plan.status}] {plan.code} — {plan.name} {plan.is_default ? '(DEFAULT RS)' : ''}
-              </option>
-            {/each}
-          </select>
-        </div>
+        <M3Select
+          label="1. Pilih Buku Tarif Target *"
+          bind:value={selectedPlanId}
+          options={planOptions}
+          placeholder="Pilih Buku Tarif"
+        />
         {#if selectedPlan}
           <div class="flex items-center gap-2 text-[11px] text-[#5f6368] dark:text-[#8e918f] mt-0.5">
             <span class="font-medium text-indigo-700 dark:text-indigo-300">Berlaku: {selectedPlan.effective_from} {selectedPlan.effective_to ? `s/d ${selectedPlan.effective_to}` : '(Aktif)'}</span>

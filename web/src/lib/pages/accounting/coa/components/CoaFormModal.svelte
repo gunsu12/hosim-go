@@ -8,6 +8,8 @@
   } from '@lucide/svelte';
   import M3Modal from '$lib/components/m3/M3Modal.svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
+  import M3Select from '$lib/components/m3/M3Select.svelte';
+  import M3ToggleCard from '$lib/components/m3/M3ToggleCard.svelte';
   import type {
     AccountRecord,
     AccountType,
@@ -238,49 +240,43 @@
   <!-- Section 2: Parent Akun & Tipe Akun -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div>
-      <label for="coa-form-parent" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-        Akun Induk (Parent)
-      </label>
-      <select
+      <M3Select
         id="coa-form-parent"
+        label="Akun Induk (Parent)"
         value={formParentId}
-        onchange={(e) => handleParentSelect((e.target as HTMLSelectElement).value)}
+        onchange={handleParentSelect}
         disabled={mode === 'edit'}
-        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all disabled:opacity-60"
-      >
-        <option value="">(Tanpa Induk - Akun Kepala Level 1)</option>
-        {#each flatAccounts as pAcc}
-          {#if mode === 'create' || pAcc.id !== account?.id}
-            <option value={pAcc.id}>
-              [{pAcc.code}] {pAcc.name} (L{pAcc.account_level} • {pAcc.type})
-            </option>
-          {/if}
-        {/each}
-      </select>
-      {#if mode === 'edit'}
-        <span class="text-[11px] text-[#747775] dark:text-[#8e918f] mt-1 block">
-          Struktur hierarki induk tidak dapat dipindahkan setelah akun memiliki buku besar.
-        </span>
-      {/if}
+        placeholder="(Tanpa Induk - Akun Kepala Level 1)"
+        helperText={mode === 'edit' ? 'Struktur hierarki induk tidak dapat dipindahkan setelah akun memiliki buku besar.' : ''}
+        options={[
+          { value: '', label: '(Tanpa Induk - Akun Kepala Level 1)' },
+          ...flatAccounts
+            .filter((pAcc) => mode === 'create' || pAcc.id !== account?.id)
+            .map((pAcc) => ({
+              value: pAcc.id,
+              label: `${pAcc.name} (L${pAcc.account_level} • ${pAcc.type})`,
+              badge: pAcc.code,
+            })),
+        ]}
+      />
     </div>
 
     <div>
-      <label for="coa-form-type" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-        Klasifikasi Tipe Akun <span class="text-rose-500">*</span>
-      </label>
-      <select
+      <M3Select
         id="coa-form-type"
+        label="Klasifikasi Tipe Akun"
+        required={true}
         value={formType}
-        onchange={(e) => handleTypeChange((e.target as HTMLSelectElement).value as AccountType)}
+        onchange={(val) => handleTypeChange(val as AccountType)}
         disabled={mode === 'edit' || (mode === 'create' && !!formParentId)}
-        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all disabled:opacity-60"
-      >
-        <option value="ASSET">ASSET (1xxx - Aset / Aktiva)</option>
-        <option value="LIABILITY">LIABILITY (2xxx - Kewajiban / Hutang)</option>
-        <option value="EQUITY">EQUITY (3xxx - Ekuitas / Modal)</option>
-        <option value="REVENUE">REVENUE (4xxx - Pendapatan)</option>
-        <option value="EXPENSE">EXPENSE (5xxx - Beban Operasional)</option>
-      </select>
+        options={[
+          { value: 'ASSET', label: 'ASSET (1xxx - Aset / Aktiva)' },
+          { value: 'LIABILITY', label: 'LIABILITY (2xxx - Kewajiban / Hutang)' },
+          { value: 'EQUITY', label: 'EQUITY (3xxx - Ekuitas / Modal)' },
+          { value: 'REVENUE', label: 'REVENUE (4xxx - Pendapatan)' },
+          { value: 'EXPENSE', label: 'EXPENSE (5xxx - Beban Operasional)' },
+        ]}
+      />
     </div>
   </div>
 
@@ -320,53 +316,25 @@
     </div>
 
     <div>
-      <span class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1.5 text-xs">
-        Sifat Akun Transaksi
-      </span>
-      <label class="flex items-start gap-2.5 cursor-pointer mt-1">
-        <input
-          type="checkbox"
-          bind:checked={formIsPostable}
-          disabled={mode === 'edit'}
-          class="mt-0.5 rounded border-[#c4c7c5] dark:border-[#555] text-[#0b57d0] focus:ring-[#0b57d0] disabled:opacity-50"
-        />
-        <div>
-          <span class="font-bold text-xs text-[#1f1f1f] dark:text-[#e3e3e3]">Akun Postable (Dapat Dijurnal)</span>
-          <span class="text-[11px] text-[#747775] dark:text-[#8e918f] block mt-0.5">
-            Hilangkan centang jika akun ini hanya sebagai Header / Induk ringkasan.
-          </span>
-        </div>
-      </label>
+      <M3ToggleCard
+        bind:checked={formIsPostable}
+        disabled={mode === 'edit'}
+        title="Akun Postable (Dapat Dijurnal)"
+        subtitle="Nonaktifkan opsi ini jika akun ini hanya sebagai Header / Induk ringkasan."
+        colorVariant="primary"
+      />
     </div>
   </div>
 
   <!-- Section 4: Kas & Bank / Treasury Flag -->
   <div class="p-4 rounded-2xl border border-teal-200/80 dark:border-teal-800/60 bg-teal-50/50 dark:bg-teal-950/25 flex flex-col gap-3 transition-colors">
-    <div class="flex items-start justify-between gap-3">
-      <label class="flex items-start gap-2.5 cursor-pointer flex-1">
-        <div class="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0 mt-0.5">
-          <Landmark class="w-4 h-4" />
-        </div>
-        <div class="flex-1">
-          <span class="font-bold text-teal-950 dark:text-teal-200 block text-xs">
-            Merupakan Akun Kas / Bank (Treasury Account)
-          </span>
-          <span class="text-[11px] text-teal-800/90 dark:text-teal-300/80 block mt-0.5 leading-relaxed">
-            Centang opsi ini jika akun ini mewakili kas tunai, rekening giro operasional, rekening penampung BPJS, atau kas kecil RS.
-          </span>
-        </div>
-      </label>
-      <label class="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
-        <input
-          type="checkbox"
-          bind:checked={formIsTreasury}
-          class="sr-only peer"
-        />
-        <div
-          class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600 dark:peer-checked:bg-teal-500"
-        ></div>
-      </label>
-    </div>
+    <M3ToggleCard
+      bind:checked={formIsTreasury}
+      title="Merupakan Akun Kas / Bank (Treasury Account)"
+      subtitle="Centang opsi ini jika akun ini mewakili kas tunai, rekening giro operasional, rekening penampung BPJS, atau kas kecil RS."
+      colorVariant="primary"
+      icon={Landmark}
+    />
 
     {#if formIsTreasury}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-teal-200 dark:border-teal-800/60 animate-fadeIn">
@@ -414,28 +382,26 @@
       ></textarea>
     </div>
 
-    <div class="flex flex-col justify-between">
-      <div>
-        <label for="coa-form-currency" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-          Mata Uang
-        </label>
-        <input
-          id="coa-form-currency"
-          type="text"
-          bind:value={formCurrency}
-          class="w-full h-10 px-3 text-xs bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-[#1f1f1f] dark:text-[#e3e3e3] rounded-xl font-mono text-center font-bold focus:outline-hidden transition-all"
-        />
-      </div>
-
-      <label class="flex items-center gap-2 cursor-pointer mt-3">
-        <input
-          type="checkbox"
-          bind:checked={formIsActive}
-          class="rounded border-[#c4c7c5] dark:border-[#555] text-[#0b57d0] focus:ring-[#0b57d0]"
-        />
-        <span class="font-medium text-[#1f1f1f] dark:text-[#e3e3e3] text-xs">Akun Aktif Digunakan</span>
+    <div>
+      <label for="coa-form-currency" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
+        Mata Uang
       </label>
+      <input
+        id="coa-form-currency"
+        type="text"
+        bind:value={formCurrency}
+        class="w-full h-10 px-3 text-xs bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-[#1f1f1f] dark:text-[#e3e3e3] rounded-xl font-mono text-center font-bold focus:outline-hidden transition-all"
+      />
     </div>
+  </div>
+
+  <div class="pt-2">
+    <M3ToggleCard
+      bind:checked={formIsActive}
+      title="Akun Aktif Digunakan"
+      subtitle="Dapat dipilih pada jurnal transaksi buku besar keuangan."
+      colorVariant="emerald"
+    />
   </div>
 
   {#snippet footer()}

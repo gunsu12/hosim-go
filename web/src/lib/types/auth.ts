@@ -8,6 +8,7 @@ export interface UserProfile {
   role: string;
   role_id?: string;
   role_name?: string;
+  practitioner_id?: string;
   permissions: string[];
   is_active?: boolean;
 }
@@ -38,6 +39,7 @@ export interface UserRecord {
   role_id?: string;
   role: string;
   role_name?: string;
+  practitioner_id?: string;
   permissions: string[];
   is_active: boolean;
   created_at: string;
@@ -49,6 +51,7 @@ export interface CreateUserDTO {
   password: string;
   name: string;
   role_id?: string;
+  practitioner_id?: string;
   is_active?: boolean;
 }
 
@@ -56,8 +59,13 @@ export interface UpdateUserDTO {
   name: string;
   email: string;
   role_id?: string;
+  practitioner_id?: string;
   is_active?: boolean;
   password?: string;
+}
+
+export interface LinkPractitionerDTO {
+  practitioner_id: string;
 }
 
 // ==========================================
