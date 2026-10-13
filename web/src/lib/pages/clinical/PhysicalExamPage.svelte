@@ -15,8 +15,8 @@
 <div class="flex flex-col gap-4">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
-      <h2 class="text-lg font-semibold text-[#1f1f1f] tracking-tight">Status Lokalis & Diagram Tubuh</h2>
-      <p class="text-xs text-[#444746]">Tandai lokasi keluhan fisik, rasa nyeri, luka robek, fraktur, atau hematoma pasien secara interaktif.</p>
+      <h2 class="text-lg font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] tracking-tight">Status Lokalis & Diagram Tubuh</h2>
+      <p class="text-xs text-[#444746] dark:text-[#c4c7c5]">Tandai lokasi keluhan fisik, rasa nyeri, luka robek, fraktur, atau hematoma pasien secara interaktif.</p>
     </div>
 
     <div class="flex items-center gap-2">

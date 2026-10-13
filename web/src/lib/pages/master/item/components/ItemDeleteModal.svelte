@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { Trash2 } from '@lucide/svelte';
-  import type { ItemSummaryRecord } from '../../../../types/master/item';
+  import { Trash2 } from "@lucide/svelte";
+  import M3Modal from "../../../../components/m3/M3Modal.svelte";
+  import M3Button from "../../../../components/m3/M3Button.svelte";
+  import type { ItemSummaryRecord } from "../../../../types/master/item";
 
   interface Props {
     isOpen: boolean;
@@ -15,41 +17,38 @@
     item,
     isLoading = false,
     onClose,
-    onConfirm
+    onConfirm,
   }: Props = $props();
 </script>
 
-{#if isOpen && item}
-  <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-    <div class="bg-white rounded-3xl border border-[#e1e5ea] shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
-      <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+<M3Modal {isOpen} title="Hapus Item dari Katalog?" size="md" {onClose}>
+  {#if item}
+    <div class="flex flex-col gap-4 text-center">
+      <div
+        class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto"
+      >
         <Trash2 class="w-6 h-6" />
       </div>
-      <div class="text-center">
-        <h3 class="text-sm font-bold text-[#1f1f1f]">Hapus Item dari Katalog?</h3>
-        <p class="text-xs text-[#747775] mt-1">
-          Anda akan menghapus item <strong class="text-[#1f1f1f]">{item.name}</strong> ({item.code}). Riwayat kartu stok dan penagihan masa lalu tetap terlindungi secara aman (soft-delete).
+      <div>
+        <p class="text-xs text-[#444746] dark:text-[#c4c7c5] leading-relaxed">
+          Anda akan menghapus item <strong class="text-[#1f1f1f] dark:text-[#e3e3e3]">{item.name}</strong> ({item.code}).
+          Riwayat kartu stok dan penagihan masa lalu tetap terlindungi secara aman (soft-delete).
         </p>
       </div>
 
       <div class="flex items-center justify-center gap-2 pt-2">
-        <button
-          onclick={onClose}
-          type="button"
-          disabled={isLoading}
-          class="px-4 py-2 rounded-xl border border-[#e1e5ea] bg-white text-xs font-semibold text-[#444746] hover:bg-[#f0f4f9] cursor-pointer"
-        >
+        <M3Button variant="text" onclick={onClose} disabled={isLoading}>
           Batal
-        </button>
+        </M3Button>
         <button
           onclick={() => onConfirm(item)}
           type="button"
           disabled={isLoading}
           class="px-5 py-2 rounded-xl bg-[#c5221f] text-white text-xs font-semibold hover:bg-[#a51d24] transition-colors cursor-pointer shadow-xs disabled:opacity-50"
         >
-          {isLoading ? 'Menghapus...' : 'Ya, Hapus Item'}
+          {isLoading ? "Menghapus..." : "Ya, Hapus Item"}
         </button>
       </div>
     </div>
-  </div>
-{/if}
+  {/if}
+</M3Modal>

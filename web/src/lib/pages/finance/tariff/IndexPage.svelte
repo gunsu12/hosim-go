@@ -8,24 +8,26 @@
     X,
     BookOpen,
     Calculator,
-    Sliders
-  } from '@lucide/svelte';
+    Sliders,
+  } from "@lucide/svelte";
 
   // Subcomponents
-  import PricePlanTab from './components/PricePlanTab.svelte';
-  import TariffClassTab from './components/TariffClassTab.svelte';
-  import TariffComponentTab from './components/TariffComponentTab.svelte';
-  import TariffLookupSimulator from './components/TariffLookupSimulator.svelte';
-  import TariffMatrixEditor from './components/TariffMatrixEditor.svelte';
+  import PricePlanTab from "./components/PricePlanTab.svelte";
+  import TariffClassTab from "./components/TariffClassTab.svelte";
+  import TariffComponentTab from "./components/TariffComponentTab.svelte";
+  import TariffLookupSimulator from "./components/TariffLookupSimulator.svelte";
+  import TariffMatrixEditor from "./components/TariffMatrixEditor.svelte";
 
   interface Props {
-    initialTab?: 'PLAN' | 'MATRIX' | 'SIMULATOR' | 'CLASS' | 'COMPONENT';
+    initialTab?: "PLAN" | "MATRIX" | "SIMULATOR" | "CLASS" | "COMPONENT";
   }
 
-  let { initialTab = 'PLAN' }: Props = $props();
+  let { initialTab = "PLAN" }: Props = $props();
 
   // Active Tab State
-  let activeTab = $state<'PLAN' | 'MATRIX' | 'SIMULATOR' | 'CLASS' | 'COMPONENT'>('PLAN');
+  let activeTab = $state<
+    "PLAN" | "MATRIX" | "SIMULATOR" | "CLASS" | "COMPONENT"
+  >("PLAN");
 
   $effect(() => {
     if (initialTab) {
@@ -95,21 +97,17 @@
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
       <div class="flex items-center gap-2.5">
-        <div
-          class="w-9 h-9 rounded-2xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold"
-        >
-          <Receipt class="w-5 h-5" />
-        </div>
         <div>
-          <h2 class="text-lg font-bold text-[#1f1f1f] dark:text-on-surface tracking-tight">Tarif</h2>
-          <div class="flex items-center gap-2 mt-0.5">
-            <span class="text-xs text-[#747775] dark:text-on-surface-variant"
-              >• Buku Tarif (Price Plan), Kelas, Pecahan Komponen & Simulator</span
-            >
-          </div>
+          <h2
+            class="text-lg font-bold text-[#1f1f1f] dark:text-on-surface tracking-tight"
+          >
+            Buku Tariff dan Komponen
+          </h2>
         </div>
       </div>
-      <p class="text-xs text-[#444746] dark:text-on-surface-variant mt-1.5 max-w-3xl leading-relaxed">
+      <p
+        class="text-xs text-[#444746] dark:text-on-surface-variant mt-1.5 max-w-3xl leading-relaxed"
+      >
         Pusat pengelolaan buku tarif pelayanan rumah sakit (standar RS & rekanan
         PKS), validasi keseimbangan pecahan komponen tagihan, siklus persetujuan
         bertahap, serta kalkulator lookup pencarian tarif real-time.
@@ -117,192 +115,7 @@
     </div>
   </div>
 
-  <!-- KPI / Stats Summary Cards -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-    <!-- Stat 1: Buku Tarif (Price Plans) -->
-    <button
-      type="button"
-      onclick={() => (activeTab = 'PLAN')}
-      class="p-3.5 rounded-2xl border text-left transition-all cursor-pointer {activeTab ===
-      'PLAN'
-        ? 'bg-indigo-50/90 border-indigo-300 ring-2 ring-indigo-400/20 dark:bg-indigo-950/50 dark:border-indigo-500/80 dark:ring-2 dark:ring-indigo-500/20 shadow-xs'
-        : 'bg-white border-[#e1e5ea] hover:border-indigo-300 hover:bg-indigo-50/20 dark:bg-surface-container-low dark:border-outline-variant dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/20'}"
-    >
-      <div class="flex items-center justify-between text-xs font-semibold mb-1">
-        <span
-          class="flex items-center gap-1.5 {activeTab === 'PLAN'
-            ? 'text-indigo-900 dark:text-indigo-200'
-            : 'text-[#1f1f1f] dark:text-on-surface'}"
-        >
-          <BookOpen
-            class="w-4 h-4 {activeTab === 'PLAN'
-              ? 'text-indigo-600 dark:text-indigo-400'
-              : 'text-indigo-500 dark:text-indigo-400'}"
-          />
-          Buku Tarif
-        </span>
-        <span
-          class="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold {activeTab ===
-          'PLAN'
-            ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/80 dark:text-indigo-200 dark:border dark:border-indigo-700/60'
-            : 'bg-[#f0f4f9] text-[#444746] dark:bg-surface-container dark:text-on-surface-variant'}"
-          >PLAN</span
-        >
-      </div>
-      <div
-        class="text-xl font-bold {activeTab === 'PLAN'
-          ? 'text-[#1f1f1f] dark:text-white'
-          : 'text-[#1f1f1f] dark:text-on-surface'}"
-      >
-        {planCount}
-      </div>
-      <div
-        class="text-[11px] {activeTab === 'PLAN'
-          ? 'text-[#444746] dark:text-indigo-200/70'
-          : 'text-[#747775] dark:text-on-surface-variant'} mt-0.5"
-      >
-        Daftar Buku Tarif
-      </div>
-    </button>
 
-    <!-- Stat 2: Simulator & Lookup -->
-    <button
-      type="button"
-      onclick={() => (activeTab = 'SIMULATOR')}
-      class="p-3.5 rounded-2xl border text-left transition-all cursor-pointer {activeTab ===
-      'SIMULATOR'
-        ? 'bg-purple-50/90 border-purple-300 ring-2 ring-purple-400/20 dark:bg-purple-950/50 dark:border-purple-500/80 dark:ring-2 dark:ring-purple-500/20 shadow-xs'
-        : 'bg-white border-[#e1e5ea] hover:border-purple-300 hover:bg-purple-50/20 dark:bg-surface-container-low dark:border-outline-variant dark:hover:border-purple-500/40 dark:hover:bg-purple-950/20'}"
-    >
-      <div class="flex items-center justify-between text-xs font-semibold mb-1">
-        <span
-          class="flex items-center gap-1.5 {activeTab === 'SIMULATOR'
-            ? 'text-purple-900 dark:text-purple-200'
-            : 'text-[#1f1f1f] dark:text-on-surface'}"
-        >
-          <Calculator
-            class="w-4 h-4 {activeTab === 'SIMULATOR'
-              ? 'text-purple-600 dark:text-purple-400'
-              : 'text-purple-500 dark:text-purple-400'}"
-          />
-          Lookup Engine
-        </span>
-        <span
-          class="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold {activeTab ===
-          'SIMULATOR'
-            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/80 dark:text-purple-200 dark:border dark:border-purple-700/60'
-            : 'bg-[#f0f4f9] text-[#444746] dark:bg-surface-container dark:text-on-surface-variant'}"
-          >SIM</span
-        >
-      </div>
-      <div
-        class="text-xl font-bold {activeTab === 'SIMULATOR'
-          ? 'text-[#1f1f1f] dark:text-white'
-          : 'text-[#1f1f1f] dark:text-on-surface'}"
-      >
-        3-Step
-      </div>
-      <div
-        class="text-[11px] {activeTab === 'SIMULATOR'
-          ? 'text-[#444746] dark:text-purple-200/70'
-          : 'text-[#747775] dark:text-on-surface-variant'} mt-0.5"
-      >
-        Hierarki Rekanan & RS
-      </div>
-    </button>
-
-    <!-- Stat 3: Kelas Tarif -->
-    <button
-      type="button"
-      onclick={() => (activeTab = 'CLASS')}
-      class="p-3.5 rounded-2xl border text-left transition-all cursor-pointer {activeTab ===
-      'CLASS'
-        ? 'bg-blue-50/90 border-blue-300 ring-2 ring-blue-400/20 dark:bg-blue-950/50 dark:border-blue-500/80 dark:ring-2 dark:ring-blue-500/20 shadow-xs'
-        : 'bg-white border-[#e1e5ea] hover:border-blue-300 hover:bg-blue-50/20 dark:bg-surface-container-low dark:border-outline-variant dark:hover:border-blue-500/40 dark:hover:bg-blue-950/20'}"
-    >
-      <div class="flex items-center justify-between text-xs font-semibold mb-1">
-        <span
-          class="flex items-center gap-1.5 {activeTab === 'CLASS'
-            ? 'text-blue-900 dark:text-blue-200'
-            : 'text-[#1f1f1f] dark:text-on-surface'}"
-        >
-          <Tag
-            class="w-4 h-4 {activeTab === 'CLASS'
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-blue-500 dark:text-blue-400'}"
-          />
-          Kelas Tarif
-        </span>
-        <span
-          class="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold {activeTab ===
-          'CLASS'
-            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200 dark:border dark:border-blue-700/60'
-            : 'bg-[#f0f4f9] text-[#444746] dark:bg-surface-container dark:text-on-surface-variant'}"
-          >CLASS</span
-        >
-      </div>
-      <div
-        class="text-xl font-bold {activeTab === 'CLASS'
-          ? 'text-[#1f1f1f] dark:text-white'
-          : 'text-[#1f1f1f] dark:text-on-surface'}"
-      >
-        {classCount}
-      </div>
-      <div
-        class="text-[11px] {activeTab === 'CLASS'
-          ? 'text-[#444746] dark:text-blue-200/70'
-          : 'text-[#747775] dark:text-on-surface-variant'} mt-0.5"
-      >
-        Kelas Perawatan RS
-      </div>
-    </button>
-
-    <!-- Stat 4: Total Komponen -->
-    <button
-      type="button"
-      onclick={() => (activeTab = 'COMPONENT')}
-      class="p-3.5 rounded-2xl border text-left transition-all cursor-pointer {activeTab ===
-      'COMPONENT'
-        ? 'bg-emerald-50/90 border-emerald-300 ring-2 ring-emerald-400/20 dark:bg-emerald-950/50 dark:border-emerald-500/80 dark:ring-2 dark:ring-emerald-500/20 shadow-xs'
-        : 'bg-white border-[#e1e5ea] hover:border-emerald-300 hover:bg-emerald-50/20 dark:bg-surface-container-low dark:border-outline-variant dark:hover:border-emerald-500/40 dark:hover:bg-emerald-950/20'}"
-    >
-      <div class="flex items-center justify-between text-xs font-semibold mb-1">
-        <span
-          class="flex items-center gap-1.5 {activeTab === 'COMPONENT'
-            ? 'text-emerald-900 dark:text-emerald-200'
-            : 'text-[#1f1f1f] dark:text-on-surface'}"
-        >
-          <Layers
-            class="w-4 h-4 {activeTab === 'COMPONENT'
-              ? 'text-emerald-600 dark:text-emerald-400'
-              : 'text-emerald-500 dark:text-emerald-400'}"
-          />
-          Komponen Tarif
-        </span>
-        <span
-          class="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold {activeTab ===
-          'COMPONENT'
-            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/80 dark:text-emerald-200 dark:border dark:border-emerald-700/60'
-            : 'bg-[#f0f4f9] text-[#444746] dark:bg-surface-container dark:text-on-surface-variant'}"
-          >COMP</span
-        >
-      </div>
-      <div
-        class="text-xl font-bold {activeTab === 'COMPONENT'
-          ? 'text-[#1f1f1f] dark:text-white'
-          : 'text-[#1f1f1f] dark:text-on-surface'}"
-      >
-        {compCount}
-      </div>
-      <div
-        class="text-[11px] {activeTab === 'COMPONENT'
-          ? 'text-[#444746] dark:text-emerald-200/70'
-          : 'text-[#747775] dark:text-on-surface-variant'} mt-0.5"
-      >
-        Pecahan Jasa RS & Dokter
-      </div>
-    </button>
-  </div>
 
   <!-- Navigation Tabs -->
   <div
@@ -312,7 +125,7 @@
       <!-- Tab 1: Price Plan -->
       <button
         type="button"
-        onclick={() => (activeTab = 'PLAN')}
+        onclick={() => (activeTab = "PLAN")}
         class="px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer {activeTab ===
         'PLAN'
           ? 'bg-indigo-600 text-white shadow-xs'
@@ -325,7 +138,7 @@
       <!-- Tab 2: Editor Matriks Multi-Kelas -->
       <button
         type="button"
-        onclick={() => (activeTab = 'MATRIX')}
+        onclick={() => (activeTab = "MATRIX")}
         class="px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer {activeTab ===
         'MATRIX'
           ? 'bg-[#0b57d0] text-white shadow-xs'
@@ -338,7 +151,7 @@
       <!-- Tab 3: Lookup Simulator -->
       <button
         type="button"
-        onclick={() => (activeTab = 'SIMULATOR')}
+        onclick={() => (activeTab = "SIMULATOR")}
         class="px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer {activeTab ===
         'SIMULATOR'
           ? 'bg-purple-600 text-white shadow-xs'
@@ -351,7 +164,7 @@
       <!-- Tab 4: Kelas Tarif -->
       <button
         type="button"
-        onclick={() => (activeTab = 'CLASS')}
+        onclick={() => (activeTab = "CLASS")}
         class="px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer {activeTab ===
         'CLASS'
           ? 'bg-blue-600 text-white shadow-xs'
@@ -364,7 +177,7 @@
       <!-- Tab 5: Komponen Tarif -->
       <button
         type="button"
-        onclick={() => (activeTab = 'COMPONENT')}
+        onclick={() => (activeTab = "COMPONENT")}
         class="px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer {activeTab ===
         'COMPONENT'
           ? 'bg-emerald-600 text-white shadow-xs'
@@ -377,13 +190,13 @@
   </div>
 
   <!-- Tab Content Rendering -->
-  {#if activeTab === 'PLAN'}
+  {#if activeTab === "PLAN"}
     <PricePlanTab {showToast} onCountChange={(c) => (planCount = c)} />
-  {:else if activeTab === 'MATRIX'}
+  {:else if activeTab === "MATRIX"}
     <TariffMatrixEditor {showToast} />
-  {:else if activeTab === 'SIMULATOR'}
+  {:else if activeTab === "SIMULATOR"}
     <TariffLookupSimulator />
-  {:else if activeTab === 'CLASS'}
+  {:else if activeTab === "CLASS"}
     <TariffClassTab {showToast} onCountChange={(c) => (classCount = c)} />
   {:else}
     <TariffComponentTab {showToast} onCountChange={(c) => (compCount = c)} />

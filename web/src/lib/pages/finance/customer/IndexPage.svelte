@@ -18,6 +18,7 @@
     X,
   } from "@lucide/svelte";
   import M3Button from "$lib/components/m3/M3Button.svelte";
+  import M3Select from "$lib/components/m3/M3Select.svelte";
   import { getCustomers, getCustomerTypes } from "$lib/api/finance";
   import type { CustomerRecord, CustomerTypeRecord } from "$lib/types/finance";
 
@@ -119,13 +120,6 @@
     loadData();
   }
 
-  // Quick stats derived
-  let activeCustomersCount = $derived(
-    customers.filter((c) => c.is_active).length,
-  );
-  let requireCardCount = $derived(
-    customers.filter((c) => c.require_card).length,
-  );
 
   // Pagination calculation
   let totalPages = $derived(Math.max(1, Math.ceil(totalCount / pageSize)));
@@ -199,11 +193,11 @@
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
       <div class="flex items-center gap-2.5">
-        <h2 class="text-xl font-bold text-[#1f1f1f] tracking-tight">
+        <h2 class="text-xl font-bold text-[#1f1f1f] dark:text-[#e3e3e3] tracking-tight">
           Master Penjamin (Customer)
         </h2>
       </div>
-      <p class="text-xs text-[#444746] mt-0.5">
+      <p class="text-xs text-[#444746] dark:text-[#c4c7c5] mt-0.5">
         Konfigurasi penjamin pembiayaan pasien (BPJS Kesehatan, Asuransi Swasta,
         Korporat/Perusahaan, & Pasien Umum).
       </p>
@@ -217,96 +211,60 @@
     </div>
   </div>
 
-  <!-- KPI Overview Stat Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-    <div class="p-4 rounded-2xl bg-white border border-[#e1e5ea] shadow-2xs">
-      <span
-        class="text-[11px] font-semibold text-[#747775] block uppercase tracking-wider"
-        >Total Penjamin</span
-      >
-      <div class="text-2xl font-bold font-mono text-[#1f1f1f] mt-1">
-        {totalCount}
-      </div>
-      <span class="text-[11px] text-[#444746] mt-0.5 block"
-        >Terdaftar di sistem</span
-      >
-    </div>
-
-    <div class="p-4 rounded-2xl bg-white border border-[#e1e5ea] shadow-2xs">
-      <span
-        class="text-[11px] font-semibold text-emerald-700 block uppercase tracking-wider"
-        >Penjamin Aktif</span
-      >
-      <div class="text-2xl font-bold font-mono text-emerald-700 mt-1">
-        {activeCustomersCount}
-      </div>
-      <span class="text-[11px] text-[#444746] mt-0.5 block"
-        >Siap melayani pasien</span
-      >
-    </div>
-
-    <div class="p-4 rounded-2xl bg-white border border-[#e1e5ea] shadow-2xs">
-      <span
-        class="text-[11px] font-semibold text-amber-800 block uppercase tracking-wider"
-        >Wajib Kartu / SEP</span
-      >
-      <div class="text-2xl font-bold font-mono text-amber-800 mt-1">
-        {requireCardCount}
-      </div>
-      <span class="text-[11px] text-[#444746] mt-0.5 block"
-        >Validasi peserta di admisi</span
-      >
-    </div>
-  </div>
 
   <!-- Search & Filter Bar -->
   <div
-    class="p-4 bg-white rounded-3xl border border-[#e1e5ea] shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs"
+    class="p-4 bg-white dark:bg-[#1e1f20] rounded-3xl border border-[#e1e5ea] dark:border-[#353738] shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs"
   >
     <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
       <!-- Search Input -->
       <div class="relative flex-1 min-w-[200px] max-w-md">
         <Search
-          class="w-4 h-4 text-[#747775] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          class="w-4 h-4 text-[#747775] dark:text-[#8e918f] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
         />
         <input
           type="text"
           bind:value={searchQuery}
           oninput={handleSearchInput}
           placeholder="Cari kode, nama penjamin, atau PIC..."
-          class="w-full h-10 pl-10 pr-4 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden transition-all"
+          class="w-full h-10 pl-10 pr-4 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
         />
       </div>
 
       <!-- Kategori Filter -->
-      <div class="flex items-center gap-2">
-        <Filter class="w-3.5 h-3.5 text-[#747775]" />
-        <select
+      <div class="w-48">
+        <M3Select
           bind:value={selectedTypeId}
+          placeholder="Semua Kategori"
           onchange={handleFilterChange}
-          class="h-10 px-3 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden"
-        >
-          <option value="">Semua Kategori</option>
-          {#each customerTypes as ct (ct.id)}
-            <option value={ct.id}>[{ct.code}] {ct.name}</option>
-          {/each}
-        </select>
+          options={[
+            { value: '', label: 'Semua Kategori' },
+            ...customerTypes.map((ct) => ({
+              value: ct.id,
+              label: ct.name,
+              badge: ct.code,
+            })),
+          ]}
+        />
       </div>
 
       <!-- Status Filter -->
-      <select
-        bind:value={selectedStatus}
-        onchange={handleFilterChange}
-        class="h-10 px-3 rounded-xl bg-[#f0f4f9] border border-transparent focus:border-[#0b57d0] focus:bg-white text-xs text-[#1f1f1f] focus:outline-hidden"
-      >
-        <option value="all">Semua Status</option>
-        <option value="active">Hanya Aktif</option>
-        <option value="inactive">Hanya Non-Aktif</option>
-      </select>
+      <div class="w-36">
+        <M3Select
+          bind:value={selectedStatus}
+          placeholder="Semua Status"
+          onchange={handleFilterChange}
+          options={[
+            { value: 'all', label: 'Semua Status' },
+            { value: 'active', label: 'Hanya Aktif' },
+            { value: 'inactive', label: 'Hanya Non-Aktif' },
+          ]}
+        />
+      </div>
     </div>
 
-    <div class="text-[#747775] text-xs">
-      Total: <strong class="text-[#1f1f1f] font-mono">{totalCount}</strong> penjamin
+    <div class="text-[#747775] dark:text-[#8e918f] text-xs">
+      Total: <strong class="text-[#1f1f1f] dark:text-[#e3e3e3] font-mono">{totalCount}</strong> penjamin
     </div>
   </div>
 
@@ -325,12 +283,12 @@
 
   <!-- Data Table Section -->
   <div
-    class="bg-white rounded-3xl border border-[#e1e5ea] shadow-xs overflow-hidden"
+    class="bg-white dark:bg-[#1e1f20] rounded-3xl border border-[#e1e5ea] dark:border-[#353738] shadow-xs overflow-hidden"
   >
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
-          <tr class="bg-[#f0f4f9] border-b border-[#e1e5ea] text-[#444746]">
+          <tr class="bg-[#f0f4f9] dark:bg-[#28292a] border-b border-[#e1e5ea] dark:border-[#353738] text-[#444746] dark:text-[#c4c7c5]">
             <th class="py-3 px-4 font-semibold">Kode</th>
             <th class="py-3 px-4 font-semibold">Nama Debitur / Penjamin</th>
             <th class="py-3 px-4 font-semibold">Kategori Penjamin</th>
@@ -341,7 +299,7 @@
           </tr>
         </thead>
 
-        <tbody class="divide-y divide-[#e1e5ea] text-[#1f1f1f]">
+        <tbody class="divide-y divide-[#e1e5ea] dark:divide-[#353738] text-[#1f1f1f] dark:text-[#e3e3e3]">
           {#if isLoading}
             <tr>
               <td colspan="7" class="py-12 text-center text-[#747775]">
@@ -373,17 +331,17 @@
             </tr>
           {:else}
             {#each customers as c (c.id)}
-              <tr class="hover:bg-[#f8fafd] transition-colors">
+              <tr class="hover:bg-[#f8fafd] dark:hover:bg-[#28292a]/50 transition-colors">
                 <!-- Kode -->
-                <td class="py-3.5 px-4 font-mono font-bold text-[#0b57d0]">
+                <td class="py-3.5 px-4 font-mono font-bold text-[#0b57d0] dark:text-[#a8c7fa]">
                   {c.code}
                 </td>
 
                 <!-- Nama & Catatan -->
                 <td class="py-3.5 px-4">
-                  <div class="font-semibold text-[#1f1f1f]">{c.name}</div>
+                  <div class="font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">{c.name}</div>
                   {#if c.address}
-                    <div class="text-[11px] text-[#747775] truncate max-w-xs">
+                    <div class="text-[11px] text-[#747775] dark:text-[#8e918f] truncate max-w-xs">
                       {c.address}
                     </div>
                   {/if}
@@ -392,25 +350,25 @@
                 <!-- Kategori Tipe -->
                 <td class="py-3.5 px-4">
                   <span
-                    class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-[#f0f4f9] text-[#444746] border border-[#e1e5ea]"
+                    class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-[#f0f4f9] dark:bg-[#28292a] text-[#444746] dark:text-[#c4c7c5] border border-[#e1e5ea] dark:border-[#353738]"
                   >
                     {c.customer_type?.name || "Umum"}
                   </span>
                 </td>
 
                 <!-- Kontak PIC -->
-                <td class="py-3.5 px-4 text-[#444746]">
+                <td class="py-3.5 px-4 text-[#444746] dark:text-[#c4c7c5]">
                   {#if c.contact_person}
-                    <div class="font-medium text-[#1f1f1f]">
+                    <div class="font-medium text-[#1f1f1f] dark:text-[#e3e3e3]">
                       {c.contact_person}
                     </div>
                   {/if}
                   {#if c.phone}
-                    <div class="font-mono text-[11px] text-[#0b57d0]">
+                    <div class="font-mono text-[11px] text-[#0b57d0] dark:text-[#a8c7fa]">
                       {c.phone}
                     </div>
                   {:else if !c.contact_person}
-                    <span class="text-[#747775]">-</span>
+                    <span class="text-[#747775] dark:text-[#8e918f]">-</span>
                   {/if}
                 </td>
 
@@ -418,13 +376,13 @@
                 <td class="py-3.5 px-4 text-center">
                   {#if c.require_card}
                     <span
-                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
                     >
                       Wajib Kartu/SEP
                     </span>
                   {:else}
                     <span
-                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
                     >
                       Tanpa Kartu
                     </span>
@@ -435,13 +393,13 @@
                 <td class="py-3.5 px-4 text-center">
                   {#if c.is_active}
                     <span
-                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300"
                     >
                       AKTIF
                     </span>
                   {:else}
                     <span
-                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 text-gray-700"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                     >
                       NON-AKTIF
                     </span>
@@ -454,7 +412,7 @@
                     <button
                       type="button"
                       onclick={() => openDetailModal(c)}
-                      class="p-1.5 rounded-lg text-[#747775] hover:text-[#0b57d0] hover:bg-[#e8f0fe] transition-colors cursor-pointer"
+                      class="p-1.5 rounded-lg text-[#747775] dark:text-[#8e918f] hover:text-[#0b57d0] dark:hover:text-[#a8c7fa] hover:bg-[#e8f0fe] dark:hover:bg-[#1e2738] transition-colors cursor-pointer"
                       title="Lihat Detail Penjamin"
                     >
                       <Eye class="w-4 h-4" />
@@ -463,7 +421,7 @@
                     <button
                       type="button"
                       onclick={() => openEditModal(c)}
-                      class="p-1.5 rounded-lg text-[#747775] hover:text-[#0b57d0] hover:bg-[#e8f0fe] transition-colors cursor-pointer"
+                      class="p-1.5 rounded-lg text-[#747775] dark:text-[#8e918f] hover:text-[#0b57d0] dark:hover:text-[#a8c7fa] hover:bg-[#e8f0fe] dark:hover:bg-[#1e2738] transition-colors cursor-pointer"
                       title="Edit Data Penjamin"
                     >
                       <Edit3 class="w-4 h-4" />
@@ -472,7 +430,7 @@
                     <button
                       type="button"
                       onclick={() => openDeleteModal(c)}
-                      class="p-1.5 rounded-lg text-[#747775] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      class="p-1.5 rounded-lg text-[#747775] dark:text-[#8e918f] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
                       title="Hapus Penjamin"
                     >
                       <Trash2 class="w-4 h-4" />
@@ -489,9 +447,9 @@
     <!-- Pagination Footer -->
     {#if totalCount > 0}
       <div
-        class="px-5 py-3 border-t border-[#e1e5ea] bg-[#f8fafd] flex flex-wrap items-center justify-between gap-3 text-xs"
+        class="px-5 py-3 border-t border-[#e1e5ea] dark:border-[#353738] bg-[#f8fafd] dark:bg-[#28292a] flex flex-wrap items-center justify-between gap-3 text-xs"
       >
-        <div class="text-[#444746]">
+        <div class="text-[#444746] dark:text-[#c4c7c5]">
           Menampilkan baris <strong>{(currentPage - 1) * pageSize + 1}</strong>
           – <strong>{Math.min(currentPage * pageSize, totalCount)}</strong> dari
           <strong>{totalCount}</strong> penjamin
@@ -505,12 +463,12 @@
               currentPage--;
               loadData();
             }}
-            class="px-3 py-1.5 rounded-xl border border-[#e1e5ea] bg-white font-medium hover:bg-[#f0f4f9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            class="px-3 py-1.5 rounded-xl border border-[#e1e5ea] dark:border-[#353738] bg-white dark:bg-[#1e1f20] text-[#1f1f1f] dark:text-[#e3e3e3] font-medium hover:bg-[#f0f4f9] dark:hover:bg-[#28292a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             Sebelumnya
           </button>
 
-          <span class="font-mono px-2 font-semibold text-[#1f1f1f]">
+          <span class="font-mono px-2 font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">
             {currentPage} / {totalPages}
           </span>
 
@@ -521,7 +479,7 @@
               currentPage++;
               loadData();
             }}
-            class="px-3 py-1.5 rounded-xl border border-[#e1e5ea] bg-white font-medium hover:bg-[#f0f4f9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            class="px-3 py-1.5 rounded-xl border border-[#e1e5ea] dark:border-[#353738] bg-white dark:bg-[#1e1f20] text-[#1f1f1f] dark:text-[#e3e3e3] font-medium hover:bg-[#f0f4f9] dark:hover:bg-[#28292a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             Selanjutnya
           </button>

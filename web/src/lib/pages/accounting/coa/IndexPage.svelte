@@ -12,6 +12,7 @@
     AlertCircle
   } from '@lucide/svelte';
   import M3Button from '../../../components/m3/M3Button.svelte';
+  import M3Select from '../../../components/m3/M3Select.svelte';
   import M3SegmentedButton from '../../../components/m3/M3SegmentedButton.svelte';
   import { auth } from '../../../stores/auth.svelte';
   import {
@@ -336,19 +337,28 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <select
-          bind:value={postableFilter}
-          class="px-2.5 py-1 text-xs bg-white dark:bg-surface-container-high border border-outline-variant/60 rounded-xl text-on-surface-variant focus:outline-none focus:border-primary"
-        >
-          <option value="ALL">Semua Sifat Akun</option>
-          <option value="POSTABLE">Hanya Transaksi (Postable)</option>
-          <option value="HEADER">Hanya Induk (Header)</option>
-        </select>
+        <div class="w-48">
+          <M3Select
+            bind:value={postableFilter}
+            placeholder="Semua Sifat Akun"
+            options={[
+              { value: 'ALL', label: 'Semua Sifat Akun' },
+              { value: 'POSTABLE', label: 'Hanya Transaksi (Postable)' },
+              { value: 'HEADER', label: 'Hanya Induk (Header)' },
+            ]}
+          />
+        </div>
 
-        <label class="flex items-center gap-1.5 text-xs text-on-surface-variant cursor-pointer select-none">
-          <input type="checkbox" bind:checked={activeOnlyFilter} class="rounded border-outline-variant text-primary focus:ring-primary" />
-          <span>Hanya Aktif</span>
-        </label>
+        <div class="w-36">
+          <M3Select
+            value={activeOnlyFilter ? 'ACTIVE' : 'ALL'}
+            onchange={(val) => activeOnlyFilter = val === 'ACTIVE'}
+            options={[
+              { value: 'ALL', label: 'Semua Status' },
+              { value: 'ACTIVE', label: 'Hanya Aktif' },
+            ]}
+          />
+        </div>
       </div>
     </div>
   </div>

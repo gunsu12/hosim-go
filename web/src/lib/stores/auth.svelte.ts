@@ -38,6 +38,12 @@ export function createAuthStore() {
     get user(): UserProfile | null {
       return session?.user || null;
     },
+    get practitionerId(): string | null {
+      return session?.user?.practitioner_id || null;
+    },
+    get isPractitioner(): boolean {
+      return !!session?.user?.practitioner_id;
+    },
     get token(): string | null {
       return session?.access_token || null;
     },

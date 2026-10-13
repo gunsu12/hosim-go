@@ -8,6 +8,7 @@
   } from '@lucide/svelte';
   import M3Modal from '$lib/components/m3/M3Modal.svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
+  import M3Select from '$lib/components/m3/M3Select.svelte';
   import {
     addPricePlanItem,
     updatePricePlanItem
@@ -50,6 +51,19 @@
   let formComponents = $state<ItemComponentDTO[]>([]);
   let isSavingItem = $state(false);
   let formError = $state<string | null>(null);
+
+  let catalogItemOptions = $derived([
+    { value: '', label: '-- Pilih Tindakan Medis --' },
+    ...tariffCatalogItems.map(i => ({ value: i.id, label: `[${i.code}] ${i.name}` }))
+  ]);
+
+  let tariffClassOptions = $derived(
+    tariffClasses.map(tc => ({ value: tc.id, label: `[${tc.code}] ${tc.name}` }))
+  );
+
+  let tariffComponentOptions = $derived(
+    tariffComponents.map(tc => ({ value: tc.id, label: `[${tc.code}] ${tc.name}` }))
+  );
 
   // Balancing Calculation
   let sumComponentBase = $derived(
@@ -189,40 +203,21 @@
   {/if}
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div>
-      <label for="f-item" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-        Tindakan Medis (Katalog TARIFF) <span class="text-rose-500">*</span>
-      </label>
-      <select
-        id="f-item"
-        bind:value={selectedCatalogItemId}
-        disabled={mode === 'EDIT'}
-        required
-        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all disabled:opacity-60"
-      >
-        <option value="">-- Pilih Tindakan Medis --</option>
-        {#each tariffCatalogItems as catItem (catItem.id)}
-          <option value={catItem.id}>[{catItem.code}] {catItem.name}</option>
-        {/each}
-      </select>
-    </div>
+    <M3Select
+      label="Tindakan Medis (Katalog TARIFF) *"
+      bind:value={selectedCatalogItemId}
+      options={catalogItemOptions}
+      disabled={mode === 'EDIT'}
+      placeholder="Pilih Tindakan Medis"
+    />
 
-    <div>
-      <label for="f-class" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-        Kelas Layanan Perawatan <span class="text-rose-500">*</span>
-      </label>
-      <select
-        id="f-class"
-        bind:value={selectedClassId}
-        disabled={mode === 'EDIT'}
-        required
-        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all disabled:opacity-60"
-      >
-        {#each tariffClasses as tc (tc.id)}
-          <option value={tc.id}>[{tc.code}] {tc.name}</option>
-        {/each}
-      </select>
-    </div>
+    <M3Select
+      label="Kelas Layanan Perawatan *"
+      bind:value={selectedClassId}
+      options={tariffClassOptions}
+      disabled={mode === 'EDIT'}
+      placeholder="Pilih Kelas Layanan"
+    />
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -288,15 +283,11 @@
           {#each formComponents as comp, idx}
             <tr class="bg-white dark:bg-[#1e1f20]">
               <td class="p-2">
-                <select
+                <M3Select
                   bind:value={comp.component_id}
-                  required
-                  class="w-full h-8 px-2 rounded-lg bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] text-xs text-[#1f1f1f] dark:text-[#e3e3e3]"
-                >
-                  {#each tariffComponents as tc (tc.id)}
-                    <option value={tc.id}>[{tc.code}] {tc.name}</option>
-                  {/each}
-                </select>
+                  options={tariffComponentOptions}
+                  placeholder="Pilih Komponen"
+                />
               </td>
               <td class="p-2">
                 <input

@@ -15,6 +15,7 @@
     X,
   } from "@lucide/svelte";
   import M3Button from "../../../components/m3/M3Button.svelte";
+  import M3Select from "../../../components/m3/M3Select.svelte";
   import {
     getItems,
     deleteItem,
@@ -73,6 +74,29 @@
   let showDeleteModal = $state(false);
   let itemToDelete = $state<ItemSummaryRecord | null>(null);
 
+  // Filter options
+  let categoryFilterOptions = $derived([
+    { value: "", label: "Semua Kategori" },
+    ...categories.map((c) => ({
+      value: c.id,
+      label: `[${c.item_type}] ${c.name}`,
+    })),
+  ]);
+
+  let productLineFilterOptions = $derived([
+    { value: "", label: "Semua Lini Produk" },
+    ...productLines.map((pl) => ({
+      value: pl.id,
+      label: pl.name,
+    })),
+  ]);
+
+  const statusFilterOptions = [
+    { value: "ALL", label: "Semua Status" },
+    { value: "ACTIVE", label: "Aktif Saja" },
+    { value: "INACTIVE", label: "Nonaktif" },
+  ];
+
   // ==========================================
   // DERIVED & HELPERS
   // ==========================================
@@ -86,20 +110,6 @@
       setTimeout(() => (successMessage = null), 4000);
     }
   }
-
-  // Quick stats
-  let statsMedication = $derived(
-    items.filter((i) => i.item_type === "MEDICATION").length,
-  );
-  let statsGeneral = $derived(
-    items.filter((i) => i.item_type === "GENERAL").length,
-  );
-  let statsAsset = $derived(
-    items.filter((i) => i.item_type === "ASSET").length,
-  );
-  let statsTariff = $derived(
-    items.filter((i) => i.item_type === "TARIFF").length,
-  );
 
   // ==========================================
   // DATA FETCHING
@@ -211,16 +221,16 @@
   <!-- Toast Feedback Alerts -->
   {#if successMessage}
     <div
-      class="p-3.5 rounded-2xl bg-[#e6f4ea] border border-[#ceead6] text-[#137333] flex items-center justify-between shadow-xs animate-in fade-in duration-200"
+      class="p-3.5 rounded-2xl bg-[#e6f4ea] dark:bg-emerald-950/40 border border-[#ceead6] dark:border-emerald-800 text-[#137333] dark:text-emerald-300 flex items-center justify-between shadow-xs animate-in fade-in duration-200"
     >
       <div class="flex items-center gap-2 text-xs font-semibold">
-        <CheckCircle2 class="w-4 h-4 text-[#137333]" />
+        <CheckCircle2 class="w-4 h-4 text-[#137333] dark:text-emerald-400" />
         <span>{successMessage}</span>
       </div>
       <button
         onclick={() => (successMessage = null)}
         type="button"
-        class="text-[#137333] hover:opacity-75"
+        class="text-[#137333] dark:text-emerald-400 hover:opacity-75 cursor-pointer"
       >
         <X class="w-3.5 h-3.5" />
       </button>
@@ -229,16 +239,16 @@
 
   {#if errorMessage}
     <div
-      class="p-3.5 rounded-2xl bg-[#fce8e6] border border-[#fad2cf] text-[#c5221f] flex items-center justify-between shadow-xs animate-in fade-in duration-200"
+      class="p-3.5 rounded-2xl bg-[#fce8e6] dark:bg-rose-950/40 border border-[#fad2cf] dark:border-rose-800 text-[#c5221f] dark:text-rose-300 flex items-center justify-between shadow-xs animate-in fade-in duration-200"
     >
       <div class="flex items-center gap-2 text-xs font-semibold">
-        <AlertCircle class="w-4 h-4 text-[#c5221f]" />
+        <AlertCircle class="w-4 h-4 text-[#c5221f] dark:text-rose-400" />
         <span>{errorMessage}</span>
       </div>
       <button
         onclick={() => (errorMessage = null)}
         type="button"
-        class="text-[#c5221f] hover:opacity-75"
+        class="text-[#c5221f] dark:text-rose-400 hover:opacity-75 cursor-pointer"
       >
         <X class="w-3.5 h-3.5" />
       </button>
@@ -250,17 +260,17 @@
     <div>
       <div class="flex items-center gap-2.5">
         <div
-          class="w-9 h-9 rounded-2xl bg-[#0b57d0]/10 text-[#0b57d0] flex items-center justify-center font-bold"
+          class="w-9 h-9 rounded-2xl bg-[#0b57d0]/10 dark:bg-[#0b57d0]/20 text-[#0b57d0] dark:text-blue-400 flex items-center justify-center font-bold"
         >
           <Boxes class="w-5 h-5" />
         </div>
         <div>
-          <h2 class="text-lg font-bold text-[#1f1f1f] tracking-tight">
+          <h2 class="text-lg font-bold text-[#1f1f1f] dark:text-[#e3e3e3] tracking-tight">
             Master Katalog Item & Tarif
           </h2>
         </div>
       </div>
-      <p class="text-xs text-[#444746] mt-1.5 max-w-3xl">
+      <p class="text-xs text-[#444746] dark:text-[#c4c7c5] mt-1.5 max-w-3xl">
         Katalog universal sentral untuk seluruh obat farmasi, BMHP habis pakai,
         aset modal alkes, serta tarif jasa medis RS dengan integrasi
         multi-satuan (UOM) dan pemetaan bagan akun (COA).
@@ -273,11 +283,11 @@
         onclick={loadItems}
         disabled={isLoading}
         type="button"
-        class="h-10 px-3.5 rounded-xl border border-[#e1e5ea] bg-white text-[#444746] hover:bg-[#f8fafd] text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
+        class="h-10 px-3.5 rounded-xl border border-[#e1e5ea] dark:border-[#444746] bg-white dark:bg-[#1e1f20] text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f8fafd] dark:hover:bg-[#282a2c] text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
         title="Muat ulang data"
       >
         <RefreshCw
-          class="w-3.5 h-3.5 {isLoading ? 'animate-spin text-[#0b57d0]' : ''}"
+          class="w-3.5 h-3.5 {isLoading ? 'animate-spin text-[#0b57d0] dark:text-blue-400' : ''}"
         />
         <span>Refresh</span>
       </button>
@@ -294,121 +304,18 @@
     </div>
   </div>
 
-  <!-- Quick Category Metric Cards -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-    <button
-      type="button"
-      onclick={() => (activeTab = "MEDICATION")}
-      class="p-3.5 rounded-2xl border text-left transition-all cursor-pointer {activeTab ===
-      'MEDICATION'
-        ? 'bg-emerald-50/80 border-emerald-300 ring-2 ring-emerald-400/20'
-        : 'bg-white border-[#e1e5ea] hover:border-emerald-200'}"
-    >
-      <div
-        class="flex items-center justify-between text-xs font-medium text-emerald-800 mb-1"
-      >
-        <span class="flex items-center gap-1.5">
-          <Pill class="w-4 h-4 text-emerald-600" />
-          Obat & Farmasi
-        </span>
-        <span
-          class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800"
-          >MED</span
-        >
-      </div>
-      <div class="text-lg font-bold text-[#1f1f1f]">{statsMedication}</div>
-      <div class="text-[11px] text-[#747775] mt-0.5">KFA, BPOM, HAM, LASA</div>
-    </button>
-
-    <button
-      type="button"
-      onclick={() => (activeTab = "GENERAL")}
-      class="p-3.5 rounded-2xl border text-left transition-all cursor-pointer {activeTab ===
-      'GENERAL'
-        ? 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/20'
-        : 'bg-white border-[#e1e5ea] hover:border-amber-200'}"
-    >
-      <div
-        class="flex items-center justify-between text-xs font-medium text-amber-800 mb-1"
-      >
-        <span class="flex items-center gap-1.5">
-          <Package class="w-4 h-4 text-amber-600" />
-          BMHP & Umum
-        </span>
-        <span
-          class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-800"
-          >GEN</span
-        >
-      </div>
-      <div class="text-lg font-bold text-[#1f1f1f]">{statsGeneral}</div>
-      <div class="text-[11px] text-[#747775] mt-0.5">
-        Steril, CSSD, Habis Pakai
-      </div>
-    </button>
-
-    <button
-      type="button"
-      onclick={() => (activeTab = "ASSET")}
-      class="p-3.5 rounded-2xl border text-left transition-all cursor-pointer {activeTab ===
-      'ASSET'
-        ? 'bg-indigo-50/80 border-indigo-300 ring-2 ring-indigo-400/20'
-        : 'bg-white border-[#e1e5ea] hover:border-indigo-200'}"
-    >
-      <div
-        class="flex items-center justify-between text-xs font-medium text-indigo-800 mb-1"
-      >
-        <span class="flex items-center gap-1.5">
-          <Stethoscope class="w-4 h-4 text-indigo-600" />
-          Aset & Alkes
-        </span>
-        <span
-          class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800"
-          >AST</span
-        >
-      </div>
-      <div class="text-lg font-bold text-[#1f1f1f]">{statsAsset}</div>
-      <div class="text-[11px] text-[#747775] mt-0.5">Depresiasi, Kalibrasi</div>
-    </button>
-
-    <button
-      type="button"
-      onclick={() => (activeTab = "TARIFF")}
-      class="p-3.5 rounded-2xl border text-left transition-all cursor-pointer {activeTab ===
-      'TARIFF'
-        ? 'bg-blue-50/80 border-blue-300 ring-2 ring-blue-400/20'
-        : 'bg-white border-[#e1e5ea] hover:border-blue-200'}"
-    >
-      <div
-        class="flex items-center justify-between text-xs font-medium text-blue-800 mb-1"
-      >
-        <span class="flex items-center gap-1.5">
-          <Receipt class="w-4 h-4 text-blue-600" />
-          Tarif & Jasa
-        </span>
-        <span
-          class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-100 text-blue-800"
-          >TAR</span
-        >
-      </div>
-      <div class="text-lg font-bold text-[#1f1f1f]">{statsTariff}</div>
-      <div class="text-[11px] text-[#747775] mt-0.5">
-        Tindakan, Konsul, Ranap
-      </div>
-    </button>
-  </div>
-
   <!-- Navigation Category Tabs -->
   <div
-    class="flex items-center justify-between border-b border-[#e1e5ea] pb-1 gap-2 overflow-x-auto"
+    class="flex items-center justify-between border-b border-[#e1e5ea] dark:border-[#444746] pb-1 gap-2 overflow-x-auto"
   >
     <div class="flex items-center gap-1.5">
       <button
         type="button"
         onclick={() => (activeTab = "ALL")}
         class="px-4 py-2 text-xs font-medium rounded-xl transition-all cursor-pointer {activeTab ===
-        'ALL'
+        "ALL"
           ? 'bg-[#0b57d0] text-white shadow-xs'
-          : 'text-[#444746] hover:bg-[#f0f4f9]'}"
+          : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#282a2c]'}"
       >
         Semua Item ({totalItems})
       </button>
@@ -417,9 +324,9 @@
         type="button"
         onclick={() => (activeTab = "MEDICATION")}
         class="px-4 py-2 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer {activeTab ===
-        'MEDICATION'
+        "MEDICATION"
           ? 'bg-emerald-600 text-white shadow-xs'
-          : 'text-[#444746] hover:bg-[#f0f4f9]'}"
+          : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#282a2c]'}"
       >
         <Pill class="w-3.5 h-3.5" />
         <span>Obat-Obatan</span>
@@ -429,9 +336,9 @@
         type="button"
         onclick={() => (activeTab = "GENERAL")}
         class="px-4 py-2 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer {activeTab ===
-        'GENERAL'
+        "GENERAL"
           ? 'bg-amber-600 text-white shadow-xs'
-          : 'text-[#444746] hover:bg-[#f0f4f9]'}"
+          : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#282a2c]'}"
       >
         <Package class="w-3.5 h-3.5" />
         <span>BMHP & Umum</span>
@@ -441,9 +348,9 @@
         type="button"
         onclick={() => (activeTab = "ASSET")}
         class="px-4 py-2 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer {activeTab ===
-        'ASSET'
+        "ASSET"
           ? 'bg-indigo-600 text-white shadow-xs'
-          : 'text-[#444746] hover:bg-[#f0f4f9]'}"
+          : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#282a2c]'}"
       >
         <Stethoscope class="w-3.5 h-3.5" />
         <span>Aset & Alkes</span>
@@ -453,9 +360,9 @@
         type="button"
         onclick={() => (activeTab = "TARIFF")}
         class="px-4 py-2 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer {activeTab ===
-        'TARIFF'
+        "TARIFF"
           ? 'bg-blue-600 text-white shadow-xs'
-          : 'text-[#444746] hover:bg-[#f0f4f9]'}"
+          : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#282a2c]'}"
       >
         <Receipt class="w-3.5 h-3.5" />
         <span>Tarif Layanan</span>
@@ -465,9 +372,9 @@
         type="button"
         onclick={() => (activeTab = "CONFIG")}
         class="px-4 py-2 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer {activeTab ===
-        'CONFIG'
+        "CONFIG"
           ? 'bg-purple-600 text-white shadow-xs'
-          : 'text-[#444746] hover:bg-[#f0f4f9]'}"
+          : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#282a2c]'}"
       >
         <Settings class="w-3.5 h-3.5" />
         <span>Kategori & Lini Produk</span>
@@ -475,7 +382,7 @@
     </div>
 
     {#if activeTab !== "CONFIG"}
-      <div class="text-xs text-[#747775] shrink-0 font-mono">
+      <div class="text-xs text-[#747775] dark:text-[#c4c7c5] shrink-0 font-mono">
         Halaman {currentPage} dari {totalPages}
       </div>
     {/if}
@@ -485,56 +392,51 @@
   {#if activeTab !== "CONFIG"}
     <!-- Search and Filter Bar -->
     <div
-      class="flex flex-wrap items-center justify-between gap-3 bg-[#f8fafd] p-3 rounded-2xl border border-[#e1e5ea]"
+      class="flex flex-wrap items-center justify-between gap-3 bg-[#f8fafd] dark:bg-[#1e1f20] p-3 rounded-2xl border border-[#e1e5ea] dark:border-[#444746]"
     >
       <div class="flex-1 min-w-[240px] relative">
         <Search
-          class="w-4 h-4 text-[#747775] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          class="w-4 h-4 text-[#747775] dark:text-[#c4c7c5] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
         />
         <input
           type="text"
           bind:value={searchQuery}
           onkeydown={(e) => e.key === "Enter" && loadItems()}
           placeholder="Cari kode SKU/KFA, nama item, atau nama generik (tekan Enter)..."
-          class="w-full h-10 pl-10 pr-4 rounded-xl bg-white border border-[#e1e5ea] focus:border-[#0b57d0] text-xs text-[#1f1f1f] focus:outline-none transition-all shadow-2xs"
+          class="w-full h-10 pl-10 pr-4 rounded-xl bg-white dark:bg-[#2b2b2b] border border-[#e1e5ea] dark:border-[#444746] focus:border-[#0b57d0] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-none transition-all shadow-2xs"
         />
       </div>
 
       <div class="flex items-center gap-2 flex-wrap">
         <!-- Filter Kategori -->
-        <select
-          bind:value={filterCategoryId}
-          onchange={loadItems}
-          class="h-10 px-3 rounded-xl bg-white border border-[#e1e5ea] text-xs text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0]"
-        >
-          <option value="">Semua Kategori</option>
-          {#each categories as cat (cat.id)}
-            <option value={cat.id}>[{cat.item_type}] {cat.name}</option>
-          {/each}
-        </select>
+        <div class="w-48">
+          <M3Select
+            bind:value={filterCategoryId}
+            options={categoryFilterOptions}
+            onchange={loadItems}
+            placeholder="Semua Kategori"
+          />
+        </div>
 
         <!-- Filter Lini Produk -->
-        <select
-          bind:value={filterProductLineId}
-          onchange={loadItems}
-          class="h-10 px-3 rounded-xl bg-white border border-[#e1e5ea] text-xs text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0]"
-        >
-          <option value="">Semua Lini Produk</option>
-          {#each productLines as pl (pl.id)}
-            <option value={pl.id}>{pl.name}</option>
-          {/each}
-        </select>
+        <div class="w-48">
+          <M3Select
+            bind:value={filterProductLineId}
+            options={productLineFilterOptions}
+            onchange={loadItems}
+            placeholder="Semua Lini Produk"
+          />
+        </div>
 
         <!-- Filter Status -->
-        <select
-          bind:value={filterStatus}
-          onchange={loadItems}
-          class="h-10 px-3 rounded-xl bg-white border border-[#e1e5ea] text-xs text-[#1f1f1f] focus:outline-none focus:border-[#0b57d0]"
-        >
-          <option value="ALL">Semua Status</option>
-          <option value="ACTIVE">Aktif Saja</option>
-          <option value="INACTIVE">Nonaktif</option>
-        </select>
+        <div class="w-36">
+          <M3Select
+            bind:value={filterStatus}
+            options={statusFilterOptions}
+            onchange={loadItems}
+            placeholder="Semua Status"
+          />
+        </div>
       </div>
     </div>
 

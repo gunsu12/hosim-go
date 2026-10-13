@@ -7,15 +7,17 @@
     Boxes,
     CheckCircle2,
     XCircle,
-    ChevronRight,
     Eye,
     Edit3,
     Trash2,
     RefreshCw,
-    Plus
-  } from '@lucide/svelte';
-  import M3Button from '../../../../components/m3/M3Button.svelte';
-  import type { ItemSummaryRecord, ItemType } from '../../../../types/master/item';
+    Plus,
+  } from "@lucide/svelte";
+  import M3Button from "../../../../components/m3/M3Button.svelte";
+  import type {
+    ItemSummaryRecord,
+    ItemType,
+  } from "../../../../types/master/item";
 
   interface Props {
     items: ItemSummaryRecord[];
@@ -40,37 +42,65 @@
     onViewDetail,
     onEdit,
     onDelete,
-    onCreate
+    onCreate,
   }: Props = $props();
 
   function getTypeBadge(type: ItemType) {
     switch (type) {
-      case 'MEDICATION':
-        return { label: 'Obat', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: Pill };
-      case 'GENERAL':
-        return { label: 'BMHP / Umum', bg: 'bg-amber-50 text-amber-700 border-amber-200', icon: Package };
-      case 'ASSET':
-        return { label: 'Aset / Alkes', bg: 'bg-indigo-50 text-indigo-700 border-indigo-200', icon: Stethoscope };
-      case 'TARIFF':
-        return { label: 'Tarif Jasa', bg: 'bg-blue-50 text-blue-700 border-blue-200', icon: Receipt };
+      case "MEDICATION":
+        return {
+          label: "Obat",
+          bg: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+          icon: Pill,
+        };
+      case "GENERAL":
+        return {
+          label: "BMHP / Umum",
+          bg: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+          icon: Package,
+        };
+      case "ASSET":
+        return {
+          label: "Aset / Alkes",
+          bg: "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800",
+          icon: Stethoscope,
+        };
+      case "TARIFF":
+        return {
+          label: "Tarif Jasa",
+          bg: "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+          icon: Receipt,
+        };
     }
   }
 </script>
 
-<div class="bg-white rounded-2xl border border-[#e1e5ea] shadow-xs overflow-hidden">
+<div
+  class="bg-white dark:bg-[#1e1f20] rounded-2xl border border-[#e1e5ea] dark:border-[#444746] shadow-xs overflow-hidden"
+>
   {#if isLoading}
-    <div class="p-12 flex flex-col items-center justify-center gap-3 text-center">
+    <div
+      class="p-12 flex flex-col items-center justify-center gap-3 text-center"
+    >
       <RefreshCw class="w-8 h-8 text-[#0b57d0] animate-spin" />
-      <p class="text-xs text-[#747775]">Memuat katalog item rumah sakit...</p>
+      <p class="text-xs text-[#747775] dark:text-[#c4c7c5]">
+        Memuat katalog item rumah sakit...
+      </p>
     </div>
   {:else if items.length === 0}
-    <div class="p-12 flex flex-col items-center justify-center gap-3 text-center">
-      <div class="w-12 h-12 rounded-full bg-[#f0f4f9] text-[#747775] flex items-center justify-center">
+    <div
+      class="p-12 flex flex-col items-center justify-center gap-3 text-center"
+    >
+      <div
+        class="w-12 h-12 rounded-full bg-[#f0f4f9] dark:bg-[#282a2c] text-[#747775] dark:text-[#c4c7c5] flex items-center justify-center"
+      >
         <Boxes class="w-6 h-6" />
       </div>
       <div>
-        <h3 class="text-sm font-semibold text-[#1f1f1f]">Katalog Item Masih Kosong</h3>
-        <p class="text-xs text-[#747775] mt-1 max-w-sm">
+        <h3 class="text-sm font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">
+          Katalog Item Masih Kosong
+        </h3>
+        <p class="text-xs text-[#747775] dark:text-[#c4c7c5] mt-1 max-w-sm">
           Belum ada data item yang sesuai dengan kriteria filter. Tambahkan master obat, BMHP, aset, atau tarif baru.
         </p>
       </div>
@@ -83,7 +113,9 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
-          <tr class="bg-[#f0f4f9] border-b border-[#e1e5ea] text-[#444746] font-semibold">
+          <tr
+            class="bg-[#f0f4f9] dark:bg-[#282a2c] border-b border-[#e1e5ea] dark:border-[#444746] text-[#444746] dark:text-[#c4c7c5] font-semibold"
+          >
             <th class="py-3 px-4">Kode Item / SKU</th>
             <th class="py-3 px-4">Nama Produk / Layanan</th>
             <th class="py-3 px-4">Tipe & Kategori</th>
@@ -93,79 +125,76 @@
             <th class="py-3 px-4 text-right">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-[#e1e5ea] text-[#1f1f1f]">
+        <tbody class="divide-y divide-[#e1e5ea] dark:divide-[#444746] text-[#1f1f1f] dark:text-[#e3e3e3]">
           {#each items as item (item.id)}
             {@const badge = getTypeBadge(item.item_type)}
-            <tr class="hover:bg-[#f8fafd] transition-colors">
+            <tr class="hover:bg-[#f8fafd] dark:hover:bg-[#2b2b2b] transition-colors">
               <!-- Kode Item -->
-              <td class="py-3.5 px-4 font-mono font-bold text-[#0b57d0] whitespace-nowrap">
-                <button
-                  type="button"
-                  onclick={() => onViewDetail(item)}
-                  class="hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <span>{item.code}</span>
-                  <ChevronRight class="w-3 h-3 opacity-60" />
-                </button>
+              <td class="py-3 px-4 font-mono font-bold text-[#0b57d0] dark:text-blue-400">
+                {item.code}
               </td>
 
-              <!-- Nama Item -->
-              <td class="py-3.5 px-4 font-semibold text-[#1f1f1f] max-w-[260px]">
-                <div class="truncate text-xs font-semibold">{item.name}</div>
+              <!-- Nama Produk -->
+              <td class="py-3 px-4">
+                <div class="font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">{item.name}</div>
                 {#if item.generic_name}
-                  <div class="text-[11px] text-[#747775] font-normal truncate">
-                    Generik: {item.generic_name}
+                  <div class="text-[11px] text-[#747775] dark:text-[#c4c7c5] mt-0.5">
+                    {item.generic_name}
                   </div>
                 {/if}
               </td>
 
               <!-- Tipe & Kategori -->
-              <td class="py-3.5 px-4 whitespace-nowrap">
-                <div class="flex items-center gap-1.5">
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border {badge.bg}">
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span
+                    class="px-2 py-0.5 rounded-full font-semibold border flex items-center gap-1 text-[11px] {badge.bg}"
+                  >
                     <badge.icon class="w-3 h-3" />
                     <span>{badge.label}</span>
                   </span>
+                  {#if item.category}
+                    <span class="text-xs text-[#444746] dark:text-[#c4c7c5]">{item.category.name}</span>
+                  {/if}
                 </div>
-                {#if item.category}
-                  <div class="text-[11px] text-[#444746] mt-0.5 truncate max-w-[180px]">
-                    {item.category.name}
-                  </div>
-                {/if}
               </td>
 
               <!-- Satuan Dasar -->
-              <td class="py-3.5 px-4 whitespace-nowrap font-medium text-[#444746]">
-                <span class="px-2 py-0.5 rounded bg-[#f0f4f9] text-[#1f1f1f] font-mono text-[11px]">
-                  {item.base_unit?.unit_name || 'Unit'}
+              <td class="py-3 px-4 font-mono">
+                <span
+                  class="px-2 py-0.5 rounded-lg bg-[#f0f4f9] dark:bg-[#282a2c] text-[#1f1f1f] dark:text-[#e3e3e3] border border-[#e1e5ea] dark:border-[#444746]"
+                >
+                  {item.base_unit?.unit_name || item.base_unit_name || '-'}
                 </span>
               </td>
 
-              <!-- Lini Produk -->
-              <td class="py-3.5 px-4 text-[#444746] whitespace-nowrap">
+              <!-- Lini Produk / COA -->
+              <td class="py-3 px-4">
                 {#if item.product_line}
-                  <div class="font-medium text-xs">{item.product_line.name}</div>
-                  {#if item.product_line.inventory_coa_code}
-                    <div class="text-[10px] text-[#747775] font-mono">
-                      COA: {item.product_line.inventory_coa_code}
-                    </div>
-                  {/if}
-                {:else if item.item_type === 'TARIFF'}
-                  <span class="text-[11px] text-[#747775] italic">Non-Persediaan (Jasa)</span>
+                  <div class="font-medium text-[#1f1f1f] dark:text-[#e3e3e3]">
+                    {item.product_line.name}
+                  </div>
+                  <div class="text-[10px] text-[#747775] dark:text-[#c4c7c5] font-mono mt-0.5">
+                    Persediaan: {item.product_line.inventory_coa_code || "-"}
+                  </div>
                 {:else}
-                  <span class="text-[11px] text-[#747775]">-</span>
+                  <span class="text-[#747775] dark:text-[#c4c7c5] italic">Non-Persediaan</span>
                 {/if}
               </td>
 
               <!-- Status -->
-              <td class="py-3.5 px-4 whitespace-nowrap">
+              <td class="py-3 px-4">
                 {#if item.is_active}
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#e6f4ea] text-[#137333]">
+                  <span
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                  >
                     <CheckCircle2 class="w-3 h-3" />
                     <span>Aktif</span>
                   </span>
                 {:else}
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#fce8e6] text-[#c5221f]">
+                  <span
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                  >
                     <XCircle class="w-3 h-3" />
                     <span>Nonaktif</span>
                   </span>
@@ -173,12 +202,12 @@
               </td>
 
               <!-- Aksi -->
-              <td class="py-3.5 px-4 text-right whitespace-nowrap">
+              <td class="py-3 px-4 text-right">
                 <div class="flex items-center justify-end gap-1">
                   <button
                     type="button"
                     onclick={() => onViewDetail(item)}
-                    class="p-1.5 rounded-lg text-[#0b57d0] hover:bg-[#0b57d0]/10 transition-colors cursor-pointer"
+                    class="p-1.5 rounded-lg text-[#0b57d0] dark:text-blue-400 hover:bg-[#0b57d0]/10 transition-colors cursor-pointer"
                     title="Lihat Rincian Lengkap"
                   >
                     <Eye class="w-4 h-4" />
@@ -187,7 +216,7 @@
                   <button
                     type="button"
                     onclick={() => onEdit(item)}
-                    class="p-1.5 rounded-lg text-[#444746] hover:bg-[#f0f4f9] transition-colors cursor-pointer"
+                    class="p-1.5 rounded-lg text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#282a2c] transition-colors cursor-pointer"
                     title="Edit Item"
                   >
                     <Edit3 class="w-4 h-4" />
@@ -196,7 +225,7 @@
                   <button
                     type="button"
                     onclick={() => onDelete(item)}
-                    class="p-1.5 rounded-lg text-[#c5221f] hover:bg-[#c5221f]/10 transition-colors cursor-pointer"
+                    class="p-1.5 rounded-lg text-[#c5221f] dark:text-rose-400 hover:bg-[#c5221f]/10 transition-colors cursor-pointer"
                     title="Hapus Item"
                   >
                     <Trash2 class="w-4 h-4" />
@@ -211,8 +240,10 @@
 
     <!-- Pagination Controls -->
     {#if totalPages > 1}
-      <div class="flex items-center justify-between p-4 border-t border-[#e1e5ea] bg-[#f8fafd]">
-        <div class="text-xs text-[#747775]">
+      <div
+        class="flex items-center justify-between p-4 border-t border-[#e1e5ea] dark:border-[#444746] bg-[#f8fafd] dark:bg-[#282a2c]"
+      >
+        <div class="text-xs text-[#747775] dark:text-[#c4c7c5]">
           Menampilkan {items.length} dari total {totalItems} item
         </div>
         <div class="flex items-center gap-1.5">
@@ -220,16 +251,18 @@
             type="button"
             onclick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            class="px-3 py-1.5 rounded-lg border border-[#e1e5ea] bg-white text-xs text-[#1f1f1f] disabled:opacity-40 hover:bg-[#f0f4f9] cursor-pointer"
+            class="px-3 py-1.5 rounded-lg border border-[#e1e5ea] dark:border-[#444746] bg-white dark:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] disabled:opacity-40 hover:bg-[#f0f4f9] dark:hover:bg-[#383b3d] cursor-pointer"
           >
             Sebelumnya
           </button>
-          <span class="px-2 text-xs font-mono font-semibold">{currentPage} / {totalPages}</span>
+          <span class="px-2 text-xs font-mono font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">
+            {currentPage} / {totalPages}
+          </span>
           <button
             type="button"
             onclick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            class="px-3 py-1.5 rounded-lg border border-[#e1e5ea] bg-white text-xs text-[#1f1f1f] disabled:opacity-40 hover:bg-[#f0f4f9] cursor-pointer"
+            class="px-3 py-1.5 rounded-lg border border-[#e1e5ea] dark:border-[#444746] bg-white dark:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] disabled:opacity-40 hover:bg-[#f0f4f9] dark:hover:bg-[#383b3d] cursor-pointer"
           >
             Selanjutnya
           </button>

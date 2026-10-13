@@ -5,6 +5,7 @@
   } from "@lucide/svelte";
   import M3Button from "$lib/components/m3/M3Button.svelte";
   import M3Modal from "$lib/components/m3/M3Modal.svelte";
+  import M3Select from "$lib/components/m3/M3Select.svelte";
   import M3ToggleCard from "$lib/components/m3/M3ToggleCard.svelte";
   import { createCustomer, updateCustomer } from "$lib/api/finance";
   import type {
@@ -182,22 +183,17 @@
     </div>
 
     <div>
-      <label
-        for="cust-type"
-        class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1"
-      >
-        Kategori Penjamin
-      </label>
-      <select
+      <M3Select
         id="cust-type"
+        label="Kategori Penjamin"
         bind:value={customerTypeId}
-        class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
-      >
-        <option value="">-- Pilih Kategori / Tipe --</option>
-        {#each customerTypes as ct (ct.id)}
-          <option value={ct.id}>{ct.name}</option>
-        {/each}
-      </select>
+        placeholder="-- Pilih Kategori / Tipe --"
+        options={customerTypes.map((ct) => ({
+          value: ct.id,
+          label: ct.name,
+          badge: ct.code,
+        }))}
+      />
     </div>
   </div>
 

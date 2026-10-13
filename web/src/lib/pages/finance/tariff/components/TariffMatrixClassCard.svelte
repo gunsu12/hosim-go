@@ -8,6 +8,7 @@
     Plus,
     Trash2
   } from '@lucide/svelte';
+  import M3Select from '$lib/components/m3/M3Select.svelte';
   import type { PricePlanRecord } from '$lib/types/finance/price_plan';
   import type { TariffComponentRecord } from '$lib/types/finance/tariff';
 
@@ -70,6 +71,13 @@
   );
   let diff = $derived(
     Math.abs(sumComponents - (Number(row.total_base_price) || 0))
+  );
+
+  let componentOptions = $derived(
+    tariffComponents.map((tc) => ({
+      value: tc.id,
+      label: `[${tc.component_type}] ${tc.name} (${tc.code})`
+    }))
   );
 </script>
 
@@ -189,15 +197,18 @@
         </div>
       </div>
 
-      <!-- Is Active Checkbox -->
+      <!-- Is Active Toggle -->
       <div class="flex flex-col justify-end">
-        <label class="h-9 px-3 rounded-xl border border-[#e1e5ea] dark:border-[#353738] bg-[#f8fafd] dark:bg-[#1e1f20] flex items-center gap-2 cursor-pointer hover:bg-[#f0f4f9] dark:hover:bg-[#28292a] transition-colors">
-          <input
-            type="checkbox"
-            bind:checked={row.is_active}
-            class="w-3.5 h-3.5 rounded text-blue-600 border-[#c4c7c5] dark:border-[#353738] focus:ring-blue-500"
-          />
-          <span class="text-xs font-medium text-[#1f1f1f] dark:text-[#e3e3e3]">Aktif Digunakan di Kasir</span>
+        <label class="h-9 px-3 rounded-xl border border-[#e1e5ea] dark:border-[#353738] bg-[#f8fafd] dark:bg-[#1e1f20] flex items-center justify-between gap-3 cursor-pointer hover:bg-[#f0f4f9] dark:hover:bg-[#28292a] transition-colors select-none">
+          <span class="text-xs font-medium text-[#1f1f1f] dark:text-[#e3e3e3]">Aktif di Kasir</span>
+          <div class="relative inline-flex items-center">
+            <input
+              type="checkbox"
+              bind:checked={row.is_active}
+              class="sr-only peer"
+            />
+            <div class="w-8 h-4.5 bg-gray-200 dark:bg-gray-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-[#0b57d0]"></div>
+          </div>
         </label>
       </div>
     </div>
@@ -239,20 +250,15 @@
               <tr>
                 <!-- Select Component -->
                 <td class="py-1.5 px-2">
-                  <select
+                  <M3Select
                     bind:value={comp.component_id}
-                    onchange={(e: any) => {
-                      const found = tariffComponents.find((tc) => tc.id === e.target.value);
+                    options={componentOptions}
+                    onchange={(val) => {
+                      const found = tariffComponents.find((tc) => tc.id === val);
                       if (found) comp.coa_code = found.default_coa_code || null;
                     }}
-                    class="w-full h-8 px-2 rounded-lg border border-[#c4c7c5] dark:border-[#353738] bg-white dark:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-none focus:border-[#0b57d0] dark:focus:border-[#a8c7fa]"
-                  >
-                    {#each tariffComponents as tc (tc.id)}
-                      <option value={tc.id}>
-                        [{tc.component_type}] {tc.name} ({tc.code})
-                      </option>
-                    {/each}
-                  </select>
+                    placeholder="Pilih Komponen"
+                  />
                 </td>
 
                 <!-- Base Amount -->

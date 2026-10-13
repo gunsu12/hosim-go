@@ -3,6 +3,7 @@
   import { BookOpen, CheckCircle2 } from '@lucide/svelte';
   import M3Modal from '$lib/components/m3/M3Modal.svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
+  import M3Select from '$lib/components/m3/M3Select.svelte';
   import M3ToggleCard from '$lib/components/m3/M3ToggleCard.svelte';
   import M3DatePicker from '$lib/components/m3/M3DatePicker.svelte';
   import { getCustomers } from '$lib/api/finance/customer';
@@ -42,6 +43,14 @@
   let formError = $state<string | null>(null);
 
   let customers = $state<CustomerRecord[]>([]);
+
+  let customerOptions = $derived([
+    { value: '', label: '-- Standar Umum (Berlaku untuk Pasien Reguler / Semua Penjamin) --' },
+    ...customers.map((c) => ({
+      value: c.id,
+      label: `[${c.code}] ${c.name}`
+    }))
+  ]);
 
   onMount(() => {
     getCustomers({ is_active: true, limit: 100 }).then((res) => {
@@ -203,19 +212,12 @@
   </div>
 
   <div>
-    <label for="pp-customer" class="block font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] mb-1">
-      Penjamin / Rekanan Khusus
-    </label>
-    <select
-      id="pp-customer"
+    <M3Select
+      label="Penjamin / Rekanan Khusus"
       bind:value={customerId}
-      class="w-full h-10 px-3.5 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
-    >
-      <option value="">-- Standar Umum (Berlaku untuk Pasien Reguler / Semua Penjamin) --</option>
-      {#each customers as cust (cust.id)}
-        <option value={cust.id}>[{cust.code}] {cust.name}</option>
-      {/each}
-    </select>
+      options={customerOptions}
+      placeholder="Pilih Penjamin"
+    />
     <p class="text-[11px] text-[#747775] dark:text-[#8e918f] mt-1">
       Kosongkan jika buku tarif ini adalah tarif umum RS. Pilih penjamin jika buku tarif ini adalah tarif PKS khusus rekanan.
     </p>

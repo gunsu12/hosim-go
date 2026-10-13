@@ -1,22 +1,22 @@
 <script lang="ts">
-  import { Tag, Layers, Plus, Trash2, Edit3 } from '@lucide/svelte';
-  import M3Button from '../../../../components/m3/M3Button.svelte';
-  import ItemCategoryModal from './ItemCategoryModal.svelte';
-  import ProductLineModal from './ProductLineModal.svelte';
-  import { confirmDialog } from '../../../../stores/confirm.svelte';
+  import { Tag, Layers, Plus, Trash2, Edit3 } from "@lucide/svelte";
+  import M3Button from "../../../../components/m3/M3Button.svelte";
+  import ItemCategoryModal from "./ItemCategoryModal.svelte";
+  import ProductLineModal from "./ProductLineModal.svelte";
+  import { confirmDialog } from "../../../../stores/confirm.svelte";
   import {
     createCategory,
     updateCategory,
     deleteCategory,
     createProductLine,
     updateProductLine,
-    deleteProductLine
-  } from '../../../../api/catalog';
+    deleteProductLine,
+  } from "../../../../api/catalog";
   import type {
     ItemCategoryRecord,
     ItemProductLineRecord,
-    ItemType
-  } from '../../../../types/master/item';
+    ItemType,
+  } from "../../../../types/master/item";
 
   interface Props {
     categories: ItemCategoryRecord[];
@@ -29,29 +29,29 @@
     categories,
     productLines,
     onRefresh,
-    showToast
+    showToast,
   }: Props = $props();
 
   let isActionLoading = $state(false);
 
   // Category Modal State
   let showCategoryModal = $state(false);
-  let catModalMode = $state<'CREATE' | 'EDIT'>('CREATE');
+  let catModalMode = $state<"CREATE" | "EDIT">("CREATE");
   let editingCatId = $state<string | null>(null);
-  let catFormCode = $state('');
-  let catFormName = $state('');
-  let catFormType = $state<ItemType>('MEDICATION');
-  let catFormIncomeCoa = $state('');
+  let catFormCode = $state("");
+  let catFormName = $state("");
+  let catFormType = $state<ItemType>("MEDICATION");
+  let catFormIncomeCoa = $state("");
   let catFormIsActive = $state(true);
 
   // Product Line Modal State
   let showProductLineModal = $state(false);
-  let plModalMode = $state<'CREATE' | 'EDIT'>('CREATE');
+  let plModalMode = $state<"CREATE" | "EDIT">("CREATE");
   let editingPlId = $state<string | null>(null);
-  let plFormCode = $state('');
-  let plFormName = $state('');
-  let plFormInventoryCoa = $state('');
-  let plFormCogsCoa = $state('');
+  let plFormCode = $state("");
+  let plFormName = $state("");
+  let plFormInventoryCoa = $state("");
+  let plFormCogsCoa = $state("");
   let plFormIsActive = $state(true);
 
   // ==========================================
@@ -59,42 +59,42 @@
   // ==========================================
 
   function openCreateCategory() {
-    catModalMode = 'CREATE';
+    catModalMode = "CREATE";
     editingCatId = null;
-    catFormCode = '';
-    catFormName = '';
-    catFormType = 'MEDICATION';
-    catFormIncomeCoa = '';
+    catFormCode = "";
+    catFormName = "";
+    catFormType = "MEDICATION";
+    catFormIncomeCoa = "";
     catFormIsActive = true;
     showCategoryModal = true;
   }
 
   function openEditCategory(cat: ItemCategoryRecord) {
-    catModalMode = 'EDIT';
+    catModalMode = "EDIT";
     editingCatId = cat.id;
     catFormCode = cat.code;
     catFormName = cat.name;
     catFormType = cat.item_type;
-    catFormIncomeCoa = cat.income_coa_code || '';
+    catFormIncomeCoa = cat.income_coa_code || "";
     catFormIsActive = cat.is_active;
     showCategoryModal = true;
   }
 
   async function handleSaveCategory() {
     if (!catFormCode.trim() || !catFormName.trim()) {
-      showToast('Kode dan nama kategori wajib diisi', true);
+      showToast("Kode dan nama kategori wajib diisi", true);
       return;
     }
 
     isActionLoading = true;
     try {
-      if (catModalMode === 'CREATE') {
+      if (catModalMode === "CREATE") {
         await createCategory({
           code: catFormCode.trim(),
           name: catFormName.trim(),
           item_type: catFormType,
           income_coa_code: catFormIncomeCoa.trim() || undefined,
-          is_active: true
+          is_active: true,
         });
         showToast(`Kategori ${catFormName} berhasil ditambahkan`);
       } else if (editingCatId) {
@@ -103,7 +103,7 @@
           name: catFormName.trim(),
           item_type: catFormType,
           income_coa_code: catFormIncomeCoa.trim() || undefined,
-          is_active: catFormIsActive
+          is_active: catFormIsActive,
         });
         showToast(`Kategori ${catFormName} berhasil diperbarui`);
       }
@@ -111,7 +111,7 @@
       showCategoryModal = false;
       onRefresh();
     } catch (err: any) {
-      showToast(err.message || 'Gagal menyimpan kategori', true);
+      showToast(err.message || "Gagal menyimpan kategori", true);
     } finally {
       isActionLoading = false;
     }
@@ -119,11 +119,11 @@
 
   async function handleDeleteCategory(id: string, name: string) {
     const ok = await confirmDialog({
-      title: 'Hapus Kategori',
+      title: "Hapus Kategori Item",
       message: `Apakah Anda yakin ingin menghapus kategori "${name}"? Data yang sudah dihapus tidak dapat dikembalikan.`,
-      variant: 'danger',
-      confirmText: 'Hapus',
-      cancelText: 'Batal'
+      variant: "danger",
+      confirmText: "Hapus",
+      cancelText: "Batal",
     });
     if (!ok) return;
 
@@ -132,7 +132,7 @@
       showToast(`Kategori ${name} berhasil dihapus`);
       onRefresh();
     } catch (err: any) {
-      showToast(err.message || 'Gagal menghapus kategori', true);
+      showToast(err.message || "Gagal menghapus kategori", true);
     }
   }
 
@@ -141,42 +141,42 @@
   // ==========================================
 
   function openCreateProductLine() {
-    plModalMode = 'CREATE';
+    plModalMode = "CREATE";
     editingPlId = null;
-    plFormCode = '';
-    plFormName = '';
-    plFormInventoryCoa = '';
-    plFormCogsCoa = '';
+    plFormCode = "";
+    plFormName = "";
+    plFormInventoryCoa = "";
+    plFormCogsCoa = "";
     plFormIsActive = true;
     showProductLineModal = true;
   }
 
   function openEditProductLine(pl: ItemProductLineRecord) {
-    plModalMode = 'EDIT';
+    plModalMode = "EDIT";
     editingPlId = pl.id;
     plFormCode = pl.code;
     plFormName = pl.name;
-    plFormInventoryCoa = pl.inventory_coa_code || '';
-    plFormCogsCoa = pl.cogs_coa_code || '';
+    plFormInventoryCoa = pl.inventory_coa_code || "";
+    plFormCogsCoa = pl.cogs_coa_code || "";
     plFormIsActive = pl.is_active;
     showProductLineModal = true;
   }
 
   async function handleSaveProductLine() {
     if (!plFormCode.trim() || !plFormName.trim()) {
-      showToast('Kode dan nama lini produk wajib diisi', true);
+      showToast("Kode dan nama lini produk wajib diisi", true);
       return;
     }
 
     isActionLoading = true;
     try {
-      if (plModalMode === 'CREATE') {
+      if (plModalMode === "CREATE") {
         await createProductLine({
           code: plFormCode.trim(),
           name: plFormName.trim(),
           inventory_coa_code: plFormInventoryCoa.trim() || undefined,
           cogs_coa_code: plFormCogsCoa.trim() || undefined,
-          is_active: true
+          is_active: true,
         });
         showToast(`Lini produk ${plFormName} berhasil ditambahkan`);
       } else if (editingPlId) {
@@ -185,7 +185,7 @@
           name: plFormName.trim(),
           inventory_coa_code: plFormInventoryCoa.trim() || undefined,
           cogs_coa_code: plFormCogsCoa.trim() || undefined,
-          is_active: plFormIsActive
+          is_active: plFormIsActive,
         });
         showToast(`Lini produk ${plFormName} berhasil diperbarui`);
       }
@@ -193,7 +193,7 @@
       showProductLineModal = false;
       onRefresh();
     } catch (err: any) {
-      showToast(err.message || 'Gagal menyimpan lini produk', true);
+      showToast(err.message || "Gagal menyimpan lini produk", true);
     } finally {
       isActionLoading = false;
     }
@@ -201,11 +201,11 @@
 
   async function handleDeleteProductLine(id: string, name: string) {
     const ok = await confirmDialog({
-      title: 'Hapus Lini Produk',
+      title: "Hapus Lini Produk",
       message: `Apakah Anda yakin ingin menghapus lini produk "${name}"? Data yang sudah dihapus tidak dapat dikembalikan.`,
-      variant: 'danger',
-      confirmText: 'Hapus',
-      cancelText: 'Batal'
+      variant: "danger",
+      confirmText: "Hapus",
+      cancelText: "Batal",
     });
     if (!ok) return;
 
@@ -214,21 +214,25 @@
       showToast(`Lini produk ${name} berhasil dihapus`);
       onRefresh();
     } catch (err: any) {
-      showToast(err.message || 'Gagal menghapus lini produk', true);
+      showToast(err.message || "Gagal menghapus lini produk", true);
     }
   }
 </script>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
   <!-- Panel 1: Master Kategori Item -->
-  <div class="bg-white rounded-2xl border border-[#e1e5ea] p-5 flex flex-col gap-4 shadow-xs">
+  <div
+    class="bg-white dark:bg-[#1e1f20] rounded-2xl border border-[#e1e5ea] dark:border-[#444746] p-5 flex flex-col gap-4 shadow-xs"
+  >
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="text-sm font-bold text-[#1f1f1f] flex items-center gap-2">
-          <Tag class="w-4 h-4 text-[#0b57d0]" />
+        <h3 class="text-sm font-bold text-[#1f1f1f] dark:text-[#e3e3e3] flex items-center gap-2">
+          <Tag class="w-4 h-4 text-[#0b57d0] dark:text-blue-400" />
           <span>Master Kategori Item ({categories.length})</span>
         </h3>
-        <p class="text-xs text-[#747775]">Memetakan kelompok barang ke Akun Pendapatan (COA Revenue).</p>
+        <p class="text-xs text-[#747775] dark:text-[#c4c7c5]">
+          Memetakan kelompok barang ke Akun Pendapatan (COA Revenue).
+        </p>
       </div>
       <M3Button variant="tonal" onclick={openCreateCategory}>
         <Plus class="w-3.5 h-3.5" />
@@ -236,21 +240,41 @@
       </M3Button>
     </div>
 
-    <div class="divide-y divide-[#e1e5ea] border border-[#e1e5ea] rounded-xl overflow-hidden max-h-[460px] overflow-y-auto">
+    <div
+      class="divide-y divide-[#e1e5ea] dark:divide-[#444746] border border-[#e1e5ea] dark:border-[#444746] rounded-xl overflow-hidden max-h-[460px] overflow-y-auto"
+    >
       {#each categories as cat (cat.id)}
-        <div class="p-3 flex items-center justify-between hover:bg-[#f8fafd] transition-colors">
+        <div
+          class="p-3 flex items-center justify-between hover:bg-[#f8fafd] dark:hover:bg-[#282a2c] transition-colors"
+        >
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-mono text-xs font-bold text-[#0b57d0]">{cat.code}</span>
-              <span class="text-xs font-semibold text-[#1f1f1f]">{cat.name}</span>
+              <span class="font-mono text-xs font-bold text-[#0b57d0] dark:text-blue-400">
+                {cat.code}
+              </span>
+              <span class="text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">
+                {cat.name}
+              </span>
               {#if !cat.is_active}
-                <span class="px-1.5 py-0.2 rounded text-[10px] bg-rose-50 text-rose-700 border border-rose-200">Nonaktif</span>
+                <span
+                  class="px-1.5 py-0.2 rounded text-[10px] bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                >
+                  Nonaktif
+                </span>
               {/if}
             </div>
-            <div class="flex items-center gap-2 mt-1 text-[11px] text-[#747775]">
-              <span class="px-1.5 py-0.5 rounded bg-[#f0f4f9] font-mono">{cat.item_type}</span>
+            <div
+              class="flex items-center gap-2 mt-1 text-[11px] text-[#747775] dark:text-[#c4c7c5]"
+            >
+              <span
+                class="px-1.5 py-0.5 rounded bg-[#f0f4f9] dark:bg-[#2b2b2b] text-[#1f1f1f] dark:text-[#e3e3e3] font-mono"
+              >
+                {cat.item_type}
+              </span>
               {#if cat.income_coa_code}
-                <span>COA Pendapatan: <strong class="font-mono">{cat.income_coa_code}</strong></span>
+                <span>
+                  COA Pendapatan: <strong class="font-mono text-[#1f1f1f] dark:text-[#e3e3e3]">{cat.income_coa_code}</strong>
+                </span>
               {/if}
             </div>
           </div>
@@ -258,7 +282,7 @@
             <button
               type="button"
               onclick={() => openEditCategory(cat)}
-              class="p-1.5 text-[#444746] hover:bg-[#f0f4f9] rounded-lg transition-colors cursor-pointer"
+              class="p-1.5 text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#2b2b2b] rounded-lg transition-colors cursor-pointer"
               title="Edit Kategori"
             >
               <Edit3 class="w-3.5 h-3.5" />
@@ -266,7 +290,7 @@
             <button
               type="button"
               onclick={() => handleDeleteCategory(cat.id, cat.name)}
-              class="p-1.5 text-[#c5221f] hover:bg-[#c5221f]/10 rounded-lg transition-colors cursor-pointer"
+              class="p-1.5 text-[#c5221f] dark:text-rose-400 hover:bg-[#c5221f]/10 rounded-lg transition-colors cursor-pointer"
               title="Hapus Kategori"
             >
               <Trash2 class="w-3.5 h-3.5" />
@@ -278,14 +302,18 @@
   </div>
 
   <!-- Panel 2: Master Lini Produk Persediaan -->
-  <div class="bg-white rounded-2xl border border-[#e1e5ea] p-5 flex flex-col gap-4 shadow-xs">
+  <div
+    class="bg-white dark:bg-[#1e1f20] rounded-2xl border border-[#e1e5ea] dark:border-[#444746] p-5 flex flex-col gap-4 shadow-xs"
+  >
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="text-sm font-bold text-[#1f1f1f] flex items-center gap-2">
-          <Layers class="w-4 h-4 text-amber-600" />
+        <h3 class="text-sm font-bold text-[#1f1f1f] dark:text-[#e3e3e3] flex items-center gap-2">
+          <Layers class="w-4 h-4 text-amber-600 dark:text-amber-400" />
           <span>Lini Produk Persediaan ({productLines.length})</span>
         </h3>
-        <p class="text-xs text-[#747775]">Memetakan kelompok fisik barang ke Akun Persediaan & HPP/Beban.</p>
+        <p class="text-xs text-[#747775] dark:text-[#c4c7c5]">
+          Memetakan kelompok fisik barang ke Akun Persediaan & HPP/Beban.
+        </p>
       </div>
       <M3Button variant="tonal" onclick={openCreateProductLine}>
         <Plus class="w-3.5 h-3.5" />
@@ -293,23 +321,41 @@
       </M3Button>
     </div>
 
-    <div class="divide-y divide-[#e1e5ea] border border-[#e1e5ea] rounded-xl overflow-hidden max-h-[460px] overflow-y-auto">
+    <div
+      class="divide-y divide-[#e1e5ea] dark:divide-[#444746] border border-[#e1e5ea] dark:border-[#444746] rounded-xl overflow-hidden max-h-[460px] overflow-y-auto"
+    >
       {#each productLines as pl (pl.id)}
-        <div class="p-3 flex items-center justify-between hover:bg-[#f8fafd] transition-colors">
+        <div
+          class="p-3 flex items-center justify-between hover:bg-[#f8fafd] dark:hover:bg-[#282a2c] transition-colors"
+        >
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-mono text-xs font-bold text-amber-700">{pl.code}</span>
-              <span class="text-xs font-semibold text-[#1f1f1f]">{pl.name}</span>
+              <span class="font-mono text-xs font-bold text-amber-700 dark:text-amber-400">
+                {pl.code}
+              </span>
+              <span class="text-xs font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">
+                {pl.name}
+              </span>
               {#if !pl.is_active}
-                <span class="px-1.5 py-0.2 rounded text-[10px] bg-rose-50 text-rose-700 border border-rose-200">Nonaktif</span>
+                <span
+                  class="px-1.5 py-0.2 rounded text-[10px] bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                >
+                  Nonaktif
+                </span>
               {/if}
             </div>
-            <div class="flex items-center gap-2 mt-1 text-[11px] text-[#747775] flex-wrap">
+            <div
+              class="flex items-center gap-2 mt-1 text-[11px] text-[#747775] dark:text-[#c4c7c5] flex-wrap"
+            >
               {#if pl.inventory_coa_code}
-                <span>Persediaan: <strong class="font-mono">{pl.inventory_coa_code}</strong></span>
+                <span>
+                  Persediaan: <strong class="font-mono text-[#1f1f1f] dark:text-[#e3e3e3]">{pl.inventory_coa_code}</strong>
+                </span>
               {/if}
               {#if pl.cogs_coa_code}
-                <span>• HPP: <strong class="font-mono">{pl.cogs_coa_code}</strong></span>
+                <span>
+                  • HPP: <strong class="font-mono text-[#1f1f1f] dark:text-[#e3e3e3]">{pl.cogs_coa_code}</strong>
+                </span>
               {/if}
             </div>
           </div>
@@ -317,7 +363,7 @@
             <button
               type="button"
               onclick={() => openEditProductLine(pl)}
-              class="p-1.5 text-[#444746] hover:bg-[#f0f4f9] rounded-lg transition-colors cursor-pointer"
+              class="p-1.5 text-[#444746] dark:text-[#c4c7c5] hover:bg-[#f0f4f9] dark:hover:bg-[#282a2c] rounded-lg transition-colors cursor-pointer"
               title="Edit Lini Produk"
             >
               <Edit3 class="w-3.5 h-3.5" />
@@ -325,7 +371,7 @@
             <button
               type="button"
               onclick={() => handleDeleteProductLine(pl.id, pl.name)}
-              class="p-1.5 text-[#c5221f] hover:bg-[#c5221f]/10 rounded-lg transition-colors cursor-pointer"
+              class="p-1.5 text-[#c5221f] dark:text-rose-400 hover:bg-[#c5221f]/10 rounded-lg transition-colors cursor-pointer"
               title="Hapus Lini Produk"
             >
               <Trash2 class="w-3.5 h-3.5" />
