@@ -1,0 +1,39 @@
+meta {
+  name: Upsert Item-Unit Rule
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/finance/price-schemas/{{priceSchemaId}}/rules
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "service_unit_id": "{{serviceUnitId}}",
+    "item_id": "{{itemId}}",
+    "tariff_adjustment_type": "FIXED_AMOUNT",
+    "tariff_adjustment_value": -25000.00,
+    "medication_adjustment_type": "NONE",
+    "medication_adjustment_value": 0,
+    "pay_by_patient_percent": 0.00,
+    "pay_by_customer_percent": 100.00,
+    "tax_percent": 11.00
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("priceSchemaRuleId", res.body.data.id);
+  }
+}

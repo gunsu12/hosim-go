@@ -14,6 +14,8 @@ Koleksi API request untuk aplikasi [Bruno](https://www.usebruno.com/).
      - **`Customers`**: `List Customer Types`, `List Customers`, `Create Customer` (otomatis simpan `{{customerId}}`), `Get by ID`, `Update`, `Delete`.
      - **`Tariff Classes`**: `List`, `Create` (otomatis simpan `{{tariffClassId}}`), `Get by ID`, `Update`, `Delete`.
      - **`Tariff Components`**: `List`, `Create` (otomatis simpan `{{tariffComponentId}}`), `Get by ID`, `Update`, `Delete`.
+     - **`Price Plans`**: `List`, `Create` (otomatis simpan `{{pricePlanId}}`), `Get by ID`, `Update`, `Submit`, `Approve`, `Activate`, `Archive`, `Clone`, `Lookup Tariff`, `List Items`, `Add Item`, `Update Item`, `Delete Item`, `Batch Upsert Items`.
+     - **`Price Schemas`**: `List Price Schemas`, `Create Price Schema` (otomatis simpan `{{priceSchemaId}}`), `Get by ID`, `Update`, `Deactivate`, `List Rules`, `Upsert Default Rule`, `Upsert Item-Unit Rule` (otomatis simpan `{{priceSchemaRuleId}}`), `Delete Rule`, `Simulate Tariff Calculation`.
    - **`Organization`**:
      - **`Departments`**: `List`, `Create` (otomatis simpan `{{departmentId}}`), `Get by ID`, `Update`, `Delete`.
      - **`Service Units`**: `List`, `Create` (otomatis simpan `{{serviceUnitId}}`), `Get by ID`, `Update`, `Delete`.

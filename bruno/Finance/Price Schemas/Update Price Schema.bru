@@ -1,0 +1,27 @@
+meta {
+  name: Update Price Schema
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/finance/price-schemas/{{priceSchemaId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Skema Penyesuaian BPJS Kesehatan 2026 (Revisi)",
+    "description": "Pembaruan klausul addendum PKS BPJS",
+    "is_active": true
+  }
+}

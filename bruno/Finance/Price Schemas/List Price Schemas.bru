@@ -1,0 +1,22 @@
+meta {
+  name: List Price Schemas
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/finance/price-schemas?page=1&limit=10&q=&is_active=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 10
+  q: 
+  is_active: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

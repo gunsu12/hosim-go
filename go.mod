@@ -7,6 +7,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose/v3 v3.24.1
+	github.com/shopspring/decimal v1.5.0
 	golang.org/x/crypto v0.48.0
 	gorm.io/driver/postgres v1.6.2
 	gorm.io/gorm v1.31.2

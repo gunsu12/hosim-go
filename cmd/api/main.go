@@ -12,12 +12,14 @@ import (
 	"time"
 
 	"hosim-go/internal/accounting/account"
+	"hosim-go/internal/audit"
 	"hosim-go/internal/auth"
 	"hosim-go/internal/catalog/item"
 	"hosim-go/internal/config"
 	"hosim-go/internal/database"
 	"hosim-go/internal/finance/customer"
 	"hosim-go/internal/finance/priceplan"
+	"hosim-go/internal/finance/priceschema"
 	"hosim-go/internal/finance/tariffclass"
 	"hosim-go/internal/finance/tariffcomponent"
 	"hosim-go/internal/middleware"
@@ -169,6 +171,39 @@ func main() {
 	accountService := account.NewService(accountRepo)
 	accountHandler := account.NewHandler(accountService)
 
+	// Skema Harga & Aturan Penyesuaian Tarif (Price Schema & Rules)
+	txManager := database.NewTransactionManager(db)
+	auditWriter := audit.NewWriter(db)
+	deptAdapter := priceschema.NewDepartmentServiceAdapter(departmentService)
+	unitAdapter := priceschema.NewServiceUnitServiceAdapter(serviceUnitService)
+	itemAdapter := priceschema.NewItemUseCaseAdapter(getItemUC)
+	pricePlanAdapter := priceschema.NewPricePlanLookupAdapter(lookupTariffUC)
+
+	priceSchemaRepo := priceschema.NewRepository(db)
+	ruleMatcher := priceschema.NewRuleMatcher(priceSchemaRepo, unitAdapter)
+
+	createPriceSchemaUC := priceschema.NewCreatePriceSchemaUseCase(priceSchemaRepo, txManager, auditWriter, deptAdapter, unitAdapter, itemAdapter)
+	updatePriceSchemaUC := priceschema.NewUpdatePriceSchemaUseCase(priceSchemaRepo, txManager, auditWriter)
+	deactivatePriceSchemaUC := priceschema.NewDeactivatePriceSchemaUseCase(priceSchemaRepo, txManager, auditWriter)
+	getPriceSchemaUC := priceschema.NewGetPriceSchemaUseCase(priceSchemaRepo)
+	listPriceSchemasUC := priceschema.NewListPriceSchemasUseCase(priceSchemaRepo)
+	upsertPriceSchemaRuleUC := priceschema.NewUpsertPriceSchemaRuleUseCase(priceSchemaRepo, txManager, auditWriter, deptAdapter, unitAdapter, itemAdapter)
+	deletePriceSchemaRuleUC := priceschema.NewDeletePriceSchemaRuleUseCase(priceSchemaRepo, txManager, auditWriter)
+	listPriceSchemaRulesUC := priceschema.NewListPriceSchemaRulesUseCase(priceSchemaRepo)
+	simulateTariffUC := priceschema.NewSimulateTariffUseCase(pricePlanAdapter, ruleMatcher)
+
+	priceSchemaHandler := priceschema.NewHandler(
+		createPriceSchemaUC,
+		updatePriceSchemaUC,
+		deactivatePriceSchemaUC,
+		getPriceSchemaUC,
+		listPriceSchemasUC,
+		upsertPriceSchemaRuleUC,
+		deletePriceSchemaRuleUC,
+		listPriceSchemaRulesUC,
+		simulateTariffUC,
+	)
+
 	// 5. Inisialisasi Router Gin
 	r := gin.New()
 	r.Use(gin.Logger())
@@ -232,6 +267,7 @@ func main() {
 			itemCategoryHandler.RegisterRoutes(protected)
 			itemProductLineHandler.RegisterRoutes(protected)
 			accountHandler.RegisterRoutes(protected)
+			priceSchemaHandler.RegisterRoutes(protected)
 		}
 	}
 

@@ -1,0 +1,44 @@
+meta {
+  name: Create Price Schema
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/finance/price-schemas
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "SCHEMA-BPJS-2026",
+    "name": "Skema Penyesuaian BPJS Kesehatan 2026",
+    "description": "Skema tarif PKS BPJS dengan diskon 15% tarif dasar dan 100% tanggungan asuransi",
+    "rules": [
+      {
+        "tariff_adjustment_type": "PERCENT",
+        "tariff_adjustment_value": -15.00,
+        "medication_adjustment_type": "NONE",
+        "medication_adjustment_value": 0,
+        "pay_by_patient_percent": 0.00,
+        "pay_by_customer_percent": 100.00,
+        "tax_percent": 0.00
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("priceSchemaId", res.body.data.id);
+  }
+}

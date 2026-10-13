@@ -61,7 +61,12 @@ var DefaultPermissions = []Permission{
 	{Code: "price_plan:approve", Name: "Setujui Buku Tarif", Module: "Buku Tarif"},
 	{Code: "price_plan:activate", Name: "Aktifkan Buku Tarif", Module: "Buku Tarif"},
 	{Code: "price_plan:archive", Name: "Arsipkan Buku Tarif", Module: "Buku Tarif"},
-	{Code: "price_plan:lookup", Name: "Lookup Tarif Tindakan", Module: "Buku Tarif"},
+	// Skema Harga & Penyesuaian Tarif PKS (Price Schema)
+	{Code: "price_schema:read", Name: "Lihat Skema Harga", Module: "Skema Harga"},
+	{Code: "price_schema:create", Name: "Tambah Skema Harga", Module: "Skema Harga"},
+	{Code: "price_schema:update", Name: "Ubah Skema Harga", Module: "Skema Harga"},
+	{Code: "price_schema:delete", Name: "Hapus Skema Harga", Module: "Skema Harga"},
+	{Code: "price_schema:simulate", Name: "Simulasi Perhitungan Skema Tarif", Module: "Skema Harga"},
 
 	// Akuntansi - Bagan Akun (Chart of Accounts)
 	{Code: "accounting:read", Name: "Lihat Bagan Akun (COA)", Module: "Akuntansi"},

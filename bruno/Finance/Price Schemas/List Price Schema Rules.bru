@@ -1,0 +1,24 @@
+meta {
+  name: List Price Schema Rules
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/finance/price-schemas/{{priceSchemaId}}/rules?page=1&limit=20&level=&departement_id=&service_unit_id=&item_id=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 20
+  level: 
+  departement_id: 
+  service_unit_id: 
+  item_id: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

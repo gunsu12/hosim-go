@@ -1,0 +1,30 @@
+meta {
+  name: Simulate Tariff Calculation
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/finance/price-schemas/simulate
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "price_schema_id": "{{priceSchemaId}}",
+    "tariff_class_id": "{{tariffClassId}}",
+    "item_id": "{{itemId}}",
+    "service_unit_id": "{{serviceUnitId}}",
+    "service_date": "2026-03-15",
+    "is_cito": false
+  }
+}

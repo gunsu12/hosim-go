@@ -1,0 +1,15 @@
+meta {
+  name: Delete Price Schema Rule
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/finance/price-schemas/{{priceSchemaId}}/rules/{{priceSchemaRuleId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
