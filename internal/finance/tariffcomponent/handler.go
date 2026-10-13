@@ -20,9 +20,6 @@ func NewHandler(service Service) *Handler {
 }
 
 func getOperator(c *gin.Context) string {
-	if op := c.GetHeader("X-User-ID"); op != "" {
-		return op
-	}
 	if username := middleware.GetUsername(c); username != "" {
 		return username
 	}

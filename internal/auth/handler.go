@@ -24,9 +24,6 @@ func NewHandler(service Service, jwtSecret string) *Handler {
 }
 
 func getOperator(c *gin.Context) string {
-	if op := c.GetHeader("X-User-ID"); op != "" {
-		return op
-	}
 	if username := middleware.GetUsername(c); username != "" {
 		return username
 	}
@@ -58,6 +55,8 @@ func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 				usersGroup.GET("/:id", middleware.RequirePermission("user:read"), h.GetUserByID)
 				usersGroup.PUT("/:id", middleware.RequirePermission("user:update"), h.UpdateUser)
 				usersGroup.DELETE("/:id", middleware.RequirePermission("user:delete"), h.DeleteUser)
+				usersGroup.POST("/:id/link-practitioner", middleware.RequireAnyPermission("user:link_practitioner", "user:update"), h.LinkPractitioner)
+				usersGroup.POST("/:id/unlink-practitioner", middleware.RequireAnyPermission("user:link_practitioner", "user:update"), h.UnlinkPractitioner)
 			}
 
 			// Manajemen Peran (Roles)
@@ -91,6 +90,10 @@ func (h *Handler) Register(c *gin.Context) {
 
 	result, err := h.service.Register(c.Request.Context(), req)
 	if err != nil {
+		if errors.Is(err, ErrSelfAdminRegister) || errors.Is(err, ErrSelfRegisterPrivilegedRole) {
+			response.Error(c, http.StatusForbidden, err.Error(), nil)
+			return
+		}
 		if errors.Is(err, ErrUsernameTaken) || errors.Is(err, ErrEmailTaken) {
 			response.Error(c, http.StatusConflict, err.Error(), nil)
 			return
@@ -226,6 +229,14 @@ func (h *Handler) CreateUser(c *gin.Context) {
 			response.Error(c, http.StatusConflict, err.Error(), nil)
 			return
 		}
+		if errors.Is(err, ErrPractitionerNotFound) {
+			response.Error(c, http.StatusNotFound, err.Error(), nil)
+			return
+		}
+		if errors.Is(err, ErrPractitionerInactive) || errors.Is(err, ErrPractitionerAlreadyLinked) {
+			response.Error(c, http.StatusConflict, err.Error(), nil)
+			return
+		}
 		response.Error(c, http.StatusInternalServerError, "Gagal membuat pengguna: "+err.Error(), nil)
 		return
 	}
@@ -267,6 +278,14 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 			response.Error(c, http.StatusConflict, err.Error(), nil)
 			return
 		}
+		if errors.Is(err, ErrPractitionerNotFound) {
+			response.Error(c, http.StatusNotFound, err.Error(), nil)
+			return
+		}
+		if errors.Is(err, ErrPractitionerInactive) || errors.Is(err, ErrPractitionerAlreadyLinked) {
+			response.Error(c, http.StatusConflict, err.Error(), nil)
+			return
+		}
 		response.Error(c, http.StatusInternalServerError, "Gagal memperbarui pengguna: "+err.Error(), nil)
 		return
 	}
@@ -288,6 +307,48 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 	}
 
 	response.Success(c, http.StatusOK, "Pengguna berhasil dinonaktifkan/dihapus", nil)
+}
+
+func (h *Handler) LinkPractitioner(c *gin.Context) {
+	id := c.Param("id")
+	var req LinkPractitionerRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, "Validasi gagal: format data tidak sesuai", err.Error())
+		return
+	}
+
+	operator := getOperator(c)
+	user, err := h.service.LinkPractitioner(c.Request.Context(), id, req.PractitionerID, operator)
+	if err != nil {
+		if errors.Is(err, ErrUserNotFound) || errors.Is(err, ErrPractitionerNotFound) {
+			response.Error(c, http.StatusNotFound, err.Error(), nil)
+			return
+		}
+		if errors.Is(err, ErrPractitionerInactive) || errors.Is(err, ErrPractitionerAlreadyLinked) {
+			response.Error(c, http.StatusConflict, err.Error(), nil)
+			return
+		}
+		response.Error(c, http.StatusInternalServerError, "Gagal menghubungkan tenaga medis: "+err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Berhasil menghubungkan pengguna ke tenaga medis", user)
+}
+
+func (h *Handler) UnlinkPractitioner(c *gin.Context) {
+	id := c.Param("id")
+	operator := getOperator(c)
+	user, err := h.service.UnlinkPractitioner(c.Request.Context(), id, operator)
+	if err != nil {
+		if errors.Is(err, ErrUserNotFound) {
+			response.Error(c, http.StatusNotFound, err.Error(), nil)
+			return
+		}
+		response.Error(c, http.StatusInternalServerError, "Gagal memutuskan hubungan tenaga medis: "+err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Berhasil memutuskan hubungan pengguna dari tenaga medis", user)
 }
 
 // ========================================================

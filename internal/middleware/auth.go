@@ -15,6 +15,7 @@ const (
 	ContextUsername        = "username"
 	ContextUserRole        = "user_role"
 	ContextUserPermissions = "user_permissions"
+	ContextPractitionerID  = "practitioner_id"
 )
 
 // AuthMiddleware memvalidasi JWT Bearer token pada request header
@@ -47,6 +48,9 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 		c.Set(ContextUsername, claims.Username)
 		c.Set(ContextUserRole, claims.Role)
 		c.Set(ContextUserPermissions, claims.Permissions)
+		if claims.PractitionerID != nil && *claims.PractitionerID != "" {
+			c.Set(ContextPractitionerID, *claims.PractitionerID)
+		}
 
 		c.Next()
 	}
@@ -200,4 +204,38 @@ func GetUserPermissions(c *gin.Context) []string {
 		}
 	}
 	return []string{}
+}
+
+// GetPractitionerID mengambil ID Tenaga Medis pengguna dari context Gin (kosong jika bukan tenaga medis)
+func GetPractitionerID(c *gin.Context) string {
+	if val, exists := c.Get(ContextPractitionerID); exists {
+		if id, ok := val.(string); ok {
+			return id
+		}
+	}
+	return ""
+}
+
+// Principal memuat data identitas pengguna yang sedang terotentikasi
+type Principal struct {
+	UserID         string   `json:"user_id"`
+	Username       string   `json:"username"`
+	Role           string   `json:"role"`
+	Permissions    []string `json:"permissions"`
+	PractitionerID *string  `json:"practitioner_id,omitempty"`
+}
+
+// GetPrincipal mengekstrak seluruh informasi principal pengguna dari context Gin
+func GetPrincipal(c *gin.Context) Principal {
+	var pracID *string
+	if id := GetPractitionerID(c); id != "" {
+		pracID = &id
+	}
+	return Principal{
+		UserID:         GetUserID(c),
+		Username:       GetUsername(c),
+		Role:           GetUserRole(c),
+		Permissions:    GetUserPermissions(c),
+		PractitionerID: pracID,
+	}
 }

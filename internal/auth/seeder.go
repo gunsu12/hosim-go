@@ -92,6 +92,7 @@ var DefaultPermissions = []Permission{
 	{Code: "user:create", Name: "Tambah Pengguna", Module: "Manajemen Pengguna"},
 	{Code: "user:update", Name: "Ubah Pengguna", Module: "Manajemen Pengguna"},
 	{Code: "user:delete", Name: "Hapus Pengguna", Module: "Manajemen Pengguna"},
+	{Code: "user:link_practitioner", Name: "Hubungkan Pengguna ke Tenaga Medis", Module: "Manajemen Pengguna"},
 
 	// Manajemen Peran (Roles)
 	{Code: "role:read", Name: "Lihat Peran", Module: "Manajemen Pengguna"},

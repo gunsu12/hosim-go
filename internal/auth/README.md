@@ -21,6 +21,7 @@ Modul ini dibangun menggunakan 2 pilar utama:
 ```mermaid
 erDiagram
     users }|--|| roles : "memiliki role (role_id)"
+    users ||--o| practitioners : "1 user to 1 practitioner (practitioner_id)"
     users ||--o{ refresh_tokens : "memiliki sesi"
     roles }|--|{ role_permissions : "pivot"
     permissions }|--|{ role_permissions : "pivot"
@@ -32,6 +33,7 @@ erDiagram
         string password "bcrypt hash"
         string name "Nama lengkap"
         string role_id FK "Relasi ke roles.id"
+        string practitioner_id FK "Relasi unik 1-ke-1 ke practitioners.id"
         boolean is_active "Status aktif"
         timestamp created_at
         timestamp updated_at
@@ -145,14 +147,14 @@ flowchart TD
 
 | File | Tanggung Jawab |
 | :--- | :--- |
-| [`entity.go`](file:///c:/laragon/www/hosim-go/internal/auth/entity.go) | Mendefinisikan model GORM: `User`, `Role`, `Permission`, dan `RefreshToken`. |
-| [`dto.go`](file:///c:/laragon/www/hosim-go/internal/auth/dto.go) | Struct request/response: `LoginRequest`, `RegisterRequest`, `UserResponse`, `TokenResponse`. |
-| [`repository.go`](file:///c:/laragon/www/hosim-go/internal/auth/repository.go) | Akses database GORM dengan otomatis melakukan `Preload("Role.Permissions")`. |
-| [`service.go`](file:///c:/laragon/www/hosim-go/internal/auth/service.go) | Logika bisnis autentikasi, hashing password bcrypt, rotasi token, dan penyusunan permissions. |
-| [`handler.go`](file:///c:/laragon/www/hosim-go/internal/auth/handler.go) | Routing endpoint HTTP `/api/v1/auth/*`. |
-| [`seeder.go`](file:///c:/laragon/www/hosim-go/internal/auth/seeder.go) | Seeder awal: mendaftarkan master permissions, default roles (`ADMIN`, `DOCTOR`, `PARAMEDIC`, `STAFF`), dan default user `admin`. |
-| [`internal/middleware/auth.go`](file:///c:/laragon/www/hosim-go/internal/middleware/auth.go) | Middleware `AuthMiddleware`, `RequirePermission`, `RequireAnyPermission`, dan `RequireRole`. |
-| [`pkg/jwt/jwt.go`](file:///c:/laragon/www/hosim-go/pkg/jwt/jwt.go) | Helper independen untuk pembuatan & validasi JWT Access Token serta random refresh token. |
+| [`entity.go`](../../internal/auth/entity.go) | Mendefinisikan model GORM: `User`, `Role`, `Permission`, dan `RefreshToken`. |
+| [`dto.go`](../../internal/auth/dto.go) | Struct request/response: `LoginRequest`, `RegisterRequest`, `UserResponse`, `TokenResponse`. |
+| [`repository.go`](../../internal/auth/repository.go) | Akses database GORM dengan otomatis melakukan `Preload("Role.Permissions")`. |
+| [`service.go`](../../internal/auth/service.go) | Logika bisnis autentikasi, hashing password bcrypt, rotasi token, dan penyusunan permissions. |
+| [`handler.go`](../../internal/auth/handler.go) | Routing endpoint HTTP `/api/v1/auth/*`. |
+| [`seeder.go`](../../internal/auth/seeder.go) | Seeder awal: mendaftarkan master permissions, default roles (`ADMIN`, `DOCTOR`, `PARAMEDIC`, `STAFF`), dan default user `admin`. |
+| [`internal/middleware/auth.go`](../../internal/middleware/auth.go) | Middleware `AuthMiddleware`, `RequirePermission`, `RequireAnyPermission`, dan `RequireRole`. |
+| [`pkg/jwt/jwt.go`](../../pkg/jwt/jwt.go) | Helper independen untuk pembuatan & validasi JWT Access Token serta random refresh token. |
 
 ---
 
@@ -160,7 +162,7 @@ flowchart TD
 
 ### A. Cara Memproteksi Endpoint Baru
 
-Gunakan fungsi middleware di package [`hosim-go/internal/middleware`](file:///c:/laragon/www/hosim-go/internal/middleware/auth.go):
+Gunakan fungsi middleware di package [`hosim-go/internal/middleware`](../../internal/middleware/auth.go):
 
 #### 1. Kunci Ketat (1 Izin Spesifik)
 Gunakan untuk aksi manipulasi data sensitif (`POST`, `PUT`, `DELETE`):
@@ -187,7 +189,7 @@ practitioners.GET("", middleware.RequireAnyPermission(
 ### B. Cara Menambahkan Permission Baru ke Sistem
 
 Jika Anda membuat modul baru (misalnya Modul Farmasi):
-1. Buka file [`internal/auth/seeder.go`](file:///c:/laragon/www/hosim-go/internal/auth/seeder.go).
+1. Buka file [`internal/auth/seeder.go`](../../internal/auth/seeder.go).
 2. Tambahkan daftar permission ke slice `DefaultPermissions`:
    ```go
    {Code: "pharmacy:dispense", Name: "Pelayanan Obat Farmasi", Module: "Farmasi"},
@@ -232,5 +234,9 @@ Frontend tidak perlu men-hardcode hak akses di kode JavaScript:
 | `POST` | `/api/v1/auth/refresh` | Publik | Memperbarui token menggunakan `refresh_token` |
 | `POST` | `/api/v1/auth/logout` | Publik | Membatalkan (*revoke*) `refresh_token` |
 | `GET` | `/api/v1/auth/me` | `Bearer Token` | Mengambil profil user yang sedang login beserta role & permissions |
+| `POST` | `/api/v1/auth/users` | `Bearer Token` (`user:create`) | Menambah akun pengguna baru (mendukung `practitioner_id`) |
+| `PUT` | `/api/v1/auth/users/:id` | `Bearer Token` (`user:update`) | Mengubah akun pengguna (mendukung `practitioner_id`) |
+| `POST` | `/api/v1/auth/users/:id/link-practitioner` | `Bearer Token` (`user:link_practitioner`) | Menghubungkan akun user ke tenaga medis (1 User : 1 Nakes) |
+| `POST` | `/api/v1/auth/users/:id/unlink-practitioner` | `Bearer Token` (`user:link_practitioner`) | Memutuskan relasi akun user dari tenaga medis |
 | `GET` | `/api/v1/auth/roles` | `Bearer Token` | Mengambil seluruh role beserta permissions (untuk UI Admin) |
 | `GET` | `/api/v1/auth/permissions`| `Bearer Token` | Mengambil seluruh katalog permissions per modul (untuk checklist Admin) |

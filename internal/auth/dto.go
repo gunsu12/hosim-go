@@ -26,16 +26,17 @@ type LogoutRequest struct {
 }
 
 type UserResponse struct {
-	ID          string    `json:"id"`
-	Username    string    `json:"username"`
-	Email       string    `json:"email"`
-	Name        string    `json:"name"`
-	RoleID      *string   `json:"role_id,omitempty"`
-	Role        string    `json:"role"`
-	RoleName    string    `json:"role_name,omitempty"`
-	Permissions []string  `json:"permissions"`
-	IsActive    bool      `json:"is_active"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID             string    `json:"id"`
+	Username       string    `json:"username"`
+	Email          string    `json:"email"`
+	Name           string    `json:"name"`
+	RoleID         *string   `json:"role_id,omitempty"`
+	Role           string    `json:"role"`
+	RoleName       string    `json:"role_name,omitempty"`
+	PractitionerID *string   `json:"practitioner_id,omitempty"`
+	Permissions    []string  `json:"permissions"`
+	IsActive       bool      `json:"is_active"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 type TokenResponse struct {
@@ -53,16 +54,17 @@ func ToUserResponse(user *User) UserResponse {
 		roleName = user.Role.Name
 	}
 	return UserResponse{
-		ID:          user.ID,
-		Username:    user.Username,
-		Email:       user.Email,
-		Name:        user.Name,
-		RoleID:      user.RoleID,
-		Role:        roleCode,
-		RoleName:    roleName,
-		Permissions: user.GetPermissionCodes(),
-		IsActive:    user.IsActive,
-		CreatedAt:   user.CreatedAt,
+		ID:             user.ID,
+		Username:       user.Username,
+		Email:          user.Email,
+		Name:           user.Name,
+		RoleID:         user.RoleID,
+		Role:           roleCode,
+		RoleName:       roleName,
+		PractitionerID: user.PractitionerID,
+		Permissions:    user.GetPermissionCodes(),
+		IsActive:       user.IsActive,
+		CreatedAt:      user.CreatedAt,
 	}
 }
 
@@ -71,20 +73,26 @@ func ToUserResponse(user *User) UserResponse {
 // ========================================================
 
 type CreateUserRequest struct {
-	Username string  `json:"username" binding:"required,min=3,max=50"`
-	Email    string  `json:"email" binding:"required,email"`
-	Password string  `json:"password" binding:"required,min=6"`
-	Name     string  `json:"name" binding:"required,min=2,max=100"`
-	RoleID   *string `json:"role_id"`
-	IsActive *bool   `json:"is_active"`
+	Username       string  `json:"username" binding:"required,min=3,max=50"`
+	Email          string  `json:"email" binding:"required,email"`
+	Password       string  `json:"password" binding:"required,min=6"`
+	Name           string  `json:"name" binding:"required,min=2,max=100"`
+	RoleID         *string `json:"role_id"`
+	PractitionerID *string `json:"practitioner_id"`
+	IsActive       *bool   `json:"is_active"`
 }
 
 type UpdateUserRequest struct {
-	Name     string  `json:"name" binding:"required,min=2,max=100"`
-	Email    string  `json:"email" binding:"required,email"`
-	RoleID   *string `json:"role_id"`
-	IsActive *bool   `json:"is_active"`
-	Password string  `json:"password,omitempty" binding:"omitempty,min=6"` // Opsional, diisi jika ingin reset password
+	Name           string  `json:"name" binding:"required,min=2,max=100"`
+	Email          string  `json:"email" binding:"required,email"`
+	RoleID         *string `json:"role_id"`
+	PractitionerID *string `json:"practitioner_id"`
+	IsActive       *bool   `json:"is_active"`
+	Password       string  `json:"password,omitempty" binding:"omitempty,min=6"` // Opsional, diisi jika ingin reset password
+}
+
+type LinkPractitionerRequest struct {
+	PractitionerID string `json:"practitioner_id" binding:"required"`
 }
 
 // ========================================================

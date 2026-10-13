@@ -11,7 +11,7 @@ import (
 type Permission struct {
 	ID          string    `gorm:"primaryKey;size:36" json:"id"`
 	Code        string    `gorm:"uniqueIndex:idx_permissions_code;size:100;not null" json:"code"` // e.g. "department:read", "outpatient:register"
-	Name        string    `gorm:"size:150;not null" json:"name"`                                 // e.g. "Lihat Master Departemen"
+	Name        string    `gorm:"size:150;not null" json:"name"`                                  // e.g. "Lihat Master Departemen"
 	Module      string    `gorm:"size:100;index;not null" json:"module"`                          // e.g. "Master Departemen", "Rawat Jalan"
 	Description string    `gorm:"size:255" json:"description,omitempty"`
 	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
@@ -45,20 +45,21 @@ func (r *Role) BeforeCreate(tx *gorm.DB) error {
 
 // User merepresentasikan entitas akun pengguna dalam sistem
 type User struct {
-	ID        string         `gorm:"primaryKey;size:36" json:"id"`
-	Username  string         `gorm:"uniqueIndex:idx_users_username;size:100;not null" json:"username"`
-	Email     string         `gorm:"uniqueIndex:idx_users_email;size:150;not null" json:"email"`
-	Password  string         `gorm:"size:255;not null" json:"-"`
-	Name      string         `gorm:"size:150;not null" json:"name"`
-	RoleID    *string        `gorm:"size:36;index" json:"role_id,omitempty"`
-	Role      *Role          `gorm:"foreignKey:RoleID;references:ID" json:"role,omitempty"`
-	IsActive  bool           `gorm:"default:true;index" json:"is_active"`
-	CreatedAt time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"default:CURRENT_TIMESTAMP;OnUpdate:CURRENT_TIMESTAMP" json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-	CreatedBy string         `gorm:"default:'SYSTEM'" json:"-"`
-	UpdatedBy string         `gorm:"default:'SYSTEM'" json:"-"`
-	DeletedBy string         `json:"-"`
+	ID             string         `gorm:"primaryKey;size:36" json:"id"`
+	Username       string         `gorm:"uniqueIndex:idx_users_username;size:100;not null" json:"username"`
+	Email          string         `gorm:"uniqueIndex:idx_users_email;size:150;not null" json:"email"`
+	Password       string         `gorm:"size:255;not null" json:"-"`
+	Name           string         `gorm:"size:150;not null" json:"name"`
+	RoleID         *string        `gorm:"size:36;index" json:"role_id,omitempty"`
+	Role           *Role          `gorm:"foreignKey:RoleID;references:ID" json:"role,omitempty"`
+	PractitionerID *string        `gorm:"size:36;index" json:"practitioner_id,omitempty"`
+	IsActive       bool           `gorm:"default:true;index" json:"is_active"`
+	CreatedAt      time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt      time.Time      `gorm:"default:CURRENT_TIMESTAMP;OnUpdate:CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
+	CreatedBy      string         `gorm:"default:'SYSTEM'" json:"-"`
+	UpdatedBy      string         `gorm:"default:'SYSTEM'" json:"-"`
+	DeletedBy      string         `json:"-"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {

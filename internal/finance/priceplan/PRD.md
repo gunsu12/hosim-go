@@ -13,8 +13,8 @@ Dalam operasional rumah sakit modern, pengelolaan tarif menghadapi kompleksitas 
 5. **Penanganan Kasus CITO (Emergensi/Cepat)**: Tindakan darurat di luar jam kerja atau saat kegawatan memerlukan kenaikan tarif (*surcharge CITO*) baik secara formula persentase standar maupun penetapan nominal khusus.
 
 ### 1.2 Batas Kewenangan Modul (Separation of Concerns)
-Sesuai prinsip arsitektur di [`AGENTS.md`](file:///c:/laragon/www/hosim-go/AGENTS.md):
-- **Modul `catalog`** ([`internal/catalog/item/PRD.md`](file:///c:/laragon/www/hosim-go/internal/catalog/item/PRD.md)): Bertindak sebagai master definisi layanan medis universal (`items` bertipe `TARIFF` dengan subtipe `item_tariffs` seperti `charge_type: ADMINISTRASI | AKOMODASI | TINDAKAN | PENUNJANG | LAINNYA`). Modul catalog **tidak menyimpan nominal harga kaku**.
+Sesuai prinsip arsitektur di [`AGENTS.md`](./AGENTS.md):
+- **Modul `catalog`** ([`internal/catalog/item/PRD.md`](../../internal/catalog/item/PRD.md)): Bertindak sebagai master definisi layanan medis universal (`items` bertipe `TARIFF` dengan subtipe `item_tariffs` seperti `charge_type: ADMINISTRASI | AKOMODASI | TINDAKAN | PENUNJANG | LAINNYA`). Modul catalog **tidak menyimpan nominal harga kaku**.
 - **Modul `finance/priceplan`**: Mengontrol nominal harga, versioning buku tarif, relasi kelas rawat, pecahan komponen biaya, aturan CITO, dan resolusi lookup tarif bagi modul operasional (*Billing*, *Outpatient*, *Inpatient*, *Emergency*).
 
 ---
@@ -166,7 +166,7 @@ Algoritma resolusi tarif wajib berjalan dengan urutan berikut:
 
 ## 5. 🔄 Lifecycle & State Transitions
 
-Pengelolaan siklus buku tarif mengikuti **Jalur B (Business Transaction)** pada [`AGENTS.md`](file:///c:/laragon/www/hosim-go/AGENTS.md):
+Pengelolaan siklus buku tarif mengikuti **Jalur B (Business Transaction)** pada [`AGENTS.md`](../../AGENTS.md):
 
 ```mermaid
 stateDiagram-v2

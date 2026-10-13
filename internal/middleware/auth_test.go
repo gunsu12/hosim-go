@@ -3,6 +3,7 @@ package middleware_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -25,10 +26,11 @@ func setupTestRouter(secret string) *gin.Engine {
 	{
 		api.GET("/profile", func(c *gin.Context) {
 			response.Success(c, http.StatusOK, "OK", gin.H{
-				"user_id":     middleware.GetUserID(c),
-				"username":    middleware.GetUsername(c),
-				"user_role":   middleware.GetUserRole(c),
-				"permissions": middleware.GetUserPermissions(c),
+				"user_id":         middleware.GetUserID(c),
+				"username":        middleware.GetUsername(c),
+				"user_role":       middleware.GetUserRole(c),
+				"permissions":     middleware.GetUserPermissions(c),
+				"practitioner_id": middleware.GetPractitionerID(c),
 			})
 		})
 
@@ -91,7 +93,7 @@ func TestAuthMiddleware_ValidToken(t *testing.T) {
 	secret := "my-secret"
 	router := setupTestRouter(secret)
 
-	token, _ := jwt.GenerateAccessToken("usr-99", "budi", "STAFF", []string{"department:read"}, secret, 15*time.Minute)
+	token, _ := jwt.GenerateAccessToken("usr-99", "budi", "STAFF", []string{"department:read"}, nil, secret, 15*time.Minute)
 
 	req, _ := http.NewRequest(http.MethodGet, "/api/profile", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -103,12 +105,33 @@ func TestAuthMiddleware_ValidToken(t *testing.T) {
 	}
 }
 
+func TestAuthMiddleware_PractitionerID(t *testing.T) {
+	secret := "my-secret"
+	router := setupTestRouter(secret)
+
+	pracID := "prac-12345"
+	token, _ := jwt.GenerateAccessToken("usr-doc", "dokter_andi", "DOCTOR", []string{"department:read"}, &pracID, secret, 15*time.Minute)
+
+	req, _ := http.NewRequest(http.MethodGet, "/api/profile", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Diharapkan 200 OK, didapat: %d (Body: %s)", w.Code, w.Body.String())
+	}
+
+	if !strings.Contains(w.Body.String(), `"practitioner_id":"prac-12345"`) {
+		t.Errorf("Diharapkan response memuat practitioner_id, didapat: %s", w.Body.String())
+	}
+}
+
 func TestRequireRole_Forbidden(t *testing.T) {
 	secret := "my-secret"
 	router := setupTestRouter(secret)
 
 	// User adalah DOCTOR, tapi endpoint meminta ADMIN
-	token, _ := jwt.GenerateAccessToken("usr-12", "dokter_rudi", "DOCTOR", []string{}, secret, 15*time.Minute)
+	token, _ := jwt.GenerateAccessToken("usr-12", "dokter_rudi", "DOCTOR", []string{}, nil, secret, 15*time.Minute)
 
 	req, _ := http.NewRequest(http.MethodGet, "/api/admin-only", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -125,7 +148,7 @@ func TestRequirePermission_Forbidden(t *testing.T) {
 	router := setupTestRouter(secret)
 
 	// User staf hanya punya permission view, bukan delete
-	token, _ := jwt.GenerateAccessToken("usr-2", "staf_biasa", "STAFF", []string{"department:read"}, secret, 15*time.Minute)
+	token, _ := jwt.GenerateAccessToken("usr-2", "staf_biasa", "STAFF", []string{"department:read"}, nil, secret, 15*time.Minute)
 
 	req, _ := http.NewRequest(http.MethodDelete, "/api/departments/123", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -141,7 +164,7 @@ func TestRequirePermission_Success(t *testing.T) {
 	secret := "my-secret"
 	router := setupTestRouter(secret)
 
-	token, _ := jwt.GenerateAccessToken("usr-2", "admin_dept", "STAFF", []string{"department:delete"}, secret, 15*time.Minute)
+	token, _ := jwt.GenerateAccessToken("usr-2", "admin_dept", "STAFF", []string{"department:delete"}, nil, secret, 15*time.Minute)
 
 	req, _ := http.NewRequest(http.MethodDelete, "/api/departments/123", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -158,7 +181,7 @@ func TestRequireAnyPermission_ParamedicAccess(t *testing.T) {
 	router := setupTestRouter(secret)
 
 	// Suster Ani TIDAK punya "practitioner:read", tapi PUNYA "outpatient:register"
-	token, _ := jwt.GenerateAccessToken("usr-ani", "suster_ani", "PARAMEDIC", []string{"outpatient:register"}, secret, 15*time.Minute)
+	token, _ := jwt.GenerateAccessToken("usr-ani", "suster_ani", "PARAMEDIC", []string{"outpatient:register"}, nil, secret, 15*time.Minute)
 
 	req, _ := http.NewRequest(http.MethodGet, "/api/practitioners", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -175,7 +198,7 @@ func TestRequireAnyPermission_AdminBypass(t *testing.T) {
 	router := setupTestRouter(secret)
 
 	// Role ADMIN otomatis bypass seluruh permission check
-	token, _ := jwt.GenerateAccessToken("usr-admin", "admin", "ADMIN", []string{}, secret, 15*time.Minute)
+	token, _ := jwt.GenerateAccessToken("usr-admin", "admin", "ADMIN", []string{}, nil, secret, 15*time.Minute)
 
 	req, _ := http.NewRequest(http.MethodGet, "/api/practitioners", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -197,10 +220,10 @@ func TestDoctorVsAdminRBAC(t *testing.T) {
 		"practitioner:read", "patient:read", "patient:create", "patient:update",
 		"outpatient:view", "appointment:view",
 	}
-	doctorToken, _ := jwt.GenerateAccessToken("usr-doc", "dokter", "DOCTOR", doctorPerms, secret, 15*time.Minute)
+	doctorToken, _ := jwt.GenerateAccessToken("usr-doc", "dokter", "DOCTOR", doctorPerms, nil, secret, 15*time.Minute)
 
 	// Token ADMIN (Superadmin bypass)
-	adminToken, _ := jwt.GenerateAccessToken("usr-adm", "admin", "ADMIN", []string{}, secret, 15*time.Minute)
+	adminToken, _ := jwt.GenerateAccessToken("usr-adm", "admin", "ADMIN", []string{}, nil, secret, 15*time.Minute)
 
 	// 1. DOCTOR membaca departemen -> Harus Sukses (200)
 	req1, _ := http.NewRequest(http.MethodGet, "/api/departments", nil)

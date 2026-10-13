@@ -6,7 +6,7 @@ Dokumentasi arsitektur dan bisnis modul `finance` di HOSIM-GO.
 
 ## 1. 🎯 Peran & Batasan Modul (Module Boundary)
 
-Sesuai [AGENTS.md § 11](file:///c:/laragon/www/hosim-go/AGENTS.md), modul `finance` bertanggung jawab atas **master data keuangan dan penentuan kebijakan tarif** rumah sakit:
+Sesuai [AGENTS.md § 11](../../AGENTS.md), modul `finance` bertanggung jawab atas **master data keuangan dan penentuan kebijakan tarif** rumah sakit:
 - **Payer / Customer**: Penjamin pembayaran pasien (Umum/Personal, BPJS Kesehatan, Asuransi Swasta, Korporat).
 - **Tariff Class**: Kelas layanan tarif (VVIP, VIP, Kelas I, II, III, Non-Kelas).
 - **Tariff Component**: Pos alokasi pecahan tarif (Jasa RS/Sarana, Jasa Medis Dokter, Jasa Paramedis).
@@ -21,17 +21,21 @@ Modul ini menyediakan referensi finansial yang nantinya diorkestrasi oleh modul 
 ```text
 internal/finance/
 ├── customer/            # Master Penjamin / Payer (BPJS, Asuransi, Korporat, Umum)
+├── customercontract/    # Master Kontrak Kerja Sama (PKS) Penjamin
 ├── tariffclass/         # Master Kelas Tarif (VIP, Kelas 1, 2, 3, Non-Kelas)
 ├── tariffcomponent/     # Master Komponen Tarif (Jasa RS, Jasa Dokter, Paramedis)
-└── priceplan/           # Kebijakan Buku Tarif & Matriks Harga Layanan
+├── priceplan/           # Kebijakan Buku Tarif Dasar & Matriks Harga Layanan
+└── priceschema/         # Skema Penyesuaian Harga per PKS Customer (Markup/Diskon)
 ```
 
 | Sub-Modul | Deskripsi | Jalur Arsitektur |
 |---|---|---|
 | [`customer`](customer/README.md) | Data penjamin bayar dan tipe customer | Jalur A (Master Data) |
+| [`customercontract`](customercontract/PRD.md) | Kontrak PKS penjamin: lifecycle, termin, batas kredit, syarat jaminan | Jalur B (Business Workflow) |
 | [`tariffclass`](tariffclass/README.md) | Kategori kelas tarif untuk akomodasi dan tindakan | Jalur A (Master Data) |
 | [`tariffcomponent`](tariffcomponent/README.md) | Pos pembagian pendapatan (*revenue split*) | Jalur A (Master Data) |
-| [`priceplan`](priceplan/PRD.md) | Buku tarif layanan, matriks harga per kelas, dan riwayat revisi | Jalur B (Business Workflow) |
+| [`priceplan`](priceplan/PRD.md) | Buku tarif layanan dasar, matriks harga per kelas, dan riwayat revisi | Jalur B (Business Workflow) |
+| [`priceschema`](priceschema/PRD.md) | Aturan penyesuaian tarif per PKS (override bertingkat & cost sharing) | Jalur B (Business Workflow) |
 
 ---
 
