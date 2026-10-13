@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"hosim-go/internal/config"
+	"hosim-go/internal/practitioner"
 	"hosim-go/pkg/jwt"
 
 	"golang.org/x/crypto/bcrypt"
@@ -15,18 +16,37 @@ import (
 )
 
 var (
-	ErrUserNotFound        = errors.New("pengguna tidak ditemukan")
-	ErrRoleNotFound        = errors.New("peran (role) tidak ditemukan")
-	ErrPermissionNotFound  = errors.New("hak akses (permission) tidak ditemukan")
-	ErrInvalidCredentials  = errors.New("username atau password tidak valid")
-	ErrUserInactive        = errors.New("akun pengguna telah dinonaktifkan")
-	ErrUsernameTaken       = errors.New("username sudah digunakan")
-	ErrEmailTaken          = errors.New("email sudah digunakan")
-	ErrRoleCodeTaken       = errors.New("kode peran (role code) sudah digunakan")
-	ErrPermCodeTaken       = errors.New("kode hak akses (permission code) sudah digunakan")
-	ErrCannotDeleteAdmin   = errors.New("peran ADMIN adalah peran sistem bawaan dan tidak dapat dihapus")
-	ErrInvalidRefreshToken = errors.New("refresh token tidak valid atau telah kedaluwarsa")
+	ErrUserNotFound               = errors.New("pengguna tidak ditemukan")
+	ErrRoleNotFound               = errors.New("peran (role) tidak ditemukan")
+	ErrPermissionNotFound         = errors.New("hak akses (permission) tidak ditemukan")
+	ErrInvalidCredentials         = errors.New("username atau password tidak valid")
+	ErrUserInactive               = errors.New("akun pengguna telah dinonaktifkan")
+	ErrUsernameTaken              = errors.New("username sudah digunakan")
+	ErrEmailTaken                 = errors.New("email sudah digunakan")
+	ErrRoleCodeTaken              = errors.New("kode peran (role code) sudah digunakan")
+	ErrPermCodeTaken              = errors.New("kode hak akses (permission code) sudah digunakan")
+	ErrCannotDeleteAdmin          = errors.New("peran ADMIN adalah peran sistem bawaan dan tidak dapat dihapus")
+	ErrInvalidRefreshToken        = errors.New("refresh token tidak valid atau telah kedaluwarsa")
+	ErrPractitionerNotFound       = errors.New("tenaga medis tidak ditemukan")
+	ErrPractitionerInactive       = errors.New("tenaga medis sedang tidak aktif")
+	ErrPractitionerAlreadyLinked  = errors.New("tenaga medis sudah terhubung ke akun pengguna lain")
+	ErrSelfAdminRegister          = errors.New("pendaftaran mandiri tidak diizinkan untuk peran ADMIN")
+	ErrSelfRegisterPrivilegedRole = errors.New("pendaftaran mandiri hanya diizinkan untuk peran STAFF, peran lain harus dibuat oleh administrator")
 )
+
+func isPractitionerUniqueViolation(err error) bool {
+	if err == nil {
+		return false
+	}
+	errMsg := strings.ToLower(err.Error())
+	return strings.Contains(errMsg, "uq_users_practitioner_id") ||
+		(strings.Contains(errMsg, "practitioner_id") && (strings.Contains(errMsg, "duplicate") || strings.Contains(errMsg, "unique")))
+}
+
+// PractitionerReader mendefinisikan port sempit untuk validasi data tenaga medis dari modul practitioner
+type PractitionerReader interface {
+	GetPractitionerByID(ctx context.Context, id string) (*practitioner.Practitioner, error)
+}
 
 type Service interface {
 	Register(ctx context.Context, req RegisterRequest) (*UserResponse, error)
@@ -41,6 +61,8 @@ type Service interface {
 	GetUserByID(ctx context.Context, id string) (*UserResponse, error)
 	UpdateUser(ctx context.Context, id string, req UpdateUserRequest, operator string) (*UserResponse, error)
 	DeleteUser(ctx context.Context, id string, operator string) error
+	LinkPractitioner(ctx context.Context, userID string, practitionerID string, operator string) (*UserResponse, error)
+	UnlinkPractitioner(ctx context.Context, userID string, operator string) (*UserResponse, error)
 
 	// Role Management
 	GetRoles(ctx context.Context) ([]Role, error)
@@ -57,14 +79,20 @@ type Service interface {
 }
 
 type service struct {
-	repo Repository
-	cfg  *config.Config
+	repo               Repository
+	cfg                *config.Config
+	practitionerReader PractitionerReader
 }
 
-func NewService(repo Repository, cfg *config.Config) Service {
+func NewService(repo Repository, cfg *config.Config, practitionerReader ...PractitionerReader) Service {
+	var pr PractitionerReader
+	if len(practitionerReader) > 0 {
+		pr = practitionerReader[0]
+	}
 	return &service{
-		repo: repo,
-		cfg:  cfg,
+		repo:               repo,
+		cfg:                cfg,
+		practitionerReader: pr,
 	}
 }
 
@@ -86,6 +114,12 @@ func (s *service) Register(ctx context.Context, req RegisterRequest) (*UserRespo
 	}
 
 	roleName := strings.ToUpper(strings.TrimSpace(req.Role))
+	if roleName == "ADMIN" {
+		return nil, ErrSelfAdminRegister
+	}
+	if roleName != "" && roleName != "STAFF" {
+		return nil, ErrSelfRegisterPrivilegedRole
+	}
 	if roleName == "" {
 		roleName = "STAFF"
 	}
@@ -138,7 +172,7 @@ func (s *service) Login(ctx context.Context, req LoginRequest) (*TokenResponse, 
 	}
 	permissions := user.GetPermissionCodes()
 
-	accessToken, err := jwt.GenerateAccessToken(user.ID, user.Username, roleCode, permissions, s.cfg.JWTSecret, s.cfg.JWTAccessDuration)
+	accessToken, err := jwt.GenerateAccessToken(user.ID, user.Username, roleCode, permissions, user.PractitionerID, s.cfg.JWTSecret, s.cfg.JWTAccessDuration)
 	if err != nil {
 		return nil, fmt.Errorf("gagal membuat access token: %w", err)
 	}
@@ -200,7 +234,7 @@ func (s *service) RefreshToken(ctx context.Context, req RefreshTokenRequest) (*T
 	}
 	permissions := user.GetPermissionCodes()
 
-	accessToken, err := jwt.GenerateAccessToken(user.ID, user.Username, roleCode, permissions, s.cfg.JWTSecret, s.cfg.JWTAccessDuration)
+	accessToken, err := jwt.GenerateAccessToken(user.ID, user.Username, roleCode, permissions, user.PractitionerID, s.cfg.JWTSecret, s.cfg.JWTAccessDuration)
 	if err != nil {
 		return nil, fmt.Errorf("gagal memperbarui access token: %w", err)
 	}
@@ -288,19 +322,42 @@ func (s *service) CreateUser(ctx context.Context, req CreateUserRequest, operato
 		isActive = *req.IsActive
 	}
 
+	var practitionerID *string
+	if req.PractitionerID != nil && strings.TrimSpace(*req.PractitionerID) != "" {
+		trimmedPrac := strings.TrimSpace(*req.PractitionerID)
+		if s.practitionerReader != nil {
+			prac, err := s.practitionerReader.GetPractitionerByID(ctx, trimmedPrac)
+			if err != nil {
+				return nil, ErrPractitionerNotFound
+			}
+			if !prac.IsActive {
+				return nil, ErrPractitionerInactive
+			}
+		}
+		existing, err := s.repo.FindByPractitionerID(ctx, trimmedPrac)
+		if err == nil && existing != nil {
+			return nil, ErrPractitionerAlreadyLinked
+		}
+		practitionerID = &trimmedPrac
+	}
+
 	newUser := &User{
-		Username:  username,
-		Email:     email,
-		Password:  string(hashedPassword),
-		Name:      strings.TrimSpace(req.Name),
-		RoleID:    req.RoleID,
-		IsActive:  isActive,
-		CreatedBy: operator,
-		UpdatedBy: operator,
+		Username:       username,
+		Email:          email,
+		Password:       string(hashedPassword),
+		Name:           strings.TrimSpace(req.Name),
+		RoleID:         req.RoleID,
+		PractitionerID: practitionerID,
+		IsActive:       isActive,
+		CreatedBy:      operator,
+		UpdatedBy:      operator,
 	}
 
 	created, err := s.repo.CreateUser(ctx, newUser)
 	if err != nil {
+		if isPractitionerUniqueViolation(err) {
+			return nil, ErrPractitionerAlreadyLinked
+		}
 		return nil, err
 	}
 
@@ -342,10 +399,47 @@ func (s *service) UpdateUser(ctx context.Context, id string, req UpdateUserReque
 		}
 	}
 
+	shouldRevokeTokens := false
+
+	if req.PractitionerID != nil {
+		trimmedPrac := strings.TrimSpace(*req.PractitionerID)
+		if trimmedPrac == "" {
+			if user.PractitionerID != nil {
+				shouldRevokeTokens = true
+			}
+			user.PractitionerID = nil
+		} else {
+			if s.practitionerReader != nil {
+				prac, err := s.practitionerReader.GetPractitionerByID(ctx, trimmedPrac)
+				if err != nil {
+					return nil, ErrPractitionerNotFound
+				}
+				if !prac.IsActive {
+					return nil, ErrPractitionerInactive
+				}
+			}
+			existing, err := s.repo.FindByPractitionerID(ctx, trimmedPrac)
+			if err == nil && existing != nil && existing.ID != id {
+				return nil, ErrPractitionerAlreadyLinked
+			}
+			if user.PractitionerID == nil || *user.PractitionerID != trimmedPrac {
+				shouldRevokeTokens = true
+			}
+			user.PractitionerID = &trimmedPrac
+		}
+	}
+
 	user.Name = strings.TrimSpace(req.Name)
 	user.Email = email
+	if req.RoleID != nil && (user.RoleID == nil || *user.RoleID != *req.RoleID) {
+		shouldRevokeTokens = true
+	}
 	user.RoleID = req.RoleID
+
 	if req.IsActive != nil {
+		if user.IsActive != *req.IsActive {
+			shouldRevokeTokens = true
+		}
 		user.IsActive = *req.IsActive
 	}
 	user.UpdatedBy = operator
@@ -357,10 +451,18 @@ func (s *service) UpdateUser(ctx context.Context, id string, req UpdateUserReque
 			return nil, fmt.Errorf("gagal mengenkripsi kata sandi baru: %w", err)
 		}
 		user.Password = string(hashed)
+		shouldRevokeTokens = true
 	}
 
 	if err := s.repo.UpdateUser(ctx, user); err != nil {
+		if isPractitionerUniqueViolation(err) {
+			return nil, ErrPractitionerAlreadyLinked
+		}
 		return nil, err
+	}
+
+	if shouldRevokeTokens {
+		_ = s.repo.RevokeAllUserTokens(ctx, user.ID)
 	}
 
 	fullUser, err := s.repo.FindUserByID(ctx, user.ID)
@@ -391,6 +493,78 @@ func (s *service) DeleteUser(ctx context.Context, id string, operator string) er
 	}
 	_ = s.repo.RevokeAllUserTokens(ctx, id)
 	return nil
+}
+
+func (s *service) LinkPractitioner(ctx context.Context, userID string, practitionerID string, operator string) (*UserResponse, error) {
+	practitionerID = strings.TrimSpace(practitionerID)
+	if practitionerID == "" {
+		return nil, errors.New("practitioner_id tidak boleh kosong")
+	}
+
+	user, err := s.repo.FindUserByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	// 1. Validasi keberadaan dan status tenaga medis jika reader diinjeksikan
+	if s.practitionerReader != nil {
+		prac, err := s.practitionerReader.GetPractitionerByID(ctx, practitionerID)
+		if err != nil {
+			return nil, ErrPractitionerNotFound
+		}
+		if !prac.IsActive {
+			return nil, ErrPractitionerInactive
+		}
+	}
+
+	// 2. Cegah mapping 1 tenaga medis ke banyak user
+	existing, err := s.repo.FindByPractitionerID(ctx, practitionerID)
+	if err == nil && existing != nil && existing.ID != user.ID {
+		return nil, ErrPractitionerAlreadyLinked
+	}
+
+	// 3. Simpan perubahan
+	user.PractitionerID = &practitionerID
+	user.UpdatedBy = operator
+
+	if err := s.repo.UpdateUser(ctx, user); err != nil {
+		if isPractitionerUniqueViolation(err) {
+			return nil, ErrPractitionerAlreadyLinked
+		}
+		return nil, fmt.Errorf("gagal menghubungkan tenaga medis: %w", err)
+	}
+
+	// 4. Revoke token sesi lama agar klaim JWT diperbarui
+	_ = s.repo.RevokeAllUserTokens(ctx, user.ID)
+
+	res := ToUserResponse(user)
+	return &res, nil
+}
+
+func (s *service) UnlinkPractitioner(ctx context.Context, userID string, operator string) (*UserResponse, error) {
+	user, err := s.repo.FindUserByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	user.PractitionerID = nil
+	user.UpdatedBy = operator
+
+	if err := s.repo.UpdateUser(ctx, user); err != nil {
+		return nil, fmt.Errorf("gagal memutuskan hubungan tenaga medis: %w", err)
+	}
+
+	// Revoke token sesi lama
+	_ = s.repo.RevokeAllUserTokens(ctx, user.ID)
+
+	res := ToUserResponse(user)
+	return &res, nil
 }
 
 // ========================================================

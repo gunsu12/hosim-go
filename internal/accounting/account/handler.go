@@ -28,9 +28,6 @@ func getOperator(c *gin.Context) string {
 	if uid := middleware.GetUserID(c); uid != "" {
 		return uid
 	}
-	if op := c.GetHeader("X-User-ID"); op != "" {
-		return op
-	}
 	return "SYSTEM"
 }
 

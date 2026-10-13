@@ -17,21 +17,23 @@ var (
 
 // CustomClaims menyimpan data payload yang ditanamkan di dalam JWT Access Token
 type CustomClaims struct {
-	UserID      string   `json:"user_id"`
-	Username    string   `json:"username"`
-	Role        string   `json:"role"`
-	Permissions []string `json:"permissions"`
+	UserID         string   `json:"user_id"`
+	Username       string   `json:"username"`
+	Role           string   `json:"role"`
+	Permissions    []string `json:"permissions"`
+	PractitionerID *string  `json:"practitioner_id,omitempty"`
 	jwt.RegisteredClaims
 }
 
 // GenerateAccessToken membuat JWT Access Token berumur pendek
-func GenerateAccessToken(userID, username, role string, permissions []string, secret string, duration time.Duration) (string, error) {
+func GenerateAccessToken(userID, username, role string, permissions []string, practitionerID *string, secret string, duration time.Duration) (string, error) {
 	now := time.Now()
 	claims := CustomClaims{
-		UserID:      userID,
-		Username:    username,
-		Role:        role,
-		Permissions: permissions,
+		UserID:         userID,
+		Username:       username,
+		Role:           role,
+		Permissions:    permissions,
+		PractitionerID: practitionerID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userID,
 			IssuedAt:  jwt.NewNumericDate(now),

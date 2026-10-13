@@ -71,10 +71,14 @@ func main() {
 		}
 	}
 
-	// 4. Inisialisasi Modul Autentikasi & Master Data (Dependency Injection)
+	// Master Tenaga Medis (Practitioner)
+	practitionerRepo := practitioner.NewRepository(db)
+	practitionerService := practitioner.NewService(practitionerRepo)
+	practitionerHandler := practitioner.NewHandler(practitionerService)
+
 	// Modul Autentikasi
 	authRepo := auth.NewRepository(db)
-	authService := auth.NewService(authRepo, cfg)
+	authService := auth.NewService(authRepo, cfg, practitionerService)
 	authHandler := auth.NewHandler(authService, cfg.JWTSecret)
 
 	// Master Departemen
@@ -142,11 +146,6 @@ func main() {
 	patientService := patient.NewService(patientRepo)
 	patientHandler := patient.NewHandler(patientService)
 
-	// Master Tenaga Medis (Practitioner)
-	practitionerRepo := practitioner.NewRepository(db)
-	practitionerService := practitioner.NewService(practitionerRepo)
-	practitionerHandler := practitioner.NewHandler(practitionerService)
-
 	// Master Katalog Item (Obat, BMHP, Aset, Tarif)
 	itemRepo := item.NewRepository(db)
 	createMedicationUC := item.NewCreateMedicationUseCase(itemRepo)
@@ -179,7 +178,7 @@ func main() {
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, X-User-ID")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
 		if c.Request.Method == http.MethodOptions {
 			c.AbortWithStatus(http.StatusNoContent)

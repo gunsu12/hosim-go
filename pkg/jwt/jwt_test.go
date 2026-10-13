@@ -15,7 +15,9 @@ func TestJWT_GenerateAndValidate(t *testing.T) {
 	permissions := []string{"patient:read", "patient:create"}
 	duration := 15 * time.Minute
 
-	tokenString, err := jwt.GenerateAccessToken(userID, username, role, permissions, secret, duration)
+	practitionerID := "prac-999"
+
+	tokenString, err := jwt.GenerateAccessToken(userID, username, role, permissions, &practitionerID, secret, duration)
 	if err != nil {
 		t.Fatalf("GenerateAccessToken gagal: %v", err)
 	}
@@ -38,6 +40,9 @@ func TestJWT_GenerateAndValidate(t *testing.T) {
 	if claims.Role != role {
 		t.Errorf("Role tidak cocok. Diharapkan: %s, Didapat: %s", role, claims.Role)
 	}
+	if claims.PractitionerID == nil || *claims.PractitionerID != practitionerID {
+		t.Errorf("PractitionerID tidak cocok. Diharapkan: %s, Didapat: %v", practitionerID, claims.PractitionerID)
+	}
 	if len(claims.Permissions) != 2 || claims.Permissions[0] != "patient:read" {
 		t.Errorf("Permissions tidak cocok. Didapat: %v", claims.Permissions)
 	}
@@ -51,7 +56,7 @@ func TestJWT_ExpiredToken(t *testing.T) {
 	permissions := []string{"department:read"}
 	duration := -1 * time.Minute // Token sudah kedaluwarsa
 
-	tokenString, err := jwt.GenerateAccessToken(userID, username, role, permissions, secret, duration)
+	tokenString, err := jwt.GenerateAccessToken(userID, username, role, permissions, nil, secret, duration)
 	if err != nil {
 		t.Fatalf("GenerateAccessToken gagal: %v", err)
 	}
@@ -69,7 +74,7 @@ func TestJWT_InvalidSecret(t *testing.T) {
 	secret := "test-secret-key-12345"
 	wrongSecret := "wrong-secret-key"
 
-	tokenString, err := jwt.GenerateAccessToken("usr-1", "admin", "ADMIN", []string{"*"}, secret, 10*time.Minute)
+	tokenString, err := jwt.GenerateAccessToken("usr-1", "admin", "ADMIN", []string{"*"}, nil, secret, 10*time.Minute)
 	if err != nil {
 		t.Fatalf("GenerateAccessToken gagal: %v", err)
 	}

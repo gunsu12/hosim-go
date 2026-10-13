@@ -15,6 +15,7 @@ type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindByUsernameOrEmail(ctx context.Context, identifier string) (*User, error)
 	FindUserByID(ctx context.Context, id string) (*User, error)
+	FindByPractitionerID(ctx context.Context, practitionerID string) (*User, error)
 	CountUsers(ctx context.Context) (int64, error)
 	ListUsers(ctx context.Context, search string, roleID string, isActive *bool, page, limit int) ([]User, int64, error)
 	UpdateUser(ctx context.Context, user *User) error
@@ -89,6 +90,14 @@ func (r *repository) FindUserByID(ctx context.Context, id string) (*User, error)
 	return &user, nil
 }
 
+func (r *repository) FindByPractitionerID(ctx context.Context, practitionerID string) (*User, error) {
+	var user User
+	if err := r.db.WithContext(ctx).Preload("Role.Permissions").Where("practitioner_id = ?", practitionerID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *repository) CountUsers(ctx context.Context) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).Model(&User{}).Count(&count).Error; err != nil {
@@ -132,7 +141,9 @@ func (r *repository) ListUsers(ctx context.Context, search string, roleID string
 }
 
 func (r *repository) UpdateUser(ctx context.Context, user *User) error {
-	return r.db.WithContext(ctx).Save(user).Error
+	return r.db.WithContext(ctx).Model(user).
+		Select("Name", "Email", "Password", "RoleID", "PractitionerID", "IsActive", "UpdatedBy", "UpdatedAt").
+		Updates(user).Error
 }
 
 func (r *repository) DeleteUser(ctx context.Context, id string, deletedBy string) error {

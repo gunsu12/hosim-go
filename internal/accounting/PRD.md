@@ -2,7 +2,7 @@
 
 ## 1. Ringkasan Eksekutif & Tujuan
 
-Domain `internal/accounting` bertindak sebagai **fondasi akuntansi dan pelaporan keuangan rumah sakit** di HOSIM-GO. Modul ini bertanggung jawab atas standardisasi bagan akun (*Chart of Accounts* / COA), pemetaan struktur hierarki multi-level, penentuan saldo normal (*position* Debit/Kredit), klasifikasi akun perbendaharaan/kas-bank (*treasury accounts*), serta integrasi kode akun ke pos tarif tindakan medis ([`internal/finance/tariffcomponent`](file:///c:/laragon/www/hosim-go/internal/finance/tariffcomponent)) dan buku tarif ([`internal/finance/priceplan`](file:///c:/laragon/www/hosim-go/internal/finance/priceplan)).
+Domain `internal/accounting` bertindak sebagai **fondasi akuntansi dan pelaporan keuangan rumah sakit** di HOSIM-GO. Modul ini bertanggung jawab atas standardisasi bagan akun (*Chart of Accounts* / COA), pemetaan struktur hierarki multi-level, penentuan saldo normal (*position* Debit/Kredit), klasifikasi akun perbendaharaan/kas-bank (*treasury accounts*), serta integrasi kode akun ke pos tarif tindakan medis ([`internal/finance/tariffcomponent`](../../internal/finance/tariffcomponent)) dan buku tarif ([`internal/finance/priceplan`](../../internal/finance/priceplan)).
 
 PRD ini dirancang secara **pragmatis, terstandar, dan aman**:
 1. **Hierarki Akun Fleksibel & Terkendali**: Mendukung struktur pohon (*tree structure*) multi-level dengan kalkulasi kedalaman level otomatis (`account_level`).
@@ -313,7 +313,7 @@ Semua rute bernaung di bawah prefix `/api/v1/accounting/accounts` dan diotorisas
 
 ## 7. Service Contract & Interface
 
-Mengikuti arsitektur **Jalur B (Business Transaction)** di [`AGENTS.md`](file:///c:/laragon/www/hosim-go/AGENTS.md#L39):
+Mengikuti arsitektur **Jalur B (Business Transaction)** di [`AGENTS.md`](./AGENTS.md#L39):
 
 ```go
 type AccountService interface {
@@ -340,7 +340,7 @@ type AccountService interface {
 
 ## 8. Struktur Kode & Organisasi Package
 
-Sesuai pola modular monolith di HOSIM-GO (sebagaimana diterapkan pada [`internal/inventory`](file:///c:/laragon/www/hosim-go/internal/inventory)):
+Sesuai pola modular monolith di HOSIM-GO (sebagaimana diterapkan pada [`internal/inventory`](../../internal/inventory)):
 
 ```text
 internal/accounting/
