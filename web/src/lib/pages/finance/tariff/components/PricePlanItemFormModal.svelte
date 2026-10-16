@@ -62,7 +62,12 @@
   );
 
   let tariffComponentOptions = $derived(
-    tariffComponents.map(tc => ({ value: tc.id, label: `[${tc.code}] ${tc.name}` }))
+    tariffComponents.map(tc => ({
+      value: tc.id,
+      label: tc.name,
+      badge: tc.component_type,
+      description: tc.code ? `Kode: ${tc.code}` : undefined
+    }))
   );
 
   // Balancing Calculation
@@ -284,8 +289,14 @@
             <tr class="bg-white dark:bg-[#1e1f20]">
               <td class="p-2">
                 <M3Select
+                  size="sm"
                   bind:value={comp.component_id}
                   options={tariffComponentOptions}
+                  searchable={true}
+                  onchange={(val) => {
+                    const found = tariffComponents.find((tc) => tc.id === val);
+                    if (found && !comp.coa_code) comp.coa_code = found.default_coa_code || null;
+                  }}
                   placeholder="Pilih Komponen"
                 />
               </td>

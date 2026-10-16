@@ -42,6 +42,7 @@ const (
 
 var (
 	ErrSchemaNotFound                = errors.New("price schema tidak ditemukan")
+	ErrSchemaInactive                = errors.New("skema harga sedang dinonaktifkan")
 	ErrSchemaCodeExists              = errors.New("kode price schema sudah terdaftar")
 	ErrSchemaCodeRequired            = errors.New("kode price schema wajib diisi")
 	ErrSchemaNameRequired            = errors.New("nama price schema wajib diisi")
@@ -62,21 +63,25 @@ var (
 	ErrServiceUnitInactiveOrNotFound = errors.New("unit layanan tidak ditemukan atau tidak aktif")
 	ErrItemInactiveOrNotFound        = errors.New("item/tindakan tidak ditemukan atau tidak aktif")
 	ErrTariffNotConfigured           = errors.New("tarif dasar tindakan tidak ditemukan di buku tarif RS")
+	ErrPricePlanNotFound             = errors.New("buku tarif acuan tidak ditemukan")
 	ErrDuplicateRuleScope            = errors.New("terdapat aturan dengan cakupan yang sama dalam satu skema")
 	ErrMultipleDefaultRules          = errors.New("skema harga hanya boleh memiliki satu aturan default (SCHEMA_DEFAULT)")
 )
 
 // PriceSchema merepresentasikan header skema penyesuaian harga PKS.
 type PriceSchema struct {
-	ID          string    `gorm:"primaryKey;size:36" json:"id"`
-	Code        string    `gorm:"uniqueIndex:idx_price_schemas_code;size:50;not null" json:"code"`
-	Name        string    `gorm:"size:150;not null" json:"name"`
-	Description *string   `gorm:"type:text" json:"description,omitempty"`
-	IsActive    bool      `gorm:"default:true;not null;index:idx_price_schemas_is_active" json:"is_active"`
-	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
-	CreatedBy   string    `gorm:"size:50;not null;default:'SYSTEM'" json:"created_by"`
-	UpdatedBy   string    `gorm:"size:50;not null;default:'SYSTEM'" json:"updated_by"`
+	ID                string    `gorm:"primaryKey;size:36" json:"id"`
+	Code              string    `gorm:"uniqueIndex:idx_price_schemas_code;size:50;not null" json:"code"`
+	Name              string    `gorm:"size:150;not null" json:"name"`
+	Description       *string   `gorm:"type:text" json:"description,omitempty"`
+	BasePricePlanID   *string   `gorm:"size:36;index:idx_price_schemas_base_price_plan_id" json:"base_price_plan_id,omitempty"`
+	BasePricePlanCode *string   `gorm:"->" json:"base_price_plan_code,omitempty"`
+	BasePricePlanName *string   `gorm:"->" json:"base_price_plan_name,omitempty"`
+	IsActive          bool      `gorm:"default:true;not null;index:idx_price_schemas_is_active" json:"is_active"`
+	CreatedAt         time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt         time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	CreatedBy         string    `gorm:"size:50;not null;default:'SYSTEM'" json:"created_by"`
+	UpdatedBy         string    `gorm:"size:50;not null;default:'SYSTEM'" json:"updated_by"`
 
 	Rules []PriceSchemaRule `gorm:"foreignKey:PriceSchemaID;constraint:OnDelete:CASCADE" json:"rules,omitempty"`
 }

@@ -12,15 +12,67 @@
     modules,
     type ModuleDefinition,
   } from "$lib/config/launcherModules";
+  import { onMount } from "svelte";
   import LauncherModuleCard from "./components/LauncherModuleCard.svelte";
 
   export type { ModuleDefinition };
 
   interface Props {
     onSelectModule: (moduleId: string, defaultNavId: string) => void;
+    highlightModuleId?: string | null;
+    savedScrollTop?: number;
   }
 
-  let { onSelectModule }: Props = $props();
+  let {
+    onSelectModule,
+    highlightModuleId = null,
+    savedScrollTop = 0,
+  }: Props = $props();
+
+  let activeHighlight = $state<string | null>(null);
+
+  $effect(() => {
+    activeHighlight = highlightModuleId;
+  });
+
+  // Jika modul yang disorot berada di luar kategori yang sedang dipilih, reset ke 'all' agar kartu ter-render
+  $effect(() => {
+    if (highlightModuleId) {
+      const targetMod = modules.find((m) => m.id === highlightModuleId);
+      if (targetMod && selectedCategory !== "all" && targetMod.category !== selectedCategory) {
+        selectedCategory = "all";
+      }
+    }
+  });
+
+  onMount(() => {
+    if (highlightModuleId) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`launcher-module-${highlightModuleId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else if (savedScrollTop > 0) {
+          const mainEl = document.querySelector("main");
+          if (mainEl) mainEl.scrollTop = savedScrollTop;
+        }
+      }, 80);
+
+      const fadeTimer = setTimeout(() => {
+        activeHighlight = null;
+      }, 2500);
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(fadeTimer);
+      };
+    } else if (savedScrollTop > 0) {
+      const timer = setTimeout(() => {
+        const mainEl = document.querySelector("main");
+        if (mainEl) mainEl.scrollTop = savedScrollTop;
+      }, 80);
+      return () => clearTimeout(timer);
+    }
+  });
 
   let searchQuery = $state("");
 
@@ -230,7 +282,11 @@
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3"
       >
         {#each category.modules as mod}
-          <LauncherModuleCard {mod} onSelect={onSelectModule} />
+          <LauncherModuleCard
+            {mod}
+            onSelect={onSelectModule}
+            isHighlighted={activeHighlight === mod.id}
+          />
         {/each}
       </div>
     </div>

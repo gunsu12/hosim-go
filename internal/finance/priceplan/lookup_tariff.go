@@ -39,9 +39,47 @@ func (uc *lookupTariffUseCase) Execute(ctx context.Context, req LookupTariffRequ
 	isCustomPlan := false
 
 	// =========================================================================
+	// LANGKAH 0: Cek Buku Tarif Spesifik jika PricePlanID ditentukan (misal dikunci oleh Price Schema)
+	// =========================================================================
+	if req.PricePlanID != nil && strings.TrimSpace(*req.PricePlanID) != "" {
+		planID := strings.TrimSpace(*req.PricePlanID)
+		specificPlan, err := uc.repo.FindPlanByID(ctx, planID)
+		if err == nil && specificPlan != nil && specificPlan.Status == PricePlanStatusActive {
+			// Validasi masa berlaku tanggal transaksi
+			dateStr := txDate.Format("2006-01-02")
+			isEffective := true
+			if !specificPlan.EffectiveFrom.IsZero() {
+				isEffective = isEffective && specificPlan.EffectiveFrom.Format("2006-01-02") <= dateStr
+			}
+			if specificPlan.EffectiveTo != nil && !specificPlan.EffectiveTo.IsZero() {
+				isEffective = isEffective && dateStr <= specificPlan.EffectiveTo.Format("2006-01-02")
+			}
+
+			// Validasi kepemilikan jika buku tarif dikhususkan untuk penjamin/customer tertentu
+			customerMatch := true
+			if specificPlan.CustomerID != nil {
+				if req.CustomerID != nil && strings.TrimSpace(*req.CustomerID) != "" {
+					customerMatch = strings.TrimSpace(*req.CustomerID) == *specificPlan.CustomerID
+				} else {
+					customerMatch = false
+				}
+			}
+
+			if isEffective && customerMatch {
+				item, err := uc.repo.FindPlanItemForLookup(ctx, specificPlan.ID, req.ItemID, req.TariffClassID)
+				if err == nil && item != nil && item.IsActive {
+					matchedPlan = specificPlan
+					matchedItem = item
+					isCustomPlan = specificPlan.CustomerID != nil
+				}
+			}
+		}
+	}
+
+	// =========================================================================
 	// LANGKAH 1: Cek Buku Tarif Khusus Penjamin / PKS (Custom Plan)
 	// =========================================================================
-	if req.CustomerID != nil && strings.TrimSpace(*req.CustomerID) != "" {
+	if matchedPlan == nil && req.CustomerID != nil && strings.TrimSpace(*req.CustomerID) != "" {
 		custID := strings.TrimSpace(*req.CustomerID)
 		customPlan, err := uc.repo.FindActiveCustomPlan(ctx, custID, txDate)
 		if err == nil && customPlan != nil {

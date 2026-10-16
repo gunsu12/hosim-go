@@ -76,6 +76,7 @@ type BatchUpsertItemsRequest struct {
 
 // LookupTariffRequest mendefinisikan payload pencarian tarif transaksi kasir / billing
 type LookupTariffRequest struct {
+	PricePlanID     *string `json:"price_plan_id"`
 	CustomerID      *string `json:"customer_id"`
 	TariffClassID   string  `json:"tariff_class_id" binding:"required"`
 	ItemID          string  `json:"item_id" binding:"required"`

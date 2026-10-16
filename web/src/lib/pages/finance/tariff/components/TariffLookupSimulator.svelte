@@ -1,11 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import {
-    Calculator,
-    Coins,
-    CheckCircle2,
-    AlertCircle,
-  } from "@lucide/svelte";
+  import { Calculator, Coins, CheckCircle2, AlertCircle } from "@lucide/svelte";
   import M3Button from "$lib/components/m3/M3Button.svelte";
   import M3Select from "$lib/components/m3/M3Select.svelte";
   import M3ToggleCard from "$lib/components/m3/M3ToggleCard.svelte";
@@ -103,11 +98,8 @@
       </div>
       <div>
         <h3 class="text-sm font-bold text-[#1f1f1f] dark:text-[#e3e3e3]">
-          Simulator & Engine Lookup Tarif Transaksi (PRD § 6.4)
+          Simulator & Engine Lookup Tarif Transaksi
         </h3>
-        <p class="text-xs text-[#444746] dark:text-[#c4c7c5] mt-0.5 max-w-2xl">
-          Uji coba resolusi hierarkis penetapan tarif secara otomatis (Langkah 1: Cek PKS Penjamin &rarr; Langkah 2: Fallback Buku Tarif Standar RS &rarr; Langkah 3: Formula CITO Hybrid).
-        </p>
       </div>
     </div>
   </div>
@@ -178,7 +170,11 @@
         >
           <div class="flex items-center justify-center gap-2 py-1 w-full">
             <Calculator class="w-4 h-4" />
-            <span>{isCalculating ? "Menghitung Tarif..." : "Cek & Hitung Tarif"}</span>
+            <span
+              >{isCalculating
+                ? "Menghitung Tarif..."
+                : "Cek & Hitung Tarif"}</span
+            >
           </div>
         </M3Button>
       </div>
@@ -195,7 +191,9 @@
             <h5 class="font-bold text-sm">Gagal Menemukan Konfigurasi Tarif</h5>
             <p class="mt-1 leading-relaxed">{lookupError}</p>
             <p class="text-[11px] text-[#747775] dark:text-[#c4c7c5] mt-2">
-              Pastikan terdapat Buku Tarif berstatus <strong>ACTIVE</strong> yang memuat kombinasi tindakan dan kelas ini, atau atur buku tarif default RS.
+              Pastikan terdapat Buku Tarif berstatus <strong>ACTIVE</strong> yang
+              memuat kombinasi tindakan dan kelas ini, atau atur buku tarif default
+              RS.
             </p>
           </div>
         </div>
@@ -208,7 +206,9 @@
             class="flex items-center justify-between border-b border-[#e1e5ea] dark:border-[#444746] pb-3"
           >
             <div class="flex items-center gap-2">
-              <CheckCircle2 class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <CheckCircle2
+                class="w-5 h-5 text-emerald-600 dark:text-emerald-400"
+              />
               <h4 class="font-bold text-sm text-[#1f1f1f] dark:text-[#e3e3e3]">
                 Hasil Resolusi Tarif Transaksi
               </h4>
@@ -253,7 +253,8 @@
               <span class="text-[#747775] dark:text-[#c4c7c5] text-[11px] block"
                 >Kode Buku Tarif Acuan</span
               >
-              <span class="font-mono font-bold text-[#0b57d0] dark:text-blue-400"
+              <span
+                class="font-mono font-bold text-[#0b57d0] dark:text-blue-400"
                 >{lookupResult.price_plan_code}</span
               >
             </div>
@@ -278,7 +279,9 @@
 
           <!-- Breakdown Component Table -->
           <div>
-            <h5 class="font-bold text-[#1f1f1f] dark:text-[#e3e3e3] text-xs mb-2">
+            <h5
+              class="font-bold text-[#1f1f1f] dark:text-[#e3e3e3] text-xs mb-2"
+            >
               Pecahan Rincian Komponen Biaya & COA:
             </h5>
             <div
@@ -295,7 +298,9 @@
                     <th class="py-2.5 px-3 text-right">Nominal Akhir</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-[#e1e5ea] dark:divide-[#444746] text-[#1f1f1f] dark:text-[#e3e3e3]">
+                <tbody
+                  class="divide-y divide-[#e1e5ea] dark:divide-[#444746] text-[#1f1f1f] dark:text-[#e3e3e3]"
+                >
                   {#each lookupResult.components as c (c.component_id)}
                     <tr class="hover:bg-[#f8fafd] dark:hover:bg-[#2b2b2b]">
                       <td class="py-2.5 px-3 font-semibold">
@@ -308,7 +313,9 @@
                           {c.component_type}
                         </span>
                       </td>
-                      <td class="py-2.5 px-3 font-mono text-[#0b57d0] dark:text-blue-400">
+                      <td
+                        class="py-2.5 px-3 font-mono text-[#0b57d0] dark:text-blue-400"
+                      >
                         {c.coa_code || "-"}
                       </td>
                       <td class="py-2.5 px-3 text-right font-mono font-bold">
@@ -331,7 +338,10 @@
             Simulator Siap Digunakan
           </h5>
           <p class="text-xs max-w-sm">
-            Pilih tindakan medis dan kelas layanan di sebelah kiri, kemudian klik tombol <strong class="text-[#1f1f1f] dark:text-[#e3e3e3]">"Cek & Hitung Tarif"</strong> untuk melihat proses resolusi hierarkis.
+            Pilih tindakan medis dan kelas layanan di sebelah kiri, kemudian
+            klik tombol <strong class="text-[#1f1f1f] dark:text-[#e3e3e3]"
+              >"Cek & Hitung Tarif"</strong
+            > untuk melihat proses resolusi hierarkis.
           </p>
         </div>
       {/if}

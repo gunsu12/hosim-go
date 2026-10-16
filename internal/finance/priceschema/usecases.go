@@ -35,6 +35,7 @@ type createPriceSchemaUseCase struct {
 	deptReader DepartmentReader
 	unitReader ServiceUnitReader
 	itemReader ItemReader
+	planReader PricePlanReader
 }
 
 func NewCreatePriceSchemaUseCase(
@@ -44,6 +45,7 @@ func NewCreatePriceSchemaUseCase(
 	deptReader DepartmentReader,
 	unitReader ServiceUnitReader,
 	itemReader ItemReader,
+	planReader PricePlanReader,
 ) CreatePriceSchemaUseCase {
 	return &createPriceSchemaUseCase{
 		repo:       repo,
@@ -52,6 +54,7 @@ func NewCreatePriceSchemaUseCase(
 		deptReader: deptReader,
 		unitReader: unitReader,
 		itemReader: itemReader,
+		planReader: planReader,
 	}
 }
 
@@ -71,13 +74,29 @@ func (uc *createPriceSchemaUseCase) Execute(ctx context.Context, req CreatePrice
 		return nil, ErrSchemaCodeExists
 	}
 
+	var basePricePlanID *string
+	if req.BasePricePlanID != nil && strings.TrimSpace(*req.BasePricePlanID) != "" {
+		trimmedPlanID := strings.TrimSpace(*req.BasePricePlanID)
+		if uc.planReader != nil {
+			exists, err := uc.planReader.PlanExists(ctx, trimmedPlanID)
+			if err != nil {
+				return nil, err
+			}
+			if !exists {
+				return nil, ErrPricePlanNotFound
+			}
+		}
+		basePricePlanID = &trimmedPlanID
+	}
+
 	schema := &PriceSchema{
-		Code:        req.Code,
-		Name:        req.Name,
-		Description: req.Description,
-		IsActive:    true,
-		CreatedBy:   actor.Username,
-		UpdatedBy:   actor.Username,
+		Code:            req.Code,
+		Name:            req.Name,
+		Description:     req.Description,
+		BasePricePlanID: basePricePlanID,
+		IsActive:        true,
+		CreatedBy:       actor.Username,
+		UpdatedBy:       actor.Username,
 	}
 
 	// Konversi dan validasi aturan awal jika ada
@@ -210,13 +229,14 @@ type UpdatePriceSchemaUseCase interface {
 }
 
 type updatePriceSchemaUseCase struct {
-	repo  Repository
-	tx    database.TransactionManager
-	audit audit.AuditWriter
+	repo       Repository
+	tx         database.TransactionManager
+	audit      audit.AuditWriter
+	planReader PricePlanReader
 }
 
-func NewUpdatePriceSchemaUseCase(repo Repository, tx database.TransactionManager, audit audit.AuditWriter) UpdatePriceSchemaUseCase {
-	return &updatePriceSchemaUseCase{repo: repo, tx: tx, audit: audit}
+func NewUpdatePriceSchemaUseCase(repo Repository, tx database.TransactionManager, audit audit.AuditWriter, planReader PricePlanReader) UpdatePriceSchemaUseCase {
+	return &updatePriceSchemaUseCase{repo: repo, tx: tx, audit: audit, planReader: planReader}
 }
 
 func (uc *updatePriceSchemaUseCase) Execute(ctx context.Context, id string, req UpdatePriceSchemaRequest, actor OperatorContext) (*PriceSchemaResponse, error) {
@@ -234,6 +254,23 @@ func (uc *updatePriceSchemaUseCase) Execute(ctx context.Context, id string, req 
 
 	schema.Name = req.Name
 	schema.Description = req.Description
+	if req.BasePricePlanID != nil {
+		if strings.TrimSpace(*req.BasePricePlanID) == "" {
+			schema.BasePricePlanID = nil
+		} else {
+			trimmedPlanID := strings.TrimSpace(*req.BasePricePlanID)
+			if uc.planReader != nil {
+				exists, err := uc.planReader.PlanExists(ctx, trimmedPlanID)
+				if err != nil {
+					return nil, err
+				}
+				if !exists {
+					return nil, ErrPricePlanNotFound
+				}
+			}
+			schema.BasePricePlanID = &trimmedPlanID
+		}
+	}
 	if req.IsActive != nil {
 		schema.IsActive = *req.IsActive
 	}
@@ -645,12 +682,14 @@ type SimulateTariffUseCase interface {
 }
 
 type simulateTariffUseCase struct {
+	repo         Repository
 	tariffLookup TariffBaseLookup
 	matcher      RuleMatcher
 }
 
-func NewSimulateTariffUseCase(tariffLookup TariffBaseLookup, matcher RuleMatcher) SimulateTariffUseCase {
+func NewSimulateTariffUseCase(repo Repository, tariffLookup TariffBaseLookup, matcher RuleMatcher) SimulateTariffUseCase {
 	return &simulateTariffUseCase{
+		repo:         repo,
 		tariffLookup: tariffLookup,
 		matcher:      matcher,
 	}
@@ -673,8 +712,31 @@ func (uc *simulateTariffUseCase) Execute(ctx context.Context, req SimulateTariff
 		}
 	}
 
-	// 1. Ambil tarif dasar RS dari Price Plan
-	base, err := uc.tariffLookup.LookupTariffBase(ctx, req.TariffClassID, req.ItemID, serviceDate, req.IsCito)
+	// 1. Tentukan Buku Tarif Acuan yang digunakan (prioritas: explicit di req.PricePlanID, lalu base_price_plan_id di Price Schema)
+	var targetPlanID *string
+	if req.PricePlanID != nil && strings.TrimSpace(*req.PricePlanID) != "" {
+		pID := strings.TrimSpace(*req.PricePlanID)
+		targetPlanID = &pID
+	}
+
+	if req.PriceSchemaID != nil && strings.TrimSpace(*req.PriceSchemaID) != "" {
+		schemaID := strings.TrimSpace(*req.PriceSchemaID)
+		if uc.repo != nil {
+			schema, err := uc.repo.FindSchemaByID(ctx, schemaID)
+			if err != nil {
+				return nil, err
+			}
+			if !schema.IsActive {
+				return nil, ErrSchemaInactive
+			}
+			if targetPlanID == nil {
+				targetPlanID = schema.BasePricePlanID
+			}
+		}
+	}
+
+	// Ambil tarif dasar RS dari Price Plan
+	base, err := uc.tariffLookup.LookupTariffBase(ctx, targetPlanID, req.TariffClassID, req.ItemID, serviceDate, req.IsCito)
 	if err != nil {
 		return nil, err
 	}

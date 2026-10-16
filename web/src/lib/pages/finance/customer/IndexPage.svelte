@@ -120,7 +120,6 @@
     loadData();
   }
 
-
   // Pagination calculation
   let totalPages = $derived(Math.max(1, Math.ceil(totalCount / pageSize)));
 
@@ -193,7 +192,9 @@
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
       <div class="flex items-center gap-2.5">
-        <h2 class="text-xl font-bold text-[#1f1f1f] dark:text-[#e3e3e3] tracking-tight">
+        <h2
+          class="text-xl font-bold text-[#1f1f1f] dark:text-[#e3e3e3] tracking-tight"
+        >
           Master Penjamin (Customer)
         </h2>
       </div>
@@ -202,32 +203,24 @@
         Korporat/Perusahaan, & Pasien Umum).
       </p>
     </div>
-
-    <div class="flex items-center gap-2.5">
-      <M3Button variant="filled" onclick={openCreateModal}>
-        <Plus class="w-4 h-4" />
-        <span>Tambah Penjamin</span>
-      </M3Button>
-    </div>
   </div>
-
 
   <!-- Search & Filter Bar -->
   <div
-    class="p-4 bg-white dark:bg-[#1e1f20] rounded-3xl border border-[#e1e5ea] dark:border-[#353738] shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs"
+    class="flex flex-wrap items-center justify-between gap-3 bg-[#f8fafd] dark:bg-[#1e1f20] p-3 rounded-2xl border border-[#e1e5ea] dark:border-[#444746]"
   >
     <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
       <!-- Search Input -->
       <div class="relative flex-1 min-w-[200px] max-w-md">
         <Search
-          class="w-4 h-4 text-[#747775] dark:text-[#8e918f] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          class="w-4 h-4 text-[#747775] dark:text-[#c4c7c5] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
         />
         <input
           type="text"
           bind:value={searchQuery}
           oninput={handleSearchInput}
           placeholder="Cari kode, nama penjamin, atau PIC..."
-          class="w-full h-10 pl-10 pr-4 rounded-xl bg-[#f0f4f9] dark:bg-[#28292a] border border-transparent focus:border-[#0b57d0] dark:focus:border-[#a8c7fa] focus:bg-white dark:focus:bg-[#1e1f20] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all"
+          class="w-full h-10 pl-10 pr-4 rounded-xl bg-white dark:bg-[#2b2b2b] border border-[#e1e5ea] dark:border-[#444746] focus:border-[#0b57d0] text-xs text-[#1f1f1f] dark:text-[#e3e3e3] focus:outline-hidden transition-all shadow-2xs"
         />
       </div>
 
@@ -238,7 +231,7 @@
           placeholder="Semua Kategori"
           onchange={handleFilterChange}
           options={[
-            { value: '', label: 'Semua Kategori' },
+            { value: "", label: "Semua Kategori" },
             ...customerTypes.map((ct) => ({
               value: ct.id,
               label: ct.name,
@@ -255,16 +248,19 @@
           placeholder="Semua Status"
           onchange={handleFilterChange}
           options={[
-            { value: 'all', label: 'Semua Status' },
-            { value: 'active', label: 'Hanya Aktif' },
-            { value: 'inactive', label: 'Hanya Non-Aktif' },
+            { value: "all", label: "Semua Status" },
+            { value: "active", label: "Hanya Aktif" },
+            { value: "inactive", label: "Hanya Non-Aktif" },
           ]}
         />
       </div>
-    </div>
 
-    <div class="text-[#747775] dark:text-[#8e918f] text-xs">
-      Total: <strong class="text-[#1f1f1f] dark:text-[#e3e3e3] font-mono">{totalCount}</strong> penjamin
+      <div class="flex items-center gap-2.5">
+        <M3Button variant="filled" onclick={openCreateModal}>
+          <Plus class="w-4 h-4" />
+          <span>Tambah Penjamin</span>
+        </M3Button>
+      </div>
     </div>
   </div>
 
@@ -288,7 +284,9 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
-          <tr class="bg-[#f0f4f9] dark:bg-[#28292a] border-b border-[#e1e5ea] dark:border-[#353738] text-[#444746] dark:text-[#c4c7c5]">
+          <tr
+            class="bg-[#f0f4f9] dark:bg-[#28292a] border-b border-[#e1e5ea] dark:border-[#353738] text-[#444746] dark:text-[#c4c7c5]"
+          >
             <th class="py-3 px-4 font-semibold">Kode</th>
             <th class="py-3 px-4 font-semibold">Nama Debitur / Penjamin</th>
             <th class="py-3 px-4 font-semibold">Kategori Penjamin</th>
@@ -299,7 +297,9 @@
           </tr>
         </thead>
 
-        <tbody class="divide-y divide-[#e1e5ea] dark:divide-[#353738] text-[#1f1f1f] dark:text-[#e3e3e3]">
+        <tbody
+          class="divide-y divide-[#e1e5ea] dark:divide-[#353738] text-[#1f1f1f] dark:text-[#e3e3e3]"
+        >
           {#if isLoading}
             <tr>
               <td colspan="7" class="py-12 text-center text-[#747775]">
@@ -331,17 +331,25 @@
             </tr>
           {:else}
             {#each customers as c (c.id)}
-              <tr class="hover:bg-[#f8fafd] dark:hover:bg-[#28292a]/50 transition-colors">
+              <tr
+                class="hover:bg-[#f8fafd] dark:hover:bg-[#28292a]/50 transition-colors"
+              >
                 <!-- Kode -->
-                <td class="py-3.5 px-4 font-mono font-bold text-[#0b57d0] dark:text-[#a8c7fa]">
+                <td
+                  class="py-3.5 px-4 font-mono font-bold text-[#0b57d0] dark:text-[#a8c7fa]"
+                >
                   {c.code}
                 </td>
 
                 <!-- Nama & Catatan -->
                 <td class="py-3.5 px-4">
-                  <div class="font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">{c.name}</div>
+                  <div class="font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">
+                    {c.name}
+                  </div>
                   {#if c.address}
-                    <div class="text-[11px] text-[#747775] dark:text-[#8e918f] truncate max-w-xs">
+                    <div
+                      class="text-[11px] text-[#747775] dark:text-[#8e918f] truncate max-w-xs"
+                    >
                       {c.address}
                     </div>
                   {/if}
@@ -364,7 +372,9 @@
                     </div>
                   {/if}
                   {#if c.phone}
-                    <div class="font-mono text-[11px] text-[#0b57d0] dark:text-[#a8c7fa]">
+                    <div
+                      class="font-mono text-[11px] text-[#0b57d0] dark:text-[#a8c7fa]"
+                    >
                       {c.phone}
                     </div>
                   {:else if !c.contact_person}
@@ -468,7 +478,9 @@
             Sebelumnya
           </button>
 
-          <span class="font-mono px-2 font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">
+          <span
+            class="font-mono px-2 font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]"
+          >
             {currentPage} / {totalPages}
           </span>
 

@@ -8,9 +8,9 @@
     Plus,
     Trash2
   } from '@lucide/svelte';
-  import M3Select from '$lib/components/m3/M3Select.svelte';
   import type { PricePlanRecord } from '$lib/types/finance/price_plan';
   import type { TariffComponentRecord } from '$lib/types/finance/tariff';
+  import M3Select from '$lib/components/m3/M3Select.svelte';
 
   export interface ComponentRowState {
     component_id: string;
@@ -76,9 +76,12 @@
   let componentOptions = $derived(
     tariffComponents.map((tc) => ({
       value: tc.id,
-      label: `[${tc.component_type}] ${tc.name} (${tc.code})`
+      label: tc.name,
+      badge: tc.component_type,
+      description: tc.code ? `Kode: ${tc.code}` : undefined
     }))
   );
+
 </script>
 
 <div class="bg-white dark:bg-[#1e1f20] rounded-3xl border transition-all duration-200 shadow-2xs overflow-hidden {row.is_enabled ? 'border-blue-300 dark:border-blue-800 ring-1 ring-blue-100 dark:ring-blue-900/30' : 'border-[#e1e5ea] dark:border-[#353738] opacity-95'}">
@@ -248,11 +251,13 @@
             {#each row.components as comp, cIdx}
               {@const compDef = tariffComponents.find((tc) => tc.id === comp.component_id)}
               <tr>
-                <!-- Select Component -->
+                <!-- Select Component with M3 Rich Styling (Portal Float) -->
                 <td class="py-1.5 px-2">
                   <M3Select
+                    size="sm"
                     bind:value={comp.component_id}
                     options={componentOptions}
+                    searchable={true}
                     onchange={(val) => {
                       const found = tariffComponents.find((tc) => tc.id === val);
                       if (found) comp.coa_code = found.default_coa_code || null;

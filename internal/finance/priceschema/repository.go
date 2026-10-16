@@ -30,17 +30,20 @@ func (r *repository) CreateSchema(ctx context.Context, schema *PriceSchema) erro
 func (r *repository) UpdateSchema(ctx context.Context, schema *PriceSchema) error {
 	return r.getDB(ctx).
 		Model(schema).
-		Select("Name", "Description", "IsActive", "UpdatedBy", "UpdatedAt").
+		Select("Name", "Description", "BasePricePlanID", "IsActive", "UpdatedBy", "UpdatedAt").
 		Updates(schema).Error
 }
 
 func (r *repository) FindSchemaByID(ctx context.Context, id string) (*PriceSchema, error) {
 	var schema PriceSchema
 	err := r.getDB(ctx).
+		Model(&PriceSchema{}).
+		Select("price_schemas.*, tariff_price_plans.code AS base_price_plan_code, tariff_price_plans.name AS base_price_plan_name").
+		Joins("LEFT JOIN tariff_price_plans ON tariff_price_plans.id = price_schemas.base_price_plan_id AND tariff_price_plans.deleted_at IS NULL").
 		Preload("Rules", func(db *gorm.DB) *gorm.DB {
 			return db.Order("created_at ASC")
 		}).
-		Where("id = ?", id).
+		Where("price_schemas.id = ?", id).
 		First(&schema).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -54,7 +57,10 @@ func (r *repository) FindSchemaByID(ctx context.Context, id string) (*PriceSchem
 func (r *repository) FindSchemaByCode(ctx context.Context, code string) (*PriceSchema, error) {
 	var schema PriceSchema
 	err := r.getDB(ctx).
-		Where("code = ?", code).
+		Model(&PriceSchema{}).
+		Select("price_schemas.*, tariff_price_plans.code AS base_price_plan_code, tariff_price_plans.name AS base_price_plan_name").
+		Joins("LEFT JOIN tariff_price_plans ON tariff_price_plans.id = price_schemas.base_price_plan_id AND tariff_price_plans.deleted_at IS NULL").
+		Where("price_schemas.code = ?", code).
 		First(&schema).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -70,10 +76,10 @@ func (r *repository) ListSchemas(ctx context.Context, params ListSchemaParams) (
 
 	if params.Search != "" {
 		s := "%" + strings.ToLower(params.Search) + "%"
-		db = db.Where("LOWER(code) LIKE ? OR LOWER(name) LIKE ?", s, s)
+		db = db.Where("LOWER(price_schemas.code) LIKE ? OR LOWER(price_schemas.name) LIKE ?", s, s)
 	}
 	if params.IsActive != nil {
-		db = db.Where("is_active = ?", *params.IsActive)
+		db = db.Where("price_schemas.is_active = ?", *params.IsActive)
 	}
 
 	var total int64
@@ -86,11 +92,16 @@ func (r *repository) ListSchemas(ctx context.Context, params ListSchemaParams) (
 	}
 	if params.Limit <= 0 {
 		params.Limit = 10
+	} else if params.Limit > 100 {
+		params.Limit = 100
 	}
 	offset := (params.Page - 1) * params.Limit
 
 	var list []PriceSchema
-	err := db.Order("created_at DESC").
+	err := db.
+		Select("price_schemas.*, tariff_price_plans.code AS base_price_plan_code, tariff_price_plans.name AS base_price_plan_name").
+		Joins("LEFT JOIN tariff_price_plans ON tariff_price_plans.id = price_schemas.base_price_plan_id AND tariff_price_plans.deleted_at IS NULL").
+		Order("price_schemas.created_at DESC").
 		Offset(offset).
 		Limit(params.Limit).
 		Find(&list).Error
@@ -200,6 +211,8 @@ func (r *repository) ListRulesBySchemaID(ctx context.Context, schemaID string, p
 	}
 	if params.Limit <= 0 {
 		params.Limit = 10
+	} else if params.Limit > 100 {
+		params.Limit = 100
 	}
 	offset := (params.Page - 1) * params.Limit
 

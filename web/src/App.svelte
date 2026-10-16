@@ -34,7 +34,15 @@
   import { ChartOfAccountsPage } from '$lib/pages/accounting';
 
   // Domain Finance & Tariff Pages
-  import { FinanceTariffPage, FinanceCustomerPage } from '$lib/pages/finance';
+  import {
+    FinancePricePlanPage,
+    FinancePriceSchemaPage,
+    FinanceTariffMatrixPage,
+    FinanceTariffLookupPage,
+    FinanceTariffClassPage,
+    FinanceTariffComponentPage,
+    FinanceCustomerPage
+  } from '$lib/pages/finance';
 
   // Domain Auth & User Management Pages
   import { AuthManagementPage } from '$lib/pages/auth';
@@ -84,6 +92,17 @@
     disposition: 'Rawat Inap / Persiapan Laparotomi Cito'
   });
 
+  let lastActiveModule = $state<string | null>(null);
+  let launcherScrollTop = $state<number>(0);
+  let mainContainerRef = $state<HTMLElement | null>(null);
+
+  // Rekam modul terakhir yang dibuka agar saat kembali ke Desktop Launcher posisinya di-scroll tepat ke modul tersebut
+  $effect(() => {
+    if (activeModule) {
+      lastActiveModule = activeModule;
+    }
+  });
+
   function handleSaveExamination(): void {
     saveSuccessAlert = true;
     setTimeout(() => {
@@ -92,7 +111,18 @@
   }
 
   function handleSelectModule(moduleId: string, defaultNavId: string): void {
+    if (mainContainerRef) {
+      launcherScrollTop = mainContainerRef.scrollTop;
+    }
+    lastActiveModule = moduleId;
     activeNav = defaultNavId;
+  }
+
+  function handleNavigateToDesktop(): void {
+    if (activeModule) {
+      lastActiveModule = activeModule;
+    }
+    activeNav = 'desktop';
   }
 </script>
 
@@ -113,7 +143,7 @@
       user={auth.user}
       onLogout={() => auth.logout()}
       {activeModule}
-      onNavigateToDesktop={() => activeNav = 'desktop'}
+      onNavigateToDesktop={handleNavigateToDesktop}
     />
 
     <!-- Main Layout: Jika di dalam modul tampilkan NavigationRail; jika di Desktop Launcher tampilkan canvas penuh -->
@@ -124,12 +154,15 @@
           {activeModule}
           bind:isExpanded={isSidebarExpanded}
           onNewEncounter={handleSaveExamination}
-          onNavigateHome={() => activeNav = 'desktop'}
+          onNavigateHome={handleNavigateToDesktop}
         />
       {/if}
 
       <!-- Main Content Canvas (Google Drive Spacious Content Island) -->
-      <main class="flex-1 bg-surface-container-lowest md:rounded-3xl border border-outline-variant shadow-xs md:mr-3 md:mb-3 overflow-y-auto p-4 sm:p-6 flex flex-col gap-5">
+      <main
+        bind:this={mainContainerRef}
+        class="flex-1 bg-surface-container-lowest md:rounded-3xl border border-outline-variant shadow-xs {!activeModule ? 'md:ml-3' : ''} md:mr-3 md:mb-3 overflow-y-auto p-4 sm:p-6 flex flex-col gap-5"
+      >
         <!-- Patient Summary Banner (Hanya ditampilkan pada konteks pelayanan klinis pasien aktif) -->
         {#if activeModule === 'clinical' && activeNav !== 'desktop'}
           <PatientBanner />
@@ -148,7 +181,11 @@
 
         <!-- 1. DESKTOP LAUNCHER (BERANDA MODUL UTAMA) -->
         {#if activeNav === 'desktop'}
-          <DesktopLauncher onSelectModule={handleSelectModule} />
+          <DesktopLauncher
+            onSelectModule={handleSelectModule}
+            highlightModuleId={lastActiveModule}
+            savedScrollTop={launcherScrollTop}
+          />
 
         <!-- 2. CLINICAL MODULES -->
         {:else if activeNav === 'physical'}
@@ -180,18 +217,18 @@
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}
           <TariffClassPage />
-        {:else if activeNav === 'finance-tariff'}
-          <FinanceTariffPage initialTab="PLAN" />
-        {:else if activeNav === 'finance-price-plan'}
-          <FinanceTariffPage initialTab="PLAN" />
+        {:else if activeNav === 'finance-tariff' || activeNav === 'finance-price-plan'}
+          <FinancePricePlanPage />
+        {:else if activeNav === 'finance-price-schema'}
+          <FinancePriceSchemaPage />
         {:else if activeNav === 'finance-tariff-matrix'}
-          <FinanceTariffPage initialTab="MATRIX" />
+          <FinanceTariffMatrixPage />
         {:else if activeNav === 'finance-tariff-lookup'}
-          <FinanceTariffPage initialTab="SIMULATOR" />
+          <FinanceTariffLookupPage />
         {:else if activeNav === 'finance-tariff-class'}
-          <FinanceTariffPage initialTab="CLASS" />
+          <FinanceTariffClassPage />
         {:else if activeNav === 'finance-tariff-component'}
-          <FinanceTariffPage initialTab="COMPONENT" />
+          <FinanceTariffComponentPage />
         {:else if activeNav === 'master-item'}
           <ItemPage />
         {:else if activeNav === 'master-coa' || activeNav === 'accounting-coa'}
@@ -209,7 +246,7 @@
               "GET /api/v1/accounting/journals (Daftar & Filter Status Jurnal)",
               "POST /api/v1/accounting/journals/:id/post (Posting ke Buku Besar)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else if activeNav === 'accounting-ledger'}
@@ -223,7 +260,7 @@
               "GET /api/v1/accounting/treasury/book (Buku Kas & Bank Berjalan)",
               "GET /api/v1/accounting/trial-balance (Neraca Saldo / Trial Balance)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else if activeNav === 'accounting-reports'}
@@ -237,7 +274,7 @@
               "GET /api/v1/accounting/reports/income-statement (Laporan Laba Rugi RS)",
               "POST /api/v1/accounting/fiscal-years/close (Tutup Buku Akhir Tahun Fiskal)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         <!-- 3.5 AUTH & USER MANAGEMENT DOMAIN MODULE -->
@@ -260,7 +297,7 @@
               "GET /api/v1/outpatient/queues (Antrean Realtime Pasien)",
               "POST /api/v1/outpatient/encounters/:id/consult (Mulai Konsultasi Dokter)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else if activeNav === 'emergency-workspace'}
@@ -274,7 +311,7 @@
               "GET /api/v1/emergency/active-cases (Daftar Kasus Kritis IGD)",
               "POST /api/v1/emergency/disposition (Disposisi Rawat Inap / Operasi Cito)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else if activeNav === 'inpatient-workspace'}
@@ -288,7 +325,7 @@
               "POST /api/v1/inpatient/transfers (Transfer Ruangan / Bed)",
               "POST /api/v1/inpatient/discharges (Pemulangan & Resume Medis Akhir)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else if activeNav === 'pharmacy-workspace'}
@@ -302,7 +339,7 @@
               "POST /api/v1/pharmacy/prescriptions/:id/review (Telaah 7 Benar Obat)",
               "POST /api/v1/pharmacy/dispensing (Dispensing & Pengurangan Stok Depo)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else if activeNav === 'inventory-workspace'}
@@ -316,7 +353,7 @@
               "POST /api/v1/inventory/movements (Mutasi Stok Antar-Gudang/Depo)",
               "GET /api/v1/inventory/stock-balance (Monitoring Sisa Stok Realtime)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else if activeNav === 'billing-workspace'}
@@ -330,7 +367,7 @@
               "POST /api/v1/billing/invoices (Penerbitan Invoice Tagihan Pasien)",
               "POST /api/v1/billing/payments (Penerimaan Kasir & Bukti Pembayaran)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else if activeNav === 'audit-workspace'}
@@ -343,7 +380,7 @@
               "GET /api/v1/audit/logs (Log Mutasi Rekam Medis & Master Data)",
               "GET /api/v1/audit/security-events (Peringatan Akses Sensitif)"
             ]}
-            onBackToLauncher={() => activeNav = 'desktop'}
+            onBackToLauncher={handleNavigateToDesktop}
           />
 
         {:else}

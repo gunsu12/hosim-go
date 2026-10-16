@@ -28,7 +28,9 @@ type ComponentOutput struct {
 	ComponentName string          `json:"component_name"`
 	ComponentType string          `json:"component_type"`
 	COACode       string          `json:"coa_code"`
+	BaseAmount    decimal.Decimal `json:"base_amount"`
 	Amount        decimal.Decimal `json:"amount"`
+	FinalAmount   decimal.Decimal `json:"final_amount"`
 }
 
 // ApplyAdjustment menghitung harga tarif setelah penyesuaian (PRD §5.2 Langkah 3).
@@ -114,12 +116,15 @@ func DistributeToComponents(
 			if i == targetHospitalIdx {
 				amt = amt.Add(delta)
 			}
+			finalAmt := amt.Round(0)
 			output[i] = ComponentOutput{
 				ComponentID:   c.ComponentID,
 				ComponentName: c.ComponentName,
 				ComponentType: c.ComponentType,
 				COACode:       c.COACode,
-				Amount:        amt.Round(0),
+				BaseAmount:    c.BaseAmount,
+				Amount:        finalAmt,
+				FinalAmount:   finalAmt,
 			}
 		}
 	} else {
@@ -136,7 +141,9 @@ func DistributeToComponents(
 				ComponentName: c.ComponentName,
 				ComponentType: c.ComponentType,
 				COACode:       c.COACode,
+				BaseAmount:    c.BaseAmount,
 				Amount:        amt,
+				FinalAmount:   amt,
 			}
 			sumDistributed = sumDistributed.Add(amt)
 		}
@@ -145,6 +152,7 @@ func DistributeToComponents(
 		roundingDiff := finalPriceTanpaCito.Sub(sumDistributed)
 		if !roundingDiff.IsZero() {
 			output[targetHospitalIdx].Amount = output[targetHospitalIdx].Amount.Add(roundingDiff)
+			output[targetHospitalIdx].FinalAmount = output[targetHospitalIdx].Amount
 		}
 	}
 
@@ -154,6 +162,7 @@ func DistributeToComponents(
 			citoSurcharge := c.CitoAmount.Sub(c.BaseAmount)
 			if citoSurcharge.GreaterThan(zeroDec) {
 				output[i].Amount = output[i].Amount.Add(citoSurcharge.Round(0))
+				output[i].FinalAmount = output[i].Amount
 			}
 		}
 	}

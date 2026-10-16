@@ -35,7 +35,7 @@ internal/finance/
 | [`tariffclass`](tariffclass/README.md) | Kategori kelas tarif untuk akomodasi dan tindakan | Jalur A (Master Data) |
 | [`tariffcomponent`](tariffcomponent/README.md) | Pos pembagian pendapatan (*revenue split*) | Jalur A (Master Data) |
 | [`priceplan`](priceplan/PRD.md) | Buku tarif layanan dasar, matriks harga per kelas, dan riwayat revisi | Jalur B (Business Workflow) |
-| [`priceschema`](priceschema/PRD.md) | Aturan penyesuaian tarif per PKS (override bertingkat & cost sharing) | Jalur B (Business Workflow) |
+| [`priceschema`](priceschema/README.md) | Aturan penyesuaian tarif per PKS (override bertingkat & cost sharing) | Jalur B (Business Workflow) |
 
 ---
 

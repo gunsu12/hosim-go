@@ -5,19 +5,23 @@
   interface Props {
     mod: ModuleDefinition;
     onSelect: (moduleId: string, defaultNavId: string) => void;
+    isHighlighted?: boolean;
   }
 
-  let { mod, onSelect }: Props = $props();
+  let { mod, onSelect, isHighlighted = false }: Props = $props();
 </script>
 
 <div
+  id="launcher-module-{mod.id}"
   role="button"
   tabindex="0"
   onclick={() => onSelect(mod.id, mod.defaultNav)}
   onkeydown={(e) => {
     if (e.key === 'Enter' || e.key === ' ') onSelect(mod.id, mod.defaultNav);
   }}
-  class="group relative text-left bg-white dark:bg-surface-container rounded-xl p-3.5 border border-[#e1e5ea] dark:border-outline-variant hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between gap-2.5 {mod.color.hoverBg}"
+  class="group relative text-left bg-white dark:bg-surface-container rounded-xl p-3.5 border transition-all duration-300 cursor-pointer flex flex-col justify-between gap-2.5 {mod.color.hoverBg} {isHighlighted
+    ? 'border-[#0b57d0] dark:border-primary ring-2 ring-[#0b57d0]/50 dark:ring-primary/50 shadow-lg scale-[1.02]'
+    : 'border-[#e1e5ea] dark:border-outline-variant hover:shadow-md'}"
 >
   <!-- Top: Icon & Status -->
   <div class="flex flex-col gap-2">

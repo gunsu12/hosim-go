@@ -178,19 +178,20 @@ func main() {
 	unitAdapter := priceschema.NewServiceUnitServiceAdapter(serviceUnitService)
 	itemAdapter := priceschema.NewItemUseCaseAdapter(getItemUC)
 	pricePlanAdapter := priceschema.NewPricePlanLookupAdapter(lookupTariffUC)
+	planReaderAdapter := priceschema.NewPricePlanReaderAdapter(getPricePlanUC)
 
 	priceSchemaRepo := priceschema.NewRepository(db)
 	ruleMatcher := priceschema.NewRuleMatcher(priceSchemaRepo, unitAdapter)
 
-	createPriceSchemaUC := priceschema.NewCreatePriceSchemaUseCase(priceSchemaRepo, txManager, auditWriter, deptAdapter, unitAdapter, itemAdapter)
-	updatePriceSchemaUC := priceschema.NewUpdatePriceSchemaUseCase(priceSchemaRepo, txManager, auditWriter)
+	createPriceSchemaUC := priceschema.NewCreatePriceSchemaUseCase(priceSchemaRepo, txManager, auditWriter, deptAdapter, unitAdapter, itemAdapter, planReaderAdapter)
+	updatePriceSchemaUC := priceschema.NewUpdatePriceSchemaUseCase(priceSchemaRepo, txManager, auditWriter, planReaderAdapter)
 	deactivatePriceSchemaUC := priceschema.NewDeactivatePriceSchemaUseCase(priceSchemaRepo, txManager, auditWriter)
 	getPriceSchemaUC := priceschema.NewGetPriceSchemaUseCase(priceSchemaRepo)
 	listPriceSchemasUC := priceschema.NewListPriceSchemasUseCase(priceSchemaRepo)
 	upsertPriceSchemaRuleUC := priceschema.NewUpsertPriceSchemaRuleUseCase(priceSchemaRepo, txManager, auditWriter, deptAdapter, unitAdapter, itemAdapter)
 	deletePriceSchemaRuleUC := priceschema.NewDeletePriceSchemaRuleUseCase(priceSchemaRepo, txManager, auditWriter)
 	listPriceSchemaRulesUC := priceschema.NewListPriceSchemaRulesUseCase(priceSchemaRepo)
-	simulateTariffUC := priceschema.NewSimulateTariffUseCase(pricePlanAdapter, ruleMatcher)
+	simulateTariffUC := priceschema.NewSimulateTariffUseCase(priceSchemaRepo, pricePlanAdapter, ruleMatcher)
 
 	priceSchemaHandler := priceschema.NewHandler(
 		createPriceSchemaUC,

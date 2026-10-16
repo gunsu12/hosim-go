@@ -6,6 +6,8 @@ import {
   BookOpen,
   Receipt,
   Building2,
+  Sliders,
+  Layers,
 } from "@lucide/svelte";
 
 export interface SubMenuItem {
@@ -139,17 +141,11 @@ export const navigationStructure: MenuItem[] = [
     ],
   },
   {
-    id: "tariff",
-    label: "Buku & Manajemen Tarif",
-    shortLabel: "Tarif",
+    id: "tariff-plan",
+    label: "Buku & Skema Tarif",
+    shortLabel: "Buku Tarif",
     icon: Receipt,
     children: [
-      {
-        id: "finance-tariff",
-        label: "Tarif & Price Plan (Tariff)",
-        badge: "Tariff",
-        permission: "tariff_class:read",
-      },
       {
         id: "finance-price-plan",
         label: "Buku Tarif (Price Plan)",
@@ -157,26 +153,48 @@ export const navigationStructure: MenuItem[] = [
         permission: "tariff_price_plan:read",
       },
       {
+        id: "finance-price-schema",
+        label: "Skema Tarif PKS (Schema)",
+        badge: "PKS",
+        permission: "price_schema:read",
+      },
+    ],
+  },
+  {
+    id: "tariff-tools",
+    label: "Matriks & Simulasi Tarif",
+    shortLabel: "Matriks",
+    icon: Sliders,
+    children: [
+      {
         id: "finance-tariff-matrix",
-        label: "Editor Matriks Tarif",
+        label: "Editor Matriks Multi-Kelas",
         badge: "Batch",
         permission: "tariff_price_plan:update",
       },
       {
         id: "finance-tariff-lookup",
-        label: "Kalkulator Lookup Tarif",
+        label: "Simulator & Lookup Tarif",
         badge: "Engine",
         permission: "tariff_price_plan:read",
       },
+    ],
+  },
+  {
+    id: "tariff-master",
+    label: "Master Referensi Tarif",
+    shortLabel: "Kelas & Komponen",
+    icon: Layers,
+    children: [
       {
         id: "finance-tariff-class",
-        label: "Kelas Tarif (Class)",
+        label: "Kelas Perawatan (Class)",
         badge: null,
         permission: "tariff_class:read",
       },
       {
         id: "finance-tariff-component",
-        label: "Komponen Tarif (Component)",
+        label: "Komponen Biaya (Component)",
         badge: null,
         permission: "tariff_component:read",
       },

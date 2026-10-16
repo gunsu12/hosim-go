@@ -8,17 +8,19 @@ import (
 
 // CreatePriceSchemaRequest adalah payload request untuk membuat skema harga baru.
 type CreatePriceSchemaRequest struct {
-	Code        string              `json:"code" binding:"required"`
-	Name        string              `json:"name" binding:"required"`
-	Description *string             `json:"description"`
-	Rules       []UpsertRuleRequest `json:"rules"`
+	Code            string              `json:"code" binding:"required"`
+	Name            string              `json:"name" binding:"required"`
+	Description     *string             `json:"description"`
+	BasePricePlanID *string             `json:"base_price_plan_id"`
+	Rules           []UpsertRuleRequest `json:"rules"`
 }
 
 // UpdatePriceSchemaRequest adalah payload request untuk memperbarui informasi skema harga.
 type UpdatePriceSchemaRequest struct {
-	Name        string  `json:"name" binding:"required"`
-	Description *string `json:"description"`
-	IsActive    *bool   `json:"is_active"`
+	Name            string  `json:"name" binding:"required"`
+	Description     *string `json:"description"`
+	BasePricePlanID *string `json:"base_price_plan_id"`
+	IsActive        *bool   `json:"is_active"`
 }
 
 // UpsertRuleRequest adalah payload request untuk menambah atau memperbarui aturan skema harga.
@@ -38,6 +40,7 @@ type UpsertRuleRequest struct {
 // SimulateTariffRequest adalah payload input untuk simulasi kalkulasi tarif (PRD §5.1, §10).
 type SimulateTariffRequest struct {
 	PriceSchemaID *string `json:"price_schema_id"`
+	PricePlanID   *string `json:"price_plan_id"`
 	TariffClassID string  `json:"tariff_class_id" binding:"required"`
 	ItemID        string  `json:"item_id" binding:"required"`
 	DepartementID *string `json:"departement_id"`
@@ -48,16 +51,19 @@ type SimulateTariffRequest struct {
 
 // PriceSchemaResponse adalah representasi DTO output skema harga.
 type PriceSchemaResponse struct {
-	ID          string                    `json:"id"`
-	Code        string                    `json:"code"`
-	Name        string                    `json:"name"`
-	Description *string                   `json:"description,omitempty"`
-	IsActive    bool                      `json:"is_active"`
-	RulesCount  int                       `json:"rules_count,omitempty"`
-	Rules       []PriceSchemaRuleResponse `json:"rules,omitempty"`
-	CreatedAt   string                    `json:"created_at"`
-	UpdatedAt   string                    `json:"updated_at"`
-	CreatedBy   string                    `json:"created_by"`
+	ID                string                    `json:"id"`
+	Code              string                    `json:"code"`
+	Name              string                    `json:"name"`
+	Description       *string                   `json:"description,omitempty"`
+	BasePricePlanID   *string                   `json:"base_price_plan_id,omitempty"`
+	BasePricePlanCode *string                   `json:"base_price_plan_code,omitempty"`
+	BasePricePlanName *string                   `json:"base_price_plan_name,omitempty"`
+	IsActive          bool                      `json:"is_active"`
+	RulesCount        int                       `json:"rules_count,omitempty"`
+	Rules             []PriceSchemaRuleResponse `json:"rules,omitempty"`
+	CreatedAt         string                    `json:"created_at"`
+	UpdatedAt         string                    `json:"updated_at"`
+	CreatedBy         string                    `json:"created_by"`
 	UpdatedBy   string                    `json:"updated_by"`
 }
 
@@ -115,17 +121,20 @@ func ToPriceSchemaResponse(s *PriceSchema) PriceSchemaResponse {
 	}
 
 	return PriceSchemaResponse{
-		ID:          s.ID,
-		Code:        s.Code,
-		Name:        s.Name,
-		Description: s.Description,
-		IsActive:    s.IsActive,
-		RulesCount:  len(s.Rules),
-		Rules:       rulesResp,
-		CreatedAt:   s.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:   s.UpdatedAt.Format(time.RFC3339),
-		CreatedBy:   s.CreatedBy,
-		UpdatedBy:   s.UpdatedBy,
+		ID:                s.ID,
+		Code:              s.Code,
+		Name:              s.Name,
+		Description:       s.Description,
+		BasePricePlanID:   s.BasePricePlanID,
+		BasePricePlanCode: s.BasePricePlanCode,
+		BasePricePlanName: s.BasePricePlanName,
+		IsActive:          s.IsActive,
+		RulesCount:        len(s.Rules),
+		Rules:             rulesResp,
+		CreatedAt:         s.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:         s.UpdatedAt.Format(time.RFC3339),
+		CreatedBy:         s.CreatedBy,
+		UpdatedBy:         s.UpdatedBy,
 	}
 }
 

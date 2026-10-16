@@ -2,6 +2,7 @@ package priceschema
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"hosim-go/internal/catalog/item"
@@ -63,6 +64,26 @@ func (a *ItemUseCaseAdapter) IsActiveItem(ctx context.Context, id string) (bool,
 	return itemDetail.IsActive, nil
 }
 
+// PricePlanReaderAdapter mengadaptasi priceplan.GetPricePlanUseCase menjadi PricePlanReader.
+type PricePlanReaderAdapter struct {
+	uc priceplan.GetPricePlanUseCase
+}
+
+func NewPricePlanReaderAdapter(uc priceplan.GetPricePlanUseCase) PricePlanReader {
+	return &PricePlanReaderAdapter{uc: uc}
+}
+
+func (a *PricePlanReaderAdapter) PlanExists(ctx context.Context, id string) (bool, error) {
+	plan, err := a.uc.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, priceplan.ErrPricePlanNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return plan != nil, nil
+}
+
 // PricePlanLookupAdapter mengadaptasi priceplan.LookupTariffUseCase menjadi TariffBaseLookup.
 type PricePlanLookupAdapter struct {
 	uc priceplan.LookupTariffUseCase
@@ -72,11 +93,12 @@ func NewPricePlanLookupAdapter(uc priceplan.LookupTariffUseCase) TariffBaseLooku
 	return &PricePlanLookupAdapter{uc: uc}
 }
 
-func (a *PricePlanLookupAdapter) LookupTariffBase(ctx context.Context, tariffClassID, itemID string, serviceDate time.Time, isCito bool) (*TariffBaseResult, error) {
+func (a *PricePlanLookupAdapter) LookupTariffBase(ctx context.Context, pricePlanID *string, tariffClassID, itemID string, serviceDate time.Time, isCito bool) (*TariffBaseResult, error) {
 	dateStr := serviceDate.Format("2006-01-02")
 
 	// Panggil lookup reguler untuk mendapatkan base price dan base amount per komponen
 	baseReq := priceplan.LookupTariffRequest{
+		PricePlanID:     pricePlanID,
 		TariffClassID:   tariffClassID,
 		ItemID:          itemID,
 		TransactionDate: dateStr,
@@ -106,6 +128,7 @@ func (a *PricePlanLookupAdapter) LookupTariffBase(ctx context.Context, tariffCla
 	// Jika CITO, panggil lookup dengan IsCito: true untuk mendapatkan total CITO dan CITO amount per komponen
 	if isCito {
 		citoReq := priceplan.LookupTariffRequest{
+			PricePlanID:     pricePlanID,
 			TariffClassID:   tariffClassID,
 			ItemID:          itemID,
 			TransactionDate: dateStr,

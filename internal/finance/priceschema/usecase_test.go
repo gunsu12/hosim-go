@@ -3,6 +3,7 @@ package priceschema
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -226,6 +227,12 @@ func (m *mockItemReader) IsActiveItem(ctx context.Context, id string) (bool, err
 	return id == "item-valid", nil
 }
 
+type mockPlanReader struct{}
+
+func (m *mockPlanReader) PlanExists(ctx context.Context, id string) (bool, error) {
+	return !strings.HasPrefix(id, "plan-invalid"), nil
+}
+
 // -------------------------------------------------------------
 // Tests
 // -------------------------------------------------------------
@@ -236,8 +243,9 @@ func TestCreatePriceSchema_AutomaticDefaultRule(t *testing.T) {
 	auditW := &mockAuditWriter{}
 	org := &mockOrgReader{}
 	itemR := &mockItemReader{}
+	planR := &mockPlanReader{}
 
-	uc := NewCreatePriceSchemaUseCase(repo, tx, auditW, org, org, itemR)
+	uc := NewCreatePriceSchemaUseCase(repo, tx, auditW, org, org, itemR, planR)
 	ctx := context.Background()
 	actor := OperatorContext{UserID: "usr-1", Username: "admin", Role: "ADMIN"}
 
@@ -488,12 +496,18 @@ func TestHierarchyOverridePriority(t *testing.T) {
 // Mock TariffBaseLookup
 type mockTariffLookup struct{}
 
-func (m *mockTariffLookup) LookupTariffBase(ctx context.Context, tariffClassID, itemID string, serviceDate time.Time, isCito bool) (*TariffBaseResult, error) {
+func (m *mockTariffLookup) LookupTariffBase(ctx context.Context, pricePlanID *string, tariffClassID, itemID string, serviceDate time.Time, isCito bool) (*TariffBaseResult, error) {
 	coaSarana := "410.01"
 	coaDokter := "214.01"
+	planID := "plan-standard"
+	planCode := "STANDARD_2026"
+	if pricePlanID != nil {
+		planID = *pricePlanID
+		planCode = "CUSTOM_" + *pricePlanID
+	}
 	return &TariffBaseResult{
-		PricePlanID:    "plan-standard",
-		PricePlanCode:  "STANDARD_2026",
+		PricePlanID:    planID,
+		PricePlanCode:  planCode,
 		TotalBasePrice: decimal.NewFromInt(200000),
 		TotalCitoPrice: decimal.NewFromInt(250000),
 		Components: []ComponentInput{
@@ -525,10 +539,16 @@ func TestSimulateTariffUseCase(t *testing.T) {
 	matcher := NewRuleMatcher(repo, org)
 	lookup := &mockTariffLookup{}
 
-	uc := NewSimulateTariffUseCase(lookup, matcher)
+	uc := NewSimulateTariffUseCase(repo, lookup, matcher)
 	ctx := context.Background()
 
 	schemaID := "schema-sim"
+	_ = repo.CreateSchema(ctx, &PriceSchema{
+		ID:       schemaID,
+		Code:     "SCHEMA_SIM",
+		Name:     "Schema Sim",
+		IsActive: true,
+	})
 	// Rule: Diskon 10% (Rp 180.000), Pajak 10% (Rp 18.000), Gross 198.000. Patient 20%, Customer 80%
 	rule := &PriceSchemaRule{
 		ID:                    "rule-sim",
@@ -573,6 +593,15 @@ func TestSimulateTariffUseCase(t *testing.T) {
 	if !res.CustomerAmount.Equal(decimal.NewFromInt(158400)) {
 		t.Errorf("expected customer 158400, got %v", res.CustomerAmount)
 	}
+
+	// Uji simulasi gagal jika schema dinonaktifkan
+	simSchema, _ := repo.FindSchemaByID(ctx, schemaID)
+	simSchema.IsActive = false
+	_ = repo.UpdateSchema(ctx, simSchema)
+	_, err = uc.Execute(ctx, req)
+	if !errors.Is(err, ErrSchemaInactive) {
+		t.Fatalf("expected ErrSchemaInactive when schema is deactivated, got %v", err)
+	}
 }
 
 func TestCreatePriceSchema_ValidateCrossModuleReferences(t *testing.T) {
@@ -581,8 +610,9 @@ func TestCreatePriceSchema_ValidateCrossModuleReferences(t *testing.T) {
 	auditW := &mockAuditWriter{}
 	org := &mockOrgReader{}
 	itemR := &mockItemReader{}
+	planR := &mockPlanReader{}
 
-	uc := NewCreatePriceSchemaUseCase(repo, tx, auditW, org, org, itemR)
+	uc := NewCreatePriceSchemaUseCase(repo, tx, auditW, org, org, itemR, planR)
 	ctx := context.Background()
 	actor := OperatorContext{UserID: "usr-1", Username: "admin", Role: "ADMIN"}
 
@@ -613,7 +643,7 @@ func TestSimulateTariffUseCase_InvalidSchemaReturnsError(t *testing.T) {
 	matcher := NewRuleMatcher(repo, org)
 	lookup := &mockTariffLookup{}
 
-	uc := NewSimulateTariffUseCase(lookup, matcher)
+	uc := NewSimulateTariffUseCase(repo, lookup, matcher)
 	ctx := context.Background()
 
 	invalidSchemaID := "schema-non-existent"
@@ -635,8 +665,9 @@ func TestCreatePriceSchema_DuplicateScopeAndMultipleDefaults(t *testing.T) {
 	auditW := &mockAuditWriter{}
 	org := &mockOrgReader{}
 	itemR := &mockItemReader{}
+	planR := &mockPlanReader{}
 
-	uc := NewCreatePriceSchemaUseCase(repo, tx, auditW, org, org, itemR)
+	uc := NewCreatePriceSchemaUseCase(repo, tx, auditW, org, org, itemR, planR)
 	ctx := context.Background()
 	actor := OperatorContext{UserID: "usr-1", Username: "admin", Role: "ADMIN"}
 
@@ -689,3 +720,103 @@ func TestCreatePriceSchema_DuplicateScopeAndMultipleDefaults(t *testing.T) {
 		t.Fatalf("expected ErrDuplicateRuleScope, got %v", err)
 	}
 }
+
+func TestPriceSchema_BasePricePlanIntegration(t *testing.T) {
+	repo := newMockRepository()
+	tx := &mockTxManager{}
+	auditW := &mockAuditWriter{}
+	org := &mockOrgReader{}
+	itemR := &mockItemReader{}
+	planR := &mockPlanReader{}
+
+	createUC := NewCreatePriceSchemaUseCase(repo, tx, auditW, org, org, itemR, planR)
+	ctx := context.Background()
+	actor := OperatorContext{UserID: "usr-1", Username: "admin", Role: "ADMIN"}
+
+	// 1. Gagal jika base_price_plan_id tidak valid
+	invalidPlanID := "plan-invalid"
+	reqInvalid := CreatePriceSchemaRequest{
+		Code:            "SCHEMA_BPJS_INVALID",
+		Name:            "Skema BPJS Plan Invalid",
+		BasePricePlanID: &invalidPlanID,
+	}
+	_, err := createUC.Execute(ctx, reqInvalid, actor)
+	if !errors.Is(err, ErrPricePlanNotFound) {
+		t.Fatalf("expected ErrPricePlanNotFound, got %v", err)
+	}
+
+	// 2. Sukses jika base_price_plan_id valid
+	validPlanID := "plan-bpjs-2024"
+	reqValid := CreatePriceSchemaRequest{
+		Code:            "SCHEMA_BPJS_2024",
+		Name:            "Skema BPJS TK 2024",
+		BasePricePlanID: &validPlanID,
+	}
+	res, err := createUC.Execute(ctx, reqValid, actor)
+	if err != nil {
+		t.Fatalf("unexpected error creating schema: %v", err)
+	}
+	if res.BasePricePlanID == nil || *res.BasePricePlanID != validPlanID {
+		t.Fatalf("expected base_price_plan_id %s, got %v", validPlanID, res.BasePricePlanID)
+	}
+
+	// 3. Simulasi otomatis menggunakan base_price_plan_id dari skema
+	matcher := NewRuleMatcher(repo, org)
+	lookup := &mockTariffLookup{}
+	simUC := NewSimulateTariffUseCase(repo, lookup, matcher)
+
+	simReq := SimulateTariffRequest{
+		PriceSchemaID: &res.ID,
+		TariffClassID: "class-1",
+		ItemID:        "item-konsul",
+	}
+	simRes, err := simUC.Execute(ctx, simReq)
+	if err != nil {
+		t.Fatalf("unexpected error simulating tariff: %v", err)
+	}
+
+	if simRes.PricePlanID != validPlanID {
+		t.Fatalf("expected simulated price_plan_id %s, got %s", validPlanID, simRes.PricePlanID)
+	}
+
+	// 4. Update Price Schema dengan base_price_plan_id invalid
+	updateUC := NewUpdatePriceSchemaUseCase(repo, tx, auditW, planR)
+	invalidUpdatePlanID := "plan-invalid-update"
+	updateReqInvalid := UpdatePriceSchemaRequest{
+		Name:            "Skema Update Invalid",
+		BasePricePlanID: &invalidUpdatePlanID,
+	}
+	_, err = updateUC.Execute(ctx, res.ID, updateReqInvalid, actor)
+	if !errors.Is(err, ErrPricePlanNotFound) {
+		t.Fatalf("expected ErrPricePlanNotFound on update with invalid plan, got %v", err)
+	}
+
+	// 5. Update Price Schema dengan base_price_plan_id valid
+	anotherValidPlanID := "plan-bpjs-2024"
+	updateReqValid := UpdatePriceSchemaRequest{
+		Name:            "Skema Update Valid",
+		BasePricePlanID: &anotherValidPlanID,
+	}
+	updateRes, err := updateUC.Execute(ctx, res.ID, updateReqValid, actor)
+	if err != nil {
+		t.Fatalf("unexpected error updating schema: %v", err)
+	}
+	if updateRes.BasePricePlanID == nil || *updateRes.BasePricePlanID != anotherValidPlanID {
+		t.Fatalf("expected base_price_plan_id %s, got %v", anotherValidPlanID, updateRes.BasePricePlanID)
+	}
+
+	// 6. Update Price Schema dengan string kosong (menghapus base_price_plan_id)
+	emptyPlanID := "   "
+	updateReqClear := UpdatePriceSchemaRequest{
+		Name:            "Skema Update Clear",
+		BasePricePlanID: &emptyPlanID,
+	}
+	clearRes, err := updateUC.Execute(ctx, res.ID, updateReqClear, actor)
+	if err != nil {
+		t.Fatalf("unexpected error clearing schema base price plan: %v", err)
+	}
+	if clearRes.BasePricePlanID != nil {
+		t.Fatalf("expected base_price_plan_id to be cleared, got %v", clearRes.BasePricePlanID)
+	}
+}
+

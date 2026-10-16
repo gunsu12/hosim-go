@@ -101,6 +101,14 @@ func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 func (h *Handler) ListSchemas(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	} else if limit > 100 {
+		limit = 100
+	}
 	search := c.Query("q")
 
 	var isActive *bool
@@ -128,6 +136,8 @@ func (h *Handler) ListSchemas(c *gin.Context) {
 func isClientValidationError(err error) bool {
 	return errors.Is(err, ErrSchemaCodeRequired) ||
 		errors.Is(err, ErrSchemaNameRequired) ||
+		errors.Is(err, ErrSchemaInactive) ||
+		errors.Is(err, ErrPricePlanNotFound) ||
 		errors.Is(err, ErrScopeExclusive) ||
 		errors.Is(err, ErrFixedPriceRequiresItem) ||
 		errors.Is(err, ErrFixedPriceNegative) ||
@@ -200,7 +210,7 @@ func (h *Handler) UpdateSchema(c *gin.Context) {
 			response.Error(c, http.StatusNotFound, err.Error(), nil)
 			return
 		}
-		if errors.Is(err, ErrSchemaNameRequired) {
+		if isClientValidationError(err) {
 			response.Error(c, http.StatusBadRequest, err.Error(), nil)
 			return
 		}
@@ -232,6 +242,14 @@ func (h *Handler) ListRules(c *gin.Context) {
 	schemaID := c.Param("id")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 20
+	} else if limit > 100 {
+		limit = 100
+	}
 
 	params := ListRuleParams{
 		Level:         c.Query("level"),

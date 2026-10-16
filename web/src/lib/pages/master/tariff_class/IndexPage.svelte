@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FinanceTariffPage } from '../../finance';
+  import { FinanceTariffClassPage } from '../../finance';
 </script>
 
-<FinanceTariffPage initialTab="CLASS" />
+<FinanceTariffClassPage />

@@ -21,7 +21,7 @@ Membuat sistem tarif yang fleksibel untuk menyesuaikan harga setiap customer/pen
 
 | # | Topik | Keputusan |
 |---|---|---|
-| D1 | Price Plan vs Price Schema | Price Plan hanya menjadi buku tarif dasar RS. `tariff_price_plans.customer_id` di-**deprecate** (lihat §9). Satu-satunya sumber penyesuaian per customer adalah Contract → Price Schema. |
+| D1 | Price Plan vs Price Schema | Price Plan adalah buku tarif dasar RS. Price Schema dapat mengunci **buku tarif acuan dasar** (`base_price_plan_id`). Jika `base_price_plan_id` diisi, harga dasar diambil dari buku tarif spesifik tersebut (misal Buku Tarif 2024 / BPJS TK). Jika `NULL`, sistem otomatis mengikuti Buku Tarif Standar RS aktif per tanggal transaksi. |
 | D2 | Arti "Service" | Service = `service_units` (modul organization). |
 | D3 | Bentuk hierarki | Satu tabel rule dengan scope opsional (`departement_id`, `service_unit_id`, `item_id` nullable), bukan tabel bertingkat dengan FK berantai. |
 | D4 | Penggabungan level | **Override**: rule paling spesifik yang cocok dipakai **sepenuhnya**; level di atasnya diabaikan. Tidak ada penjumlahan antarlevel. |
@@ -73,17 +73,19 @@ Aturan: `service_unit_id` dan `departement_id` **tidak boleh diisi bersamaan**. 
 
 ```sql
 CREATE TABLE price_schemas (
-    id          VARCHAR(36)  PRIMARY KEY,
-    code        VARCHAR(50)  NOT NULL,
-    name        VARCHAR(150) NOT NULL,
-    description TEXT,
-    is_active   BOOLEAN      NOT NULL DEFAULT TRUE,
-    created_at  TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by  VARCHAR(50)  NOT NULL,
-    updated_by  VARCHAR(50)  NOT NULL
+    id                 VARCHAR(36)  PRIMARY KEY,
+    code               VARCHAR(50)  NOT NULL,
+    name               VARCHAR(150) NOT NULL,
+    description        TEXT,
+    base_price_plan_id VARCHAR(36)  REFERENCES tariff_price_plans(id) ON DELETE RESTRICT,
+    is_active          BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at         TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at         TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by         VARCHAR(50)  NOT NULL,
+    updated_by         VARCHAR(50)  NOT NULL
 );
 CREATE UNIQUE INDEX idx_price_schemas_code ON price_schemas(code);
+CREATE INDEX idx_price_schemas_base_price_plan_id ON price_schemas(base_price_plan_id);
 ```
 
 - Tidak memakai soft delete. Schema yang sudah dipakai registrasi **tidak boleh dihapus**; nonaktifkan dengan `is_active = FALSE`.
@@ -362,7 +364,7 @@ Tagihan lama **tidak boleh** membaca ulang price schema.
 | `priceplan` | `customer_id` di-deprecate. Pola expand → contract: (1) stop membuat plan baru dengan `customer_id`, (2) migrasikan plan customer yang ada menjadi rule `FIXED_PRICE` di schema, (3) hapus Langkah 1 di `internal/finance/priceplan/lookup_tariff.go` , (4) drop kolom lewat migrasi baru. |
 | `customercontract` | Revisi PRD ke sintaks PostgreSQL (hapus `ON UPDATE CURRENT_TIMESTAMP` dan `enum` MySQL), tambah `priority` di pivot (§4.4). |
 | registrasi/encounter | Simpan `customer_contract_id` dan `price_schema_id`; validasi §6.2. |
-| `billing` | Konsumsi `LookupTariff` + `FindMatchingRule`, kalkulasi §5, simpan snapshot §8. |
+| `billing` | Membangun fitur **Patient Visit Charge Tariff**: konsumsi `LookupTariff` (`priceplan`) + `FindMatchingRule` (`priceschema`), kalkulasi via `calculation.go` (§5, §12), dan simpan immutable snapshot (§8). |
 | `organization` | Sediakan query contract untuk departement dari service unit dan cek status aktif. |
 
 ---
@@ -398,3 +400,37 @@ Tagihan lama **tidak boleh** membaca ulang price schema.
 | Q3 | Tanggungan / Cost Sharing Fallback | **Setiap Price Schema WAJIB memiliki tepat 1 rule `SCHEMA_DEFAULT`** (seluruh scope ID bernilai NULL). Untuk pasien umum (tanpa `price_schema_id`), sistem billing mengasumsikan tanggungan 100% Pasien / Pribadi. |
 | Q4 | Plafon Biaya / Plafon Layanan | Di luar fase 1; fitur limitasi kredit/plafon akan dikelola pada modul `customercontract`. |
 | Q5 | Otorisasi Akses Mutasi | Dibatasi oleh permission RBAC khusus `finance.price_schema.manage`. Approval multi-step belum diperlukan di fase 1. |
+
+---
+
+## 12. Roadmap & Technical Debt: Single Source of Truth (SSoT) Penentuan Tarif & Farmasi
+
+Dokumentasi ini mengikat arsitektur penentuan harga di seluruh sistem HOSIM-GO agar tidak terjadi fragmentasi logika saat mengimplementasikan modul `billing` dan alur pelayanan pasien (*Patient Visit Charge Tariff*).
+
+### 12.1 SSoT Tarif Tindakan / Layanan (*Patient Visit Charge Tariff*)
+1. **Single Source of Truth Perhitungan Matematis**:
+   - Seluruh logika kalkulasi tarif tindakan/layanan medis dipusatkan secara eksklusif pada file:
+     [`internal/finance/priceschema/calculation.go`](./calculation.go)
+   - Fungsi domain murni (`ApplyAdjustment`, `CalculateTax`, `CalculateCostSharing`, `DistributeToComponents`) di file tersebut adalah **satu-satunya rujukan resmi** untuk:
+     - Penghitungan penyesuaian tarif (markup %, diskon %, nominal tetap, fixed price PKS).
+     - Perhitungan PPN tagihan.
+     - Pembagian porsi tagihan antara Pasien dan Customer/Penjamin (*cost sharing*).
+     - Alokasi proporsional pecahan komponen biaya (Jasa Sarana RS, Jasa Medis Dokter, Anestesi, Paramedis) beserta penanganan pembulatan (*residual rounding* ke Jasa RS).
+2. **Orkestrasi pada Modul Billing**:
+   - Saat mengimplementasikan fitur penagihan tindakan kunjungan pasien (**Patient Visit Charge Tariff**) di `internal/billing`:
+     - Ambil tarif dasar RS dari `internal/finance/priceplan` (`LookupTariffBase`).
+     - Ambil aturan penyesuaian PKS dari `internal/finance/priceschema` (`FindMatchingRule`).
+     - Eksekusi kalkulasi melalui fungsi-fungsi di `internal/finance/priceschema/calculation.go`.
+     - Simpan **Immutable Snapshot** pada tabel charge line billing (`priced_at`, `price_plan_id`, `price_schema_id`, `final_price`, breakdown komponen).
+   - **DILARANG KERAS** bagi modul operasional mana pun (*Billing*, *Outpatient*, *Inpatient*, *Emergency*) membuat rumus perhitungan tarif sendiri atau melakukan mutasi manual terhadap nominal tarif di luar engine ini.
+3. **Pembersihan Technical Debt Price Plan (Deprecasi Langkah 1)**:
+   - Bersamaan dengan integrasi billing / visit charge, hapus **Langkah 1** di [`internal/finance/priceplan/lookup_tariff.go`](../priceplan/lookup_tariff.go) (pencarian custom plan via `customer_id`).
+   - Dengan demikian, `priceplan` murni menjadi SSoT untuk **buku tarif dasar RS**, dan `priceschema` murni menjadi SSoT untuk **penyesuaian tarif PKS**.
+
+### 12.2 Single Source of Functionality untuk Obat & BMHP (Fase 2)
+1. **Kebutuhan Pricing Farmasi & Logistik**:
+   - Kolom `medication_adjustment_type` dan `medication_adjustment_value` telah disiapkan pada skema database `price_schema_rules`.
+   - Pada fase berikutnya, penghitungan harga jual obat dan BHP/BMHP (meliputi harga dasar/HNA/HPP, margin/markup apotek, penyesuaian diskon/markup PKS per departemen/unit/kategori obat, tuslah/embalase resep, PPN, dan cost sharing) **WAJIB memiliki Single Source of Functionality terpusat** (mengikuti pola murni seperti `priceschema/calculation.go`).
+2. **Konsistensi Lintas Modul**:
+   - Modul `billing` (kasir), `pharmacy` (dispensing obat / resep rawat jalan dan rawat inap), serta `inventory` (penjualan BMHP) **wajib mengonsumsi engine kalkulasi farmasi yang sama**.
+   - Dilarang menduplikasi perhitungan margin atau diskon obat secara terpisah di modul apotek vs modul kasir guna mencegah disparitas harga tagihan obat.

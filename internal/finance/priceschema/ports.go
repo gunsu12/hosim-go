@@ -49,9 +49,14 @@ type ItemReader interface {
 	IsActiveItem(ctx context.Context, id string) (bool, error)
 }
 
+// PricePlanReader adalah port verifikasi keberadaan buku tarif di modul priceplan.
+type PricePlanReader interface {
+	PlanExists(ctx context.Context, id string) (bool, error)
+}
+
 // TariffBaseLookup adalah port lookup tarif dasar ke modul priceplan.
 type TariffBaseLookup interface {
-	LookupTariffBase(ctx context.Context, tariffClassID, itemID string, serviceDate time.Time, isCito bool) (*TariffBaseResult, error)
+	LookupTariffBase(ctx context.Context, pricePlanID *string, tariffClassID, itemID string, serviceDate time.Time, isCito bool) (*TariffBaseResult, error)
 }
 
 // TariffBaseResult adalah data tarif dasar hasil lookup dari Price Plan.

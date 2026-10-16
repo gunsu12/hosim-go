@@ -188,14 +188,26 @@ type mockRepository struct {
 	defaultPlan *TariffPricePlan
 	itemsMap    map[string]*TariffPricePlanItem // key: planID:itemID:classID
 	planByID    *TariffPricePlan
+	plansMap    map[string]*TariffPricePlan
 	allItems    []TariffPricePlanItem
 }
 
 func (m *mockRepository) CreatePlan(ctx context.Context, plan *TariffPricePlan) error { return nil }
 func (m *mockRepository) UpdatePlan(ctx context.Context, plan *TariffPricePlan) error { return nil }
 func (m *mockRepository) FindPlanByID(ctx context.Context, id string) (*TariffPricePlan, error) {
+	if m.plansMap != nil {
+		if p, ok := m.plansMap[id]; ok {
+			return p, nil
+		}
+	}
 	if m.planByID != nil {
 		return m.planByID, nil
+	}
+	if m.customPlan != nil && m.customPlan.ID == id {
+		return m.customPlan, nil
+	}
+	if m.defaultPlan != nil && m.defaultPlan.ID == id {
+		return m.defaultPlan, nil
 	}
 	return nil, gorm.ErrRecordNotFound
 }
@@ -423,6 +435,167 @@ func TestLookupTariffUseCase_HierarchicalResolution(t *testing.T) {
 		}
 		if !res.IsCito {
 			t.Errorf("expected is_cito to be true in response")
+		}
+	})
+}
+
+func TestLookupTariffUseCase_SpecificPricePlanSecurity(t *testing.T) {
+	ctx := context.Background()
+	custA := "cust-a"
+	custB := "cust-b"
+	itemID := "item-lab-darah"
+	classID := "class-1"
+	now := time.Now().UTC()
+
+	effFrom := now.Add(-24 * time.Hour)
+	effTo := now.Add(24 * time.Hour)
+	expiredFrom := now.Add(-48 * time.Hour)
+	expiredTo := now.Add(-24 * time.Hour)
+
+	// 1. Buku tarif DRAFT
+	draftPlan := &TariffPricePlan{
+		ID:            "plan-draft",
+		Code:          "TPP-DRAFT",
+		Name:          "Draft Plan",
+		Status:        PricePlanStatusDraft,
+		EffectiveFrom: effFrom,
+		EffectiveTo:   &effTo,
+	}
+
+	// 2. Buku tarif EXPIRED
+	expiredPlan := &TariffPricePlan{
+		ID:            "plan-expired",
+		Code:          "TPP-EXPIRED",
+		Name:          "Expired Plan",
+		Status:        PricePlanStatusActive,
+		EffectiveFrom: expiredFrom,
+		EffectiveTo:   &expiredTo,
+	}
+
+	// 3. Buku tarif KHUSUS PENJAMIN A
+	customPlanA := &TariffPricePlan{
+		ID:            "plan-custom-a",
+		Code:          "TPP-CUSTOM-A",
+		Name:          "Custom Plan A",
+		Status:        PricePlanStatusActive,
+		CustomerID:    &custA,
+		EffectiveFrom: effFrom,
+		EffectiveTo:   &effTo,
+	}
+
+	// 4. Buku tarif VALID & AKTIF STANDAR
+	activeValidPlan := &TariffPricePlan{
+		ID:            "plan-valid",
+		Code:          "TPP-VALID",
+		Name:          "Valid Active Plan",
+		Status:        PricePlanStatusActive,
+		EffectiveFrom: effFrom,
+		EffectiveTo:   &effTo,
+	}
+
+	createItem := func(planID string, price float64) *TariffPricePlanItem {
+		return &TariffPricePlanItem{
+			ID:              "item-" + planID,
+			PricePlanID:     planID,
+			ItemID:          itemID,
+			TariffClassID:   classID,
+			TotalBasePrice:  price,
+			IsActive:        true,
+			Components: []TariffPricePlanItemComponent{
+				{ComponentID: "c1", BaseAmount: price},
+			},
+		}
+	}
+
+	mockRepo := &mockRepository{
+		plansMap: map[string]*TariffPricePlan{
+			"plan-draft":    draftPlan,
+			"plan-expired":  expiredPlan,
+			"plan-custom-a": customPlanA,
+			"plan-valid":    activeValidPlan,
+		},
+		itemsMap: map[string]*TariffPricePlanItem{
+			"plan-draft:" + itemID + ":" + classID:    createItem("plan-draft", 10000),
+			"plan-expired:" + itemID + ":" + classID:  createItem("plan-expired", 20000),
+			"plan-custom-a:" + itemID + ":" + classID: createItem("plan-custom-a", 30000),
+			"plan-valid:" + itemID + ":" + classID:    createItem("plan-valid", 50000),
+		},
+	}
+
+	uc := NewLookupTariffUseCase(mockRepo)
+
+	// Kasus A: Rencana status DRAFT tidak boleh digunakan
+	t.Run("Reject DRAFT status plan", func(t *testing.T) {
+		planID := "plan-draft"
+		_, err := uc.Execute(ctx, LookupTariffRequest{
+			PricePlanID:     &planID,
+			TariffClassID:   classID,
+			ItemID:          itemID,
+			TransactionDate: now.Format(time.RFC3339),
+		})
+		if !errors.Is(err, ErrTariffNotConfigured) {
+			t.Fatalf("expected ErrTariffNotConfigured when specific plan is DRAFT, got %v", err)
+		}
+	})
+
+	// Kasus B: Rencana kadaluarsa tidak boleh digunakan
+	t.Run("Reject EXPIRED date plan", func(t *testing.T) {
+		planID := "plan-expired"
+		_, err := uc.Execute(ctx, LookupTariffRequest{
+			PricePlanID:     &planID,
+			TariffClassID:   classID,
+			ItemID:          itemID,
+			TransactionDate: now.Format(time.RFC3339),
+		})
+		if !errors.Is(err, ErrTariffNotConfigured) {
+			t.Fatalf("expected ErrTariffNotConfigured when specific plan is expired, got %v", err)
+		}
+	})
+
+	// Kasus C: Rencana khusus Penjamin A tidak boleh dipakai tanpa CustomerID / dengan CustomerID B
+	t.Run("Reject custom plan without matching customer", func(t *testing.T) {
+		planID := "plan-custom-a"
+		// C.1: Tanpa CustomerID
+		_, err := uc.Execute(ctx, LookupTariffRequest{
+			PricePlanID:     &planID,
+			TariffClassID:   classID,
+			ItemID:          itemID,
+			TransactionDate: now.Format(time.RFC3339),
+		})
+		if !errors.Is(err, ErrTariffNotConfigured) {
+			t.Fatalf("expected ErrTariffNotConfigured when customer is missing for custom plan, got %v", err)
+		}
+
+		// C.2: Dengan CustomerID B yang tidak cocok
+		_, err = uc.Execute(ctx, LookupTariffRequest{
+			PricePlanID:     &planID,
+			CustomerID:      &custB,
+			TariffClassID:   classID,
+			ItemID:          itemID,
+			TransactionDate: now.Format(time.RFC3339),
+		})
+		if !errors.Is(err, ErrTariffNotConfigured) {
+			t.Fatalf("expected ErrTariffNotConfigured when customer mismatch for custom plan, got %v", err)
+		}
+	})
+
+	// Kasus D: Rencana VALID dan AKTIF sukses digunakan
+	t.Run("Accept valid and active specific plan", func(t *testing.T) {
+		planID := "plan-valid"
+		res, err := uc.Execute(ctx, LookupTariffRequest{
+			PricePlanID:     &planID,
+			TariffClassID:   classID,
+			ItemID:          itemID,
+			TransactionDate: now.Format(time.RFC3339),
+		})
+		if err != nil {
+			t.Fatalf("unexpected error for valid plan: %v", err)
+		}
+		if res.PricePlanID != planID {
+			t.Fatalf("expected plan %s, got %s", planID, res.PricePlanID)
+		}
+		if res.TotalPrice != 50000 {
+			t.Fatalf("expected price 50000, got %f", res.TotalPrice)
 		}
 	})
 }
