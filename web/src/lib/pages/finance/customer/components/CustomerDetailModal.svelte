@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Building2, Edit } from '@lucide/svelte';
+  import { Building2, Edit, FileText } from '@lucide/svelte';
   import M3Modal from '$lib/components/m3/M3Modal.svelte';
   import M3Button from '$lib/components/m3/M3Button.svelte';
   import type { CustomerRecord } from '$lib/types/finance';
@@ -127,6 +127,16 @@
       Tutup
     </M3Button>
     {#if customer}
+      <M3Button
+        variant="tonal"
+        onclick={() => {
+          onClose();
+          window.location.hash = '#finance-customer-contract';
+        }}
+      >
+        <FileText class="w-4 h-4 mr-1" />
+        <span>Kontrak PKS</span>
+      </M3Button>
       <M3Button variant="filled" onclick={() => { onClose(); onEdit(customer!); }}>
         <Edit class="w-4 h-4 mr-1" />
         <span>Edit Penjamin</span>

@@ -19,7 +19,10 @@ Kata **WAJIB**, **DILARANG**, dan **BOLEH** bersifat normatif.
 | **Tombol Aksi** | [`M3Button.svelte`](./src/lib/components/m3/M3Button.svelte) | Tag `<button>` tanpa styling standar M3 |
 | **Reaktivitas Komponen** | Svelte 5 Runes (`$state`, `$derived`, `$props`, `$effect`) | Sintaks Svelte 3/4 (`export let`, `$:` reactive declaration, `<slot />`) |
 | **Event Dispatcher** | Callback props (`onclick`, `onClose`, `onSuccess`) | `createEventDispatcher` |
-| **Batas Ukuran File** | **Maksimal ~500 baris kode per file** | Menumpuk semua tab/modal dalam 1 file monolitik > 500 baris |
+| **Batas Ukuran File** | **Target ~500 baris per file** (fleksibel bila orkestrasi belum dapat dirampingkan) | Menumpuk semua logika tanpa dekomposisi |
+| **Aksi Baris Tabel** | 1 Aksi Utama + `MoreVertical` (`fixed` & smart flipping) | 4–5 tombol berderet atau dropdown `absolute` terpotong di `overflow` |
+| **Filter & Pencarian** | Single-row filter bar + status pills horizontal | Filter bertingkat 2–3 baris yang memakan ruang vertikal layar |
+| **Feedback Operasi** | Floating toast notification (`fixed bottom-6 right-6`) | Banner alert di atas tabel yang memicu layout shift |
 | **Tema & Tampilan** | Full Dark Mode adaptif (`dark:...`) di setiap elemen | Warna hardcoded tanpa padanan kelas dark mode |
 
 ---
@@ -81,8 +84,9 @@ Pola desain pada [`CustomerModal.svelte`](./src/lib/pages/finance/customer/compo
 
 ## 4. Batasan Ukuran File & Dekomposisi Komponen
 
-- **Batas Ukuran File**: Satu file komponen Svelte atau TypeScript **WAJIB ditargetkan tidak melebihi ~500 baris kode**.
-- **Strategi Pemecahan**:
+- **Batas Ukuran File**: Satu file komponen Svelte atau TypeScript **ditargetkan tidak melebihi ~500 baris kode**.
+- Aturan ini adalah **pedoman kualitas dan keterbacaan, bukan batasan kaku** yang memaksa pemecahan buatan. Jika sebuah halaman indeks mengorkestrasikan banyak dialog dan belum ada abstraksi yang lebih sederhana, membiarkannya tetap utuh lebih diutamakan daripada memecahnya menjadi file-file kecil yang justru menyulitkan pelacakan alur.
+- **Strategi Pemecahan Alami**:
   1. **Tab Views**: Pisahkan konten per tab menjadi komponen mandiri (e.g. `UsersTab.svelte`, `RolesTab.svelte`, `PermissionsTab.svelte`).
   2. **Sub-Modals**: Ekstrak form add/edit dan dialog delete ke file terpisah (e.g. `UserFormModal.svelte`, `UserDeleteModal.svelte`).
   3. **Complex Rows/Cards**: Ekstrak card iterasi tabel/matriks yang rumit ke komponen card mandiri.
@@ -101,3 +105,31 @@ Pola desain pada [`CustomerModal.svelte`](./src/lib/pages/finance/customer/compo
 - **TypeScript Hygiene**:
   - Selalu definisikan interface `Props` eksplisit untuk setiap komponen.
   - Impor tipe dari modul pemilik resminya di `$lib/types/...`. DILARANG mendeklarasikan ulang tipe domain di modul lain.
+
+---
+
+## 6. Standar Tabel, Action Menu & Tampilan "To The Point"
+
+### 6.1. Action Menu pada Tabel (Anti-Clipping & Clean Table)
+- **Prinsip Tampilan Bersih**: Kolom AKSI pada tabel maksimal menampilkan **1 tombol aksi cepat** (misalnya *View Detail*) dan **1 tombol opsi** (`MoreVertical`). Hindari menaruh 4–5 tombol berjejer di dalam baris karena membuat tabel bising secara visual (*cluttered*).
+- **Anti-Clipping Container**: Dropdown menu opsi pada tabel **WAJIB** diposisikan dengan `position: fixed` (atau dirender di luar pembungkus tabel `overflow-x-auto`) menggunakan koordinat pemicu dari `button.getBoundingClientRect()`.
+- **Smart Flipping**: Menu **WAJIB** mendeteksi ruang vertikal layar: jika posisi tombol berada di baris bawah dan ruang ke bawah tidak mencukupi, menu otomatis membuka ke atas (`bottom`) agar tidak terpotong tepi layar.
+- **Auto-Dismiss**: Menu otomatis menutup saat pengguna mengklik di luar area, menekan tombol `Escape`, atau melakukan *scroll* pada jendela maupun container tabel (`onscroll={closeMenu}`).
+
+### 6.2. Header & Filter Bar "To The Point" (Single-Row Bar + Status Pills)
+- **Status Filter Pills**: Gunakan baris tombol pil horizontal ringkas dengan counter jumlah data (`Semua (X)`, `Aktif (Y)`, `Draft (Z)`).
+- **Single-Row Filter Bar**: Satukan input pencarian multi-field (nomor, nama, relasi), selector filter utama (`M3Select`), dan info counter data dalam **satu kontainer baris tunggal (`h-10`)**.
+- **DILARANG** membuat form filter bertingkat 2–3 baris yang memakan ruang vertikal layar sebelum tabel terlihat. Pengguna harus langsung disajikan data tabel tanpa terganggu oleh filter yang memakan tempat.
+
+### 6.3. Prinsip "One Dialog per Intent" untuk Workflow Transaksional
+- Pada entitas yang memiliki siklus hidup (*lifecycle* seperti DRAFT, ACTIVE, SUSPENDED, TERMINATED), **WAJIB** memisahkan dialog berdasarkan tujuan bisnis (*intent*):
+  - Form dialog khusus: hanya untuk pembuatan baru dan revisi draft awal (`FooFormModal.svelte`).
+  - Dialog transisi status: hanya meminta alasan/justifikasi aktivasi, penangguhan, atau pemutusan (`FooStatusModal.svelte`).
+  - Dialog amandemen / perpanjangan: hanya menampilkan field yang diizinkan untuk diubah (`FooAmendModal.svelte`, `FooRenewModal.svelte`).
+  - Dialog pemetaan / aturan khusus: dialog terpisah untuk konfigurasi relasi sekunder (`FooPriceSchemasModal.svelte`).
+- **Simplicity Advantage**: Form menjadi pendek, fokus, dan tidak membingungkan pengguna dengan puluhan field nonaktif yang tidak relevan dengan tindakan saat itu.
+
+### 6.4. Feedback Operasional yang Ringkas (Floating Toast vs Layout Shift)
+- **Respon Operasi CRUD**: Gunakan floating toast notification di sudut kanan bawah (`fixed bottom-6 right-6 z-50`) dengan waktu *auto-dismiss* 3–4 detik untuk konfirmasi keberhasilan aksi (simpan, ubah status, hapus).
+- **DILARANG** menampilkan banner alert sukses/gagal di atas tabel yang menyebabkan pergeseran layout halaman (*layout shift*).
+- **Inline Error**: Banner error inline (`bg-rose-50 ...`) hanya digunakan di dalam dialog modal saat proses validasi atau panggilan API gagal, sehingga pengguna dapat langsung memperbaiki input tanpa kehilangan konteks.

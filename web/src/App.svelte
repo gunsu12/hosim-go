@@ -41,7 +41,8 @@
     FinanceTariffLookupPage,
     FinanceTariffClassPage,
     FinanceTariffComponentPage,
-    FinanceCustomerPage
+    FinanceCustomerPage,
+    FinanceCustomerContractPage
   } from '$lib/pages/finance';
 
   // Domain Auth & User Management Pages
@@ -213,6 +214,8 @@
           <RoomPage />
         {:else if activeNav === 'finance-customer' || activeNav === 'master-customer' || activeNav === 'master-payer'}
           <FinanceCustomerPage />
+        {:else if activeNav === 'finance-customer-contract'}
+          <FinanceCustomerContractPage />
         {:else if activeNav === 'master-referal'}
           <ReferalPage />
         {:else if activeNav === 'master-tariff-class'}

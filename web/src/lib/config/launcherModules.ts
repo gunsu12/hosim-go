@@ -255,6 +255,7 @@ export const modules: ModuleDefinition[] = [
     permission: "tariff_class:read",
     features: [
       "Debitur & Penjamin (Customer)",
+      "Kontrak Kerja Sama (PKS)",
       "Buku Tarif (Price Plan)",
       "Kelas & Komponen Tarif",
     ],

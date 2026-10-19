@@ -212,6 +212,12 @@ export const navigationStructure: MenuItem[] = [
         badge: "Customer",
         permission: "customer:read",
       },
+      {
+        id: "finance-customer-contract",
+        label: "Kontrak Kerjasama (PKS)",
+        badge: "PKS",
+        permission: "customer:read",
+      },
     ],
   },
   {

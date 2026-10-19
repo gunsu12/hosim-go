@@ -34,6 +34,7 @@ export const ROUTE_MAP: Record<string, string> = {
   'finance-tariff': '/finance/tariff',
   'finance-price-schema': '/finance/price-schema',
   'finance-customer': '/finance/customer',
+  'finance-customer-contract': '/finance/customer-contract',
   'finance-price-plan': '/finance/price-plan',
   'finance-tariff-matrix': '/finance/tariff-matrix',
   'finance-tariff-lookup': '/finance/tariff-lookup',
