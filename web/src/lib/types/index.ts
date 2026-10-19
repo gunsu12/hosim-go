@@ -6,3 +6,5 @@ export * from './auth';
 export * from './clinical';
 export * from './master';
 export * from './finance';
+export * from './accounting';
+

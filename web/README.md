@@ -156,6 +156,8 @@ Routing dikelola oleh modul [`router.ts`](file:///c:/laragon/www/hosim-go/web/sr
 | `master-referal` | `#/master/referal` | Master: Faskes Asal & Tujuan Rujukan Pasien |
 | `master-tariff-class` | `#/master/tariff-class` | Master: Kelas Tarif Layanan & Standar KRIS |
 | `accounting-coa` | `#/accounting/coa` | Akuntansi: Bagan Akun Standar (Chart of Accounts) |
+| `accounting-fiscal-periods` | `#/accounting/fiscal-periods` | Akuntansi: Periode Bulanan & Kontrol Lock/Unlock/Close |
+| `accounting-fiscal-years` | `#/accounting/fiscal-years` | Akuntansi: Tahun Buku Fiskal & Tutup Buku Akhir Tahun |
 | `accounting-journals` | `#/accounting/journals` | Akuntansi: Jurnal Umum & Transaksi Memorial *(Preview)* |
 | `accounting-ledger` | `#/accounting/ledger` | Akuntansi: Buku Besar & Kas/Bank Treasury *(Preview)* |
 | `accounting-reports` | `#/accounting/reports` | Akuntansi: Laporan Keuangan & Neraca Saldo *(Preview)* |

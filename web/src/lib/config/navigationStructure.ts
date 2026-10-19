@@ -4,6 +4,7 @@ import {
   History,
   ShieldCheck,
   BookOpen,
+  CalendarClock,
   Receipt,
   Building2,
   Sliders,
@@ -109,9 +110,9 @@ export const navigationStructure: MenuItem[] = [
     ],
   },
   {
-    id: "accounting",
-    label: "Chart of Account",
-    shortLabel: "Coa",
+    id: "accounting-structure",
+    label: "Bagan Akun (COA)",
+    shortLabel: "Akun & COA",
     icon: BookOpen,
     children: [
       {
@@ -137,6 +138,26 @@ export const navigationStructure: MenuItem[] = [
         label: "Laporan Keuangan & Neraca",
         badge: "Tahap 4",
         permission: "accounting:read",
+      },
+    ],
+  },
+  {
+    id: "accounting-period",
+    label: "Periode & Tutup Buku",
+    shortLabel: "Periode Fiskal",
+    icon: CalendarClock,
+    children: [
+      {
+        id: "accounting-fiscal-periods",
+        label: "Periode Bulanan (Periods)",
+        badge: "Aktif",
+        permission: "accounting:period:read",
+      },
+      {
+        id: "accounting-fiscal-years",
+        label: "Tahun Buku (Years)",
+        badge: "Aktif",
+        permission: "accounting:period:read",
       },
     ],
   },

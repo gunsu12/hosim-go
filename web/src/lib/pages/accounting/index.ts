@@ -2,3 +2,7 @@
 // Organized to match internal/accounting/<subdomain>
 
 export { default as ChartOfAccountsPage } from './coa/IndexPage.svelte';
+export {
+  FiscalPeriodsPage,
+  FiscalYearsPage
+} from './fiscalperiod';

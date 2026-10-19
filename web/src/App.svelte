@@ -31,7 +31,11 @@
   } from '$lib/pages/master';
 
   // Domain Accounting Pages
-  import { ChartOfAccountsPage } from '$lib/pages/accounting';
+  import {
+    ChartOfAccountsPage,
+    FiscalPeriodsPage,
+    FiscalYearsPage
+  } from '$lib/pages/accounting';
 
   // Domain Finance & Tariff Pages
   import {
@@ -236,6 +240,10 @@
           <ItemPage />
         {:else if activeNav === 'master-coa' || activeNav === 'accounting-coa'}
           <ChartOfAccountsPage />
+        {:else if activeNav === 'accounting-fiscal-periods'}
+          <FiscalPeriodsPage />
+        {:else if activeNav === 'accounting-fiscal-years'}
+          <FiscalYearsPage />
 
         <!-- 3.6 AKUNTANSI & KEUANGAN RS DOMAIN MODULES -->
         {:else if activeNav === 'accounting-journals'}

@@ -291,13 +291,13 @@
                   </td>
                   <td class="py-3 px-3">
                     <span
-                      class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-[11px]"
+                      class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-[11px] text-nowrap"
                     >
                       {item.tariff_class_name || item.tariff_class_code}
                     </span>
                   </td>
                   <td
-                    class="py-3 px-3 text-right font-mono font-bold text-[#1f1f1f] dark:text-[#e3e3e3]"
+                    class="py-3 px-3 text-right font-mono font-bold text-[#1f1f1f] dark:text-[#e3e3e3] text-nowrap"
                   >
                     Rp {item.total_base_price.toLocaleString("id-ID")}
                   </td>

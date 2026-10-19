@@ -207,12 +207,12 @@ export const modules: ModuleDefinition[] = [
   },
   {
     id: "accounting",
-    title: "Chart of Account (COA)",
-    shortTitle: "Akuntansi COA",
+    title: "Akuntansi & Tata Kelola Fiskal",
+    shortTitle: "Akuntansi RS",
     category: "admin_finance",
     categoryLabel: "Administrasi, Keuangan & Tata Kelola",
     description:
-      "Bagan akun standar rumah sakit (Aset, Kewajiban, Ekuitas, Pendapatan, Beban), konfigurasi akun kas & bank, serta hierarki pohon buku besar keuangan.",
+      "Bagan akun standar rumah sakit (COA), kalender tahun buku fiskal, kontrol penguncian & tutup buku bulanan/tahunan, serta buku besar keuangan.",
     icon: BookOpen,
     color: {
       bg: "bg-indigo-50",
@@ -223,15 +223,16 @@ export const modules: ModuleDefinition[] = [
     },
     defaultNav: "accounting-coa",
     status: "ready",
-    statusText: "COA Aktif & Terintegrasi",
+    statusText: "COA & Periode Aktif",
     permission: "accounting:read",
     features: [
       "Bagan Akun (COA)",
+      "Periode Fiskal Bulanan",
+      "Tutup Buku Akhir Tahun",
       "Jurnal Umum Double-Entry",
       "Buku Kas & Bank",
-      "Laporan Keuangan",
     ],
-    quickStats: "Standar Akuntansi RS",
+    quickStats: "COA & Fiskal Terintegrasi",
   },
   {
     id: "finance",

@@ -43,7 +43,7 @@
         if (activeModule === "clinical")
           return item.id === "clinical" || item.id === "activity";
         if (activeModule === "auth") return item.id === "auth";
-        if (activeModule === "accounting") return item.id === "accounting";
+        if (activeModule === "accounting") return item.id.startsWith("accounting");
         if (activeModule === "finance")
           return item.id.startsWith("tariff") || item.id === "customer";
         return item.id === activeModule;

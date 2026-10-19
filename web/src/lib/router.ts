@@ -43,6 +43,8 @@ export const ROUTE_MAP: Record<string, string> = {
 
   // Accounting & Financial Management
   'accounting-coa': '/accounting/coa',
+  'accounting-fiscal-periods': '/accounting/fiscal-periods',
+  'accounting-fiscal-years': '/accounting/fiscal-years',
   'accounting-journals': '/accounting/journals',
   'accounting-ledger': '/accounting/ledger',
   'accounting-reports': '/accounting/reports',
