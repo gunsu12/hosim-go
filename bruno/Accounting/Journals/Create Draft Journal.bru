@@ -10,12 +10,12 @@ post {
   auth: bearer
 }
 
-auth:bearer {
-  token: {{token}}
-}
-
 headers {
   Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {
@@ -39,6 +39,11 @@ body:json {
       }
     ]
   }
+}
+
+vars:pre-request {
+  debitAccountId: 01a109e5-653d-7a83-b59d-919768c652d8
+  creditAccountId: 01a109e5-652b-7c56-844d-991209da1d35
 }
 
 script:post-response {

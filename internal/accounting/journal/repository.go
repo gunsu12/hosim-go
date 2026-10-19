@@ -22,19 +22,7 @@ func NewRepository(db *gorm.DB) Repository {
 }
 
 func (r *repository) SaveDraft(ctx context.Context, entry *JournalEntry) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// 1. Simpan header voucher (Omit Lines agar GORM tidak meng-insert relasi anak dua kali)
-		if err := tx.Omit("Lines").Create(entry).Error; err != nil {
-			return err
-		}
-		// 2. Simpan baris-baris rincian secara eksplisit
-		if len(entry.Lines) > 0 {
-			if err := tx.Create(&entry.Lines).Error; err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	return r.db.WithContext(ctx).Create(entry).Error
 }
 
 func (r *repository) UpdateDraft(ctx context.Context, entry *JournalEntry) error {
@@ -63,8 +51,8 @@ func (r *repository) UpdateDraft(ctx context.Context, entry *JournalEntry) error
 			}
 		}
 
-		// 4. Update header (Omit Lines agar tidak menimpa ulang asosiasi)
-		return tx.Omit("Lines").Save(entry).Error
+		// 4. Update header tanpa menyentuh asosiasi
+		return tx.Omit(clause.Associations).Save(entry).Error
 	})
 }
 
@@ -249,16 +237,9 @@ func (r *repository) CreatePostedEntry(ctx context.Context, entry *JournalEntry)
 			return fmt.Errorf("transaksi dibatalkan: periode fiskal %s tidak berstatus OPEN (status saat ini: %s)", entry.FiscalPeriod, periodStatus)
 		}
 
-		// 2. Simpan header voucher (Omit Lines agar GORM tidak meng-insert relasi anak dua kali)
-		if err := tx.Omit("Lines").Create(entry).Error; err != nil {
+		// 2. Simpan voucher beserta baris rinciannya
+		if err := tx.Create(entry).Error; err != nil {
 			return err
-		}
-
-		// 2. Simpan baris rincian secara eksplisit
-		if len(entry.Lines) > 0 {
-			if err := tx.Create(&entry.Lines).Error; err != nil {
-				return err
-			}
 		}
 
 		// 3. Ring 3: Sanity Check Neraca Saldo Global
@@ -310,14 +291,9 @@ func (r *repository) ReverseEntry(ctx context.Context, original *JournalEntry, r
 			return ErrCannotReverseUnpostedJournal
 		}
 
-		// 2. Simpan voucher reversal baru (Omit Lines agar tidak auto-insert ganda)
-		if err := tx.Omit("Lines").Create(reversal).Error; err != nil {
+		// 3. Simpan voucher reversal beserta baris rinciannya
+		if err := tx.Create(reversal).Error; err != nil {
 			return err
-		}
-		if len(reversal.Lines) > 0 {
-			if err := tx.Create(&reversal.Lines).Error; err != nil {
-				return err
-			}
 		}
 
 		// 3. Ring 3: Sanity Check Neraca Saldo Global
