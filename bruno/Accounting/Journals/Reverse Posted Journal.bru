@@ -1,0 +1,31 @@
+meta {
+  name: Reverse Posted Journal
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/accounting/journals/{{journalId}}/reverse
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "Salah input alokasi rekening bank dan nomor referensi kuitansi"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("reversalJournalId", res.body.data.id);
+  }
+}

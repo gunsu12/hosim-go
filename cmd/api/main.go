@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"hosim-go/internal/accounting/account"
+	"hosim-go/internal/accounting/fiscalperiod"
+	"hosim-go/internal/accounting/journal"
 	"hosim-go/internal/audit"
 	"hosim-go/internal/auth"
 	"hosim-go/internal/catalog/item"
@@ -171,6 +173,17 @@ func main() {
 	accountService := account.NewService(accountRepo)
 	accountHandler := account.NewHandler(accountService)
 
+	// Kalender Akuntansi & Periode Fiskal (Fiscal Period)
+	fiscalPeriodRepo := fiscalperiod.NewRepository(db)
+	fiscalPeriodService := fiscalperiod.NewService(fiscalPeriodRepo)
+	fiscalPeriodHandler := fiscalperiod.NewHandler(fiscalPeriodService)
+
+	// Jurnal Transaksi & Buku Besar (Journal Entries)
+	accountVerifier := journal.NewAccountServiceAdapter(accountService)
+	journalRepo := journal.NewRepository(db)
+	journalService := journal.NewService(journalRepo, accountVerifier, fiscalPeriodService)
+	journalHandler := journal.NewHandler(journalService)
+
 	// Skema Harga & Aturan Penyesuaian Tarif (Price Schema & Rules)
 	txManager := database.NewTransactionManager(db)
 	auditWriter := audit.NewWriter(db)
@@ -268,6 +281,8 @@ func main() {
 			itemCategoryHandler.RegisterRoutes(protected)
 			itemProductLineHandler.RegisterRoutes(protected)
 			accountHandler.RegisterRoutes(protected)
+			fiscalPeriodHandler.RegisterRoutes(protected)
+			journalHandler.RegisterRoutes(protected)
 			priceSchemaHandler.RegisterRoutes(protected)
 		}
 	}

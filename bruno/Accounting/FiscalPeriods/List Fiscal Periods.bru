@@ -1,0 +1,20 @@
+meta {
+  name: List Fiscal Periods
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/accounting/fiscal-periods?year=2026&status=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  year: 2026
+  status: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

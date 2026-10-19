@@ -1,0 +1,25 @@
+meta {
+  name: Unlock Fiscal Period
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/accounting/fiscal-periods/{{fiscalPeriodId}}/unlock
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "notes": "Buka kunci untuk revisi penyesuaian draf"
+  }
+}

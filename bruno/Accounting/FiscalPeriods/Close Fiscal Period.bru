@@ -1,0 +1,25 @@
+meta {
+  name: Close Fiscal Period
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/accounting/fiscal-periods/{{fiscalPeriodId}}/close
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "notes": "Tutup buku bulanan permanen setelah laporan laba rugi disahkan"
+  }
+}

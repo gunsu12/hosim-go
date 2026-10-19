@@ -1,0 +1,15 @@
+meta {
+  name: Get Fiscal Period by ID
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/accounting/fiscal-periods/{{fiscalPeriodId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

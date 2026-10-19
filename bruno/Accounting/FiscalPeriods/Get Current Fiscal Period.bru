@@ -1,0 +1,21 @@
+meta {
+  name: Get Current Fiscal Period
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/accounting/fiscal-periods/current
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("fiscalPeriodId", res.body.data.id);
+  }
+}

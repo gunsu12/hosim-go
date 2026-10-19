@@ -1,0 +1,48 @@
+meta {
+  name: Create Draft Journal
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/accounting/journals
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "entry_date": "2026-10-19",
+    "entry_type": "GENERAL",
+    "description": "Pembayaran biaya operasional listrik PLN gedung utama RS",
+    "reference_number": "PLN-OCT-2026-001",
+    "lines": [
+      {
+        "account_id": "{{debitAccountId}}",
+        "entry_position": "DEBIT",
+        "amount": 25000000.00,
+        "memo": "Tagihan listrik PLN gedung utama"
+      },
+      {
+        "account_id": "{{creditAccountId}}",
+        "entry_position": "CREDIT",
+        "amount": 25000000.00,
+        "memo": "Transfer via Bank Mandiri Operasional RS"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("journalId", res.body.data.id);
+  }
+}

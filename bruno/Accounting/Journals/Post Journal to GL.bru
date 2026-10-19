@@ -1,0 +1,15 @@
+meta {
+  name: Post Journal to GL
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/accounting/journals/{{journalId}}/post
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

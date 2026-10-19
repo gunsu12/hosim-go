@@ -1,0 +1,15 @@
+meta {
+  name: Delete Draft Journal
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/accounting/journals/{{journalId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Create Fiscal Year
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/accounting/fiscal-years
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "year": 2026,
+    "notes": "Tahun Buku Akuntansi RS 2026"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("fiscalYearId", res.body.data.id);
+  }
+}

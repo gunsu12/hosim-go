@@ -1,0 +1,15 @@
+meta {
+  name: List Fiscal Years
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/accounting/fiscal-years
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

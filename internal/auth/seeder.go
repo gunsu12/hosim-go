@@ -73,6 +73,15 @@ var DefaultPermissions = []Permission{
 	{Code: "accounting:create", Name: "Tambah Bagan Akun (COA)", Module: "Akuntansi"},
 	{Code: "accounting:update", Name: "Ubah Bagan Akun (COA)", Module: "Akuntansi"},
 	{Code: "accounting:delete", Name: "Hapus Bagan Akun (COA)", Module: "Akuntansi"},
+	{Code: "accounting:period:read", Name: "Lihat Periode Fiskal", Module: "Akuntansi"},
+	{Code: "accounting:period:manage", Name: "Kelola & Kunci Periode Fiskal", Module: "Akuntansi"},
+	{Code: "accounting:period:close", Name: "Tutup Buku Periode Fiskal", Module: "Akuntansi"},
+	{Code: "accounting:journal:read", Name: "Lihat Jurnal Transaksi", Module: "Akuntansi"},
+	{Code: "accounting:journal:create", Name: "Tambah Draf Jurnal", Module: "Akuntansi"},
+	{Code: "accounting:journal:update", Name: "Ubah Draf Jurnal", Module: "Akuntansi"},
+	{Code: "accounting:journal:delete", Name: "Hapus Draf Jurnal", Module: "Akuntansi"},
+	{Code: "accounting:journal:post", Name: "Sahkan Jurnal (Posting)", Module: "Akuntansi"},
+	{Code: "accounting:journal:reverse", Name: "Batalkan Jurnal (Reversal)", Module: "Akuntansi"},
 
 	// Pasien
 	{Code: "patient:read", Name: "Lihat Pasien", Module: "Master Pasien"},

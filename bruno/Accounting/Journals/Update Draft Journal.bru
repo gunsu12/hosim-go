@@ -1,0 +1,40 @@
+meta {
+  name: Update Draft Journal
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/accounting/journals/{{journalId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "description": "Pembayaran tagihan listrik PLN gedung utama & poliklinik (revisi memo)",
+    "reference_number": "PLN-OCT-2026-001-REV",
+    "lines": [
+      {
+        "account_id": "{{debitAccountId}}",
+        "entry_position": "DEBIT",
+        "amount": 25000000.00,
+        "memo": "Tagihan listrik PLN gedung utama & poliklinik"
+      },
+      {
+        "account_id": "{{creditAccountId}}",
+        "entry_position": "CREDIT",
+        "amount": 25000000.00,
+        "memo": "Transfer via Bank Mandiri Operasional RS"
+      }
+    ]
+  }
+}

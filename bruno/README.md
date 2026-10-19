@@ -10,6 +10,10 @@ Koleksi API request untuk aplikasi [Bruno](https://www.usebruno.com/).
 4. Jalankan request **Auth > Login** terlebih dahulu:
    - Request ini akan otomatis menyimpan `access_token` ke environment variable `token`.
 5. Anda dapat langsung menjalankan request di folder:
+   - **`Accounting`**:
+     - **`Accounts`**: `List Accounts`, `Create Account` (otomatis simpan `{{accountId}}`), `Get Account by ID`, `Update Account`, `Delete Account`, `Get Account Tree`, `List Postable Accounts`, `List Treasury Accounts`.
+     - **`FiscalPeriods`**: `List Fiscal Years`, `Create Fiscal Year` (otomatis simpan `{{fiscalYearId}}`), `Get Fiscal Year by ID`, `List Fiscal Periods`, `Get Current Fiscal Period` (otomatis simpan `{{fiscalPeriodId}}`), `Get Fiscal Period by ID`, `Lock Fiscal Period`, `Unlock Fiscal Period`, `Close Fiscal Period`, `Close Fiscal Year`.
+     - **`Journals`**: `List Journals`, `Create Draft Journal` (otomatis simpan `{{journalId}}`), `Get Journal by ID`, `Update Draft Journal`, `Post Journal to GL`, `Reverse Posted Journal` (otomatis simpan `{{reversalJournalId}}`), `Delete Draft Journal`.
    - **`Finance`**:
      - **`Customers`**: `List Customer Types`, `List Customers`, `Create Customer` (otomatis simpan `{{customerId}}`), `Get by ID`, `Update`, `Delete`.
      - **`Tariff Classes`**: `List`, `Create` (otomatis simpan `{{tariffClassId}}`), `Get by ID`, `Update`, `Delete`.

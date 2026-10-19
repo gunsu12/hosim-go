@@ -1,0 +1,26 @@
+meta {
+  name: List Journals
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/accounting/journals?page=1&limit=20&start_date=&end_date=&fiscal_period=&status=&entry_type=&search=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  page: 1
+  limit: 20
+  start_date: 
+  end_date: 
+  fiscal_period: 
+  status: 
+  entry_type: 
+  search: 
+}
+
+auth:bearer {
+  token: {{token}}
+}

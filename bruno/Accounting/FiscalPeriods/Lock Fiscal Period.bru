@@ -1,0 +1,25 @@
+meta {
+  name: Lock Fiscal Period
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/accounting/fiscal-periods/{{fiscalPeriodId}}/lock
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "notes": "Penguncian sementara untuk proses rekonsiliasi kas-bank"
+  }
+}
